@@ -29,6 +29,7 @@ from typing import Any
 from fastapi import APIRouter, Cookie, HTTPException, Response
 from pydantic import BaseModel
 
+from . import guides
 from .fields import DATA_DIR, load_fields
 from .knowledge import OPERATORS, load_programs, validate_program
 
@@ -273,6 +274,55 @@ def delete_program(program_id: str, aidstation_admin: str | None = Cookie(None))
     path.unlink()
     _audit("delete", program_id, before, None)
     return {"ok": True, "backup": backup, "programs_loaded": reload_runtime()}
+
+
+# ---- 白話指南 ------------------------------------------------------------
+
+class GuideRequest(BaseModel):
+    guide: dict
+
+
+@router.get("/guides")
+def admin_list_guides(aidstation_admin: str | None = Cookie(None)) -> list[dict]:
+    require_login(aidstation_admin)
+    return guides.load_guides()
+
+
+@router.post("/guide/{guide_id}")
+def admin_save_guide(guide_id: str, req: GuideRequest,
+                     aidstation_admin: str | None = Cookie(None)) -> dict:
+    require_login(aidstation_admin)
+    guide = {**req.guide, "id": guide_id}
+    errors = guides.validate_guide(guide)
+    if errors:
+        raise HTTPException(422, {"message": "指南有問題，沒有存檔", "errors": errors})
+    existed = guides.get_guide(guide_id) is not None
+    saved = guides.upsert_guide(guide)
+    _audit("update" if existed else "create", f"guide:{guide_id}", None, saved)
+    return {"ok": True, "created": not existed, "guide": saved}
+
+
+class PreviewRequest(BaseModel):
+    body: str = ""
+
+
+@router.post("/guide-preview")
+def admin_preview_guide(req: PreviewRequest,
+                        aidstation_admin: str | None = Cookie(None)) -> dict:
+    """後台預覽用同一支渲染器，所見即農民所得。"""
+    require_login(aidstation_admin)
+    return {"html": guides.render_markdown(req.body)}
+
+
+@router.delete("/guide/{guide_id}")
+def admin_delete_guide(guide_id: str,
+                       aidstation_admin: str | None = Cookie(None)) -> dict:
+    require_login(aidstation_admin)
+    before = guides.get_guide(guide_id)
+    if not guides.delete_guide(guide_id):
+        raise HTTPException(404, "找不到這篇指南")
+    _audit("delete", f"guide:{guide_id}", before, None)
+    return {"ok": True}
 
 
 @router.get("/audit")

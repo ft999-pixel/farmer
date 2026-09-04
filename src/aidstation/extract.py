@@ -328,7 +328,7 @@ class ClaudeExtractor:
 
     def __init__(self, fields: dict[str, dict], model: str | None = None):
         self.fields = fields
-        self.model = model or os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-5")
+        self.model = model or os.environ.get("ANTHROPIC_MODEL", "claude-opus-4-8")
         import anthropic  # 延遲載入，未安裝時不影響離線模式
         self.client = anthropic.Anthropic()
         self.fallback = KeywordExtractor(fields)

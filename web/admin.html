@@ -70,6 +70,24 @@ tr.stale td{background:var(--warn-bg);}
 .editor-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px;}
 .editor-head h2{margin:0;flex:1;}
 .hide{display:none;}
+/* 分頁切換 */
+.tabs{display:flex;gap:8px;margin-top:16px;}
+.tabs button[aria-pressed="true"]{background:var(--green-bright);border-color:var(--green-bright);
+  color:var(--ink);font-weight:700;}
+/* Markdown 說明與預覽 */
+.md-help{margin-top:10px;font-size:12.5px;color:var(--ink-soft);line-height:1.8;}
+.md-table{width:auto;margin:6px 0;}
+.md-table td{padding:3px 14px 3px 0;border:none;}
+.md-help code{background:var(--green-tint);padding:2px 6px;border-radius:5px;}
+.preview{background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:20px 24px;
+  font-size:16px;line-height:1.95;min-height:80px;}
+.preview h2{font-size:19px;margin:22px 0 8px;padding-left:11px;border-left:4px solid var(--green-bright);}
+.preview h3{font-size:16.5px;margin:18px 0 6px;}
+.preview p{margin:0 0 14px;}
+.preview ul,.preview ol{margin:0 0 14px;padding-left:24px;}
+.preview li{margin-bottom:7px;}
+.preview strong{background:linear-gradient(transparent 62%, var(--green-pale) 62%);}
+.preview:empty::before{content:'還沒有內容';color:var(--ink-soft);font-size:14px;}
 .audit{font-size:13.5px;}
 .audit td{padding:7px 8px;}
 @media (max-width:640px){ .leaf-grid{grid-template-columns:1fr;} .list-row{grid-template-columns:1fr;} }
@@ -107,6 +125,12 @@ tr.stale td{background:var(--warn-bg);}
     <p class="hint">密碼設在專案根目錄 <code>.env</code> 的 <code>ADMIN_PASSWORD</code>。沒設定時後台不會啟用。</p>
     <div style="margin-top:12px"><button class="primary" id="do-login">登入</button></div>
   </section>
+
+  <!-- 分頁切換 -->
+  <div id="tabs" class="tabs hide">
+    <button data-tab="programs" aria-pressed="true">補助資料</button>
+    <button data-tab="guides">白話指南</button>
+  </div>
 
   <!-- 清單 -->
   <section id="list-box" class="hide">
@@ -177,6 +201,55 @@ tr.stale td{background:var(--warn-bg);}
     </div>
     <div style="margin-top:12px"><label for="f-source-note">來源說明／法規依據</label><textarea id="f-source-note"></textarea></div>
     <p class="hint">超過半年沒覆核的補助會在清單上標成橘色。資料過期沒人發現，是這套系統最大的風險。</p>
+  </section>
+
+  <!-- 指南清單 -->
+  <section id="guide-list-box" class="hide">
+    <div class="editor-head">
+      <h2>白話指南</h2>
+      <button class="primary" id="new-guide">＋ 新增指南</button>
+    </div>
+    <table id="guide-table"></table>
+  </section>
+
+  <!-- 指南編輯器 -->
+  <section id="guide-editor" class="hide">
+    <div class="editor-head">
+      <h2 id="guide-title-head">編輯指南</h2>
+      <button id="guide-cancel">取消</button>
+      <button class="primary" id="guide-save">存檔並發布</button>
+    </div>
+    <div class="grid g2">
+      <div><label for="g-id">網址代號（發布後不要改，改了舊連結會失效）</label><input id="g-id" placeholder="disaster-72hr"></div>
+      <div><label for="g-title">標題</label><input id="g-title"></div>
+    </div>
+    <div class="grid g2" style="margin-top:12px">
+      <div><label for="g-category">分類</label><input id="g-category" placeholder="災後應變"></div>
+      <div><label for="g-minutes">閱讀時間（分鐘）</label><input id="g-minutes" type="number" min="1" max="60"></div>
+    </div>
+    <div style="margin-top:16px">
+      <label for="g-body">內文</label>
+      <textarea id="g-body" style="min-height:420px;font-size:15px;line-height:1.9"></textarea>
+      <div class="md-help">
+        <b>可以用的格式</b>（不會的話直接打字也可以，會自動分段）：
+        <table class="md-table">
+          <tr><td><code># 大標題</code></td><td>換行的段落標題</td></tr>
+          <tr><td><code>## 小標題</code></td><td>次一層標題</td></tr>
+          <tr><td><code>**重點**</code></td><td>粗體，會加綠色底線</td></tr>
+          <tr><td><code>- 項目</code></td><td>條列</td></tr>
+          <tr><td><code>1. 項目</code></td><td>編號清單</td></tr>
+          <tr><td><code>[文字](網址)</code></td><td>連結</td></tr>
+        </table>
+        空一行就是分段。貼入 HTML 不會生效，會原樣顯示成文字（這是刻意的安全設計）。
+      </div>
+    </div>
+    <div style="margin-top:18px">
+      <div class="editor-head" style="margin-bottom:10px">
+        <h2 style="font-size:15px">預覽（農民看到的樣子）</h2>
+        <button class="mini" id="g-preview">重新整理預覽</button>
+      </div>
+      <div id="g-preview-box" class="preview"></div>
+    </div>
   </section>
 
   <!-- 稽核 -->
@@ -437,15 +510,104 @@ async function loadAudit(){
      : '<tr><td colspan="3" class="hint">還沒有異動紀錄。</td></tr>');
 }
 
+// ---- 白話指南 ------------------------------------------------------------
+let currentGuide = null;
+
+async function loadGuides(){
+  const rows = await api('/admin/guides');
+  $('guide-table').innerHTML = `<tr><th>標題</th><th>分類</th><th>更新日期</th><th></th></tr>` +
+    (rows.length ? rows.map(g => `
+      <tr>
+        <td><b>${esc(g.title)}</b><br><span class="hint">${esc(g.id)}</span></td>
+        <td>${esc(g.category || '—')}</td>
+        <td>${esc(g.updated_at || '—')}</td>
+        <td><div class="row-actions">
+          <button class="mini" onclick="window.open('/app/guide.html?id=${encodeURIComponent(g.id)}','_blank')">預覽</button>
+          <button class="mini g-edit" data-id="${esc(g.id)}">編輯</button>
+          <button class="mini danger g-del" data-id="${esc(g.id)}" data-title="${esc(g.title)}">刪除</button>
+        </div></td>
+      </tr>`).join('') : '<tr><td colspan="4" class="hint">還沒有任何指南。</td></tr>');
+
+  $('guide-table').querySelectorAll('.g-edit').forEach(b => b.onclick = () => openGuide(b.dataset.id));
+  $('guide-table').querySelectorAll('.g-del').forEach(b => b.onclick = async () => {
+    if (!confirm(`確定刪除「${b.dataset.title}」？\n農民就再也讀不到這篇了。`)) return;
+    try {
+      await api('/admin/guide/' + b.dataset.id, {method: 'DELETE'});
+      msg('已刪除。', 'ok');
+      await loadGuides(); await loadAudit();
+    } catch (e) { showError(e); }
+  });
+}
+
+async function openGuide(id){
+  const rows = await api('/admin/guides');
+  currentGuide = id ? rows.find(g => g.id === id) : {id: '', title: '', category: '', read_minutes: 3, body: ''};
+  $('guide-title-head').textContent = id ? `編輯：${currentGuide.title}` : '新增指南';
+  $('g-id').value = currentGuide.id || ''; $('g-id').disabled = !!id;
+  $('g-title').value = currentGuide.title || '';
+  $('g-category').value = currentGuide.category || '';
+  $('g-minutes').value = currentGuide.read_minutes || '';
+  $('g-body').value = currentGuide.body || '';
+  show($('tabs'), false); show($('guide-list-box'), false); show($('audit-box'), false);
+  show($('guide-editor'), true);
+  await refreshPreview();
+  msg('', ''); window.scrollTo(0, 0);
+}
+
+// 預覽用後端渲染，確保跟農民看到的完全一致（前端不自己解析 Markdown）
+async function refreshPreview(){
+  const body = $('g-body').value;
+  if (!body.trim()) { $('g-preview-box').innerHTML = ''; return; }
+  try {
+    const r = await api('/admin/guide-preview', {method: 'POST',
+      headers: {'Content-Type': 'application/json'}, body: JSON.stringify({body})});
+    $('g-preview-box').innerHTML = r.html;
+  } catch (e) { $('g-preview-box').textContent = '預覽失敗'; }
+}
+
+async function saveGuide(){
+  const guide = {
+    id: $('g-id').value.trim(), title: $('g-title').value.trim(),
+    category: $('g-category').value.trim(),
+    read_minutes: Number($('g-minutes').value) || null,
+    body: $('g-body').value,
+  };
+  if (!guide.id) { msg('請填網址代號。', 'err'); return; }
+  try {
+    const r = await api('/admin/guide/' + guide.id, {method: 'POST',
+      headers: {'Content-Type': 'application/json'}, body: JSON.stringify({guide})});
+    msg(r.created ? '已新增並發布，農民現在就讀得到了。' : '已更新並發布。', 'ok');
+    await backToGuides();
+  } catch (e) { showError(e); window.scrollTo(0, 0); }
+}
+
+async function backToGuides(){
+  show($('guide-editor'), false); show($('tabs'), true);
+  show($('guide-list-box'), true); show($('audit-box'), true);
+  await loadGuides(); await loadAudit();
+}
+
+function switchTab(tab){
+  document.querySelectorAll('#tabs button').forEach(b =>
+    b.setAttribute('aria-pressed', String(b.dataset.tab === tab)));
+  show($('list-box'), tab === 'programs');
+  show($('guide-list-box'), tab === 'guides');
+  show($('editor-box'), false); show($('guide-editor'), false);
+  show($('audit-box'), true);
+}
+
 async function backToList(){
-  show($('editor-box'), false); show($('list-box'), true); show($('audit-box'), true);
+  show($('editor-box'), false); show($('tabs'), true);
+  show($('list-box'), true); show($('audit-box'), true);
   await loadList(); await loadAudit();
 }
 
 async function enterAdmin(){
   SCHEMA = await api('/admin/schema');
-  show($('login-box'), false); show($('logout'), true);
+  show($('login-box'), false); show($('logout'), true); show($('tabs'), true);
+  await loadGuides();
   await backToList();
+  switchTab('programs');
 }
 
 // ---- 啟動 ---------------------------------------------------------------
@@ -462,6 +624,17 @@ $('logout').onclick = async () => { await api('/admin/logout', {method: 'POST'})
 $('new-btn').onclick = () => openEditor(null);
 $('cancel-btn').onclick = () => backToList();
 $('save-btn').onclick = save;
+$('new-guide').onclick = () => openGuide(null);
+$('guide-cancel').onclick = () => backToGuides();
+$('guide-save').onclick = saveGuide;
+$('g-preview').onclick = refreshPreview;
+document.querySelectorAll('#tabs button').forEach(b => b.onclick = () => switchTab(b.dataset.tab));
+// 停止打字 600ms 後自動更新預覽
+let previewTimer;
+$('g-body').addEventListener('input', () => {
+  clearTimeout(previewTimer);
+  previewTimer = setTimeout(refreshPreview, 600);
+});
 $('add-doc').onclick = () => { current.documents.push({name: '', where: ''}); renderDocs(current.documents); };
 
 (async () => {

@@ -5,6 +5,8 @@
 """
 from __future__ import annotations
 
+import base64
+import binascii
 from datetime import date
 
 try:  # 讀取專案根目錄的 .env（沒裝 python-dotenv 或沒有 .env 都不影響啟動）
@@ -18,10 +20,10 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-from . import __version__, blockers
+from . import __version__, blockers, guides
 from .admin import router as admin_router
 from .deadline import deadline_from_received, load_holidays
-from .document import build_plain_card, get_translator
+from .document import ImageReadError, build_plain_card, get_translator, read_image
 from .matching import MatchingInputError, match_profile
 from .fields import load_fields
 from .knowledge import load_programs
@@ -48,11 +50,24 @@ class DeadlineRequest(BaseModel):
 
 
 class TranslateRequest(BaseModel):
-    text: str                    # 公文全文（OCR 後或直接貼上）
+    text: str = ""               # 公文全文（貼上）；給 image 時可留空
+    image: str | None = None     # 公文照片，base64（可含 data:image/jpeg;base64, 前綴）
     received_date: str | None = None
     today: str | None = None
     category: str | None = None  # 補助類別，供卡點統計交叉分析（可不給）
     township: str | None = None
+
+
+def decode_image(raw: str) -> tuple[bytes, str]:
+    """把前端傳來的 data URL／裸 base64 拆成 (bytes, media_type)。影像不落地。"""
+    media_type = "image/jpeg"
+    if raw.startswith("data:"):
+        header, _, raw = raw.partition(",")
+        media_type = header[5:].split(";")[0] or media_type
+    try:
+        return base64.b64decode(raw, validate=True), media_type
+    except (ValueError, binascii.Error):
+        raise ImageReadError("照片資料讀不出來，請重新上傳一次。")
 
 
 class BlockerRequest(BaseModel):
@@ -94,7 +109,8 @@ _web_sessions: dict[str, FlowSession] = {}
 class ChatRequest(BaseModel):
     session_id: str
     text: str = ""
-    kind: str = "text"       # "text"＝對話｜"document"＝貼公文全文｜"reset"＝重新開始
+    image: str | None = None   # kind="document_image" 時的公文照片 base64
+    kind: str = "text"         # "text"｜"document"＝貼全文｜"document_image"＝拍照｜"reset"
     today: date | None = None  # demo 可固定日期；不影響正式呼叫的預設行為
 
 
@@ -108,11 +124,36 @@ def post_chat(req: ChatRequest) -> dict:
         return {"text": "好，重新開始。跟我說發生什麼事？講一句話就好（例：我的檨仔攏落了了）。",
                 "options": None}
     session = _web_sessions.setdefault(req.session_id, FlowSession())
-    if req.kind == "document":
+    if req.kind == "document_image":
+        try:
+            data, media_type = decode_image(req.image or "")
+            text = read_image(data, media_type)
+        except ImageReadError as exc:
+            # 認不出來就直說，並給農民下一步；不回傳半猜的翻譯
+            return {"text": f"{exc}\n\n看不懂的地方也可以直接打電話問承辦，他們會幫你看。",
+                    "options": ["我知道了", "我卡住了"], "payload": None}
+        reply = _web_flow.handle_document_text(session, text)
+    elif req.kind == "document":
         reply = _web_flow.handle_document_text(session, req.text)
     else:
         reply = _web_flow.handle_text(session, req.text)
     return {"text": reply.text, "options": reply.options, "payload": reply.payload}
+
+
+@app.get("/guides")
+def list_guides() -> list[dict]:
+    """公開的指南清單（不含內文，首頁列表用）。"""
+    return [{k: g.get(k) for k in ("id", "title", "category", "read_minutes", "updated_at")}
+            for g in guides.load_guides()]
+
+
+@app.get("/guides/{guide_id}")
+def read_guide(guide_id: str) -> dict:
+    """單篇指南。內文在伺服器端轉成安全 HTML，前端不做 Markdown 解析。"""
+    guide = guides.get_guide(guide_id)
+    if guide is None:
+        raise HTTPException(404, "找不到這篇指南")
+    return {**guide, "html": guides.render_markdown(guide.get("body", ""))}
 
 
 @app.get("/fields")
@@ -156,8 +197,21 @@ def post_match(req: MatchRequest) -> dict:
 
 @app.post("/translate")
 def post_translate(req: TranslateRequest) -> dict:
-    """公文白話化：受控欄位抽取 → 白話卡。文到型且未給收文日時會要求反問。"""
-    doc = get_translator().translate(req.text)
+    """公文白話化：（照片 → 文字 →）受控欄位抽取 → 白話卡。
+
+    給 image 就先 OCR；文到型且未給收文日時會要求反問收文日。
+    影像只在記憶體停留，處理完即丟，不寫入磁碟。
+    """
+    text = req.text
+    if req.image:
+        try:
+            data, media_type = decode_image(req.image)
+            text = read_image(data, media_type)
+        except ImageReadError as exc:
+            raise HTTPException(422, str(exc))
+    if not text.strip():
+        raise HTTPException(422, "請提供公文文字（text）或公文照片（image）。")
+    doc = get_translator().translate(text)
     received = date.fromisoformat(req.received_date) if req.received_date else None
     today = date.fromisoformat(req.today) if req.today else None
     card = build_plain_card(doc, received_date=received, today=today, holidays=HOLIDAYS)

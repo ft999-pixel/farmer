@@ -232,14 +232,14 @@ window.AidChat = (function () {
       }
     }
 
-    async function send(text, kind) {
+    async function send(text, kind, extra) {
       text = (text || '').trim();
-      if (!text) return;
-      addMsg(text, 'user');
+      if (!text && !extra) return;
+      addMsg(text || '（我傳了一張公文照片）', 'user');
       clearOptions();
-      const typing = addMsg('…', 'bot');
+      const typing = addMsg(kind === 'document_image' ? '照片收到了，正在看…' : '…', 'bot');
       try {
-        const data = await call({ text: text, kind: kind || 'text' });
+        const data = await call(Object.assign({ text: text, kind: kind || 'text' }, extra));
         typing.remove();
         handleReply(data);
       } catch (err) {
@@ -273,7 +273,11 @@ window.AidChat = (function () {
       '你好！我是農民補給站。\n遇到災損、想查補助，用一句話告訴我就好，台語嘛通。', 'bot');
     if (opts.starters) addOptions(opts.starters);
 
-    return { send, reset, sendDocument: (text) => send(text, 'document') };
+    return {
+      send, reset,
+      sendDocument: (text) => send(text, 'document'),
+      sendDocumentImage: (dataUrl) => send('', 'document_image', { image: dataUrl })
+    };
   }
 
   return { init };

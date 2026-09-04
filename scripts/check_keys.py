@@ -28,7 +28,7 @@ def check_anthropic() -> None:
         import anthropic
         client = anthropic.Anthropic()
         msg = client.messages.create(
-            model=os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-5"),
+            model=os.environ.get("ANTHROPIC_MODEL", "claude-opus-4-8"),
             max_tokens=10, messages=[{"role": "user", "content": "回覆OK"}])
         print(f"✓ Anthropic 金鑰可用（模型回覆：{msg.content[0].text.strip()[:10]}）")
     except Exception as e:

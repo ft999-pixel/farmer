@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>白話指南｜農民補給站</title>
+<style>
+:root{
+  --green-bright:#02DF82; --green-mid:#01B96B; --green-pale:#9FF5CF;
+  --green-bg:#F0FDF6; --green-tint:#D9FBEC; --ink:#06301F; --ink-soft:#0A4A32;
+  --orange:#D85A30; --line:#CBEEDC;
+}
+@font-face{font-family:'GenSen';src:url('fonts/GenSenRounded2TW-R.woff2') format('woff2');font-weight:400;font-display:swap;}
+@font-face{font-family:'GenSen';src:url('fonts/GenSenRounded2TW-M.woff2') format('woff2');font-weight:500;font-display:swap;}
+@font-face{font-family:'GenSen';src:url('fonts/GenSenRounded2TW-H.woff2') format('woff2');font-weight:700;font-display:swap;}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--green-bg);color:var(--ink);
+  font-family:'GenSen','Yuanti TC','Microsoft JhengHei',sans-serif;}
+.nav-outer{max-width:820px;margin:0 auto;padding:14px 20px 0;}
+.nav-pill{display:flex;align-items:center;gap:18px;background:#fff;border:1px solid var(--line);
+  border-radius:999px;padding:10px 18px;flex-wrap:wrap;}
+.nav-logo{display:flex;align-items:center;gap:8px;text-decoration:none;color:var(--ink);font-weight:700;}
+.nav-links{display:flex;gap:18px;flex-wrap:wrap;font-size:1.0625rem;font-weight:500;}
+.nav-links a{text-decoration:none;color:var(--ink);white-space:nowrap;}
+.nav-links a:hover,.nav-links a.current{color:var(--green-mid);}
+.wrap{max-width:820px;margin:0 auto;padding:22px 20px 70px;}
+.back{display:inline-block;color:var(--ink-soft);text-decoration:none;font-size:1rem;margin-bottom:14px;}
+.back:hover{color:var(--green-mid);}
+article{background:#fff;border:1px solid var(--line);border-radius:20px;padding:34px 38px;}
+h1{font-size:2rem;font-weight:700;line-height:1.4;margin:0 0 10px;}
+.meta{color:var(--ink-soft);font-size:1rem;margin:0 0 26px;padding-bottom:20px;border-bottom:2px solid var(--green-tint);}
+.tag{display:inline-block;background:var(--green-tint);border-radius:999px;padding:3px 13px;margin-right:8px;}
+/* 內文：字級偏大、行距偏鬆，給長輩讀的 */
+.body{font-size:1.1875rem;line-height:2;}
+.body h2{font-size:1.4375rem;font-weight:700;margin:34px 0 12px;padding-left:14px;
+  border-left:5px solid var(--green-bright);}
+.body h3{font-size:1.25rem;font-weight:700;margin:26px 0 10px;}
+.body p{margin:0 0 18px;}
+.body ul,.body ol{margin:0 0 18px;padding-left:26px;}
+.body li{margin-bottom:10px;}
+.body strong{color:var(--ink);background:linear-gradient(transparent 62%, var(--green-pale) 62%);}
+.body a{color:var(--green-mid);}
+.foot{margin-top:30px;padding-top:20px;border-top:2px solid var(--green-tint);
+  color:var(--ink-soft);font-size:.9375rem;line-height:1.8;}
+.actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:22px;}
+.btn{font-family:inherit;font-size:1.0625rem;font-weight:700;padding:14px 26px;border-radius:999px;
+  text-decoration:none;display:inline-block;background:var(--green-bright);color:var(--ink);}
+.btn.outline{background:#fff;border:2px solid var(--line);color:var(--ink);font-weight:500;}
+.more{margin-top:30px;}
+.more h2{font-size:1.25rem;margin:0 0 12px;}
+.more a{display:block;background:#fff;border:1px solid var(--line);border-radius:14px;
+  padding:16px 20px;margin-bottom:10px;text-decoration:none;color:var(--ink);font-weight:500;}
+.more a:hover{border-color:var(--green-bright);}
+.more span{display:block;color:var(--ink-soft);font-size:.9375rem;font-weight:400;margin-top:4px;}
+.empty{text-align:center;color:var(--ink-soft);padding:50px 0;font-size:1.0625rem;}
+</style>
+</head>
+<body>
+<div class="nav-outer">
+  <nav class="nav-pill">
+    <a href="index.html" class="nav-logo" aria-label="農民補給站首頁">
+      <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><path d="M4 2 v18" stroke="#06301F" stroke-width="2.5" stroke-linecap="round"/><path d="M4 3 L18 7 L4 11 Z" fill="#02DF82"/></svg>
+      農民補給站
+    </a>
+    <div class="nav-links">
+      <a href="browse.html">找補助</a>
+      <a href="chat.html?tab=doc">看懂公文</a>
+      <a href="index.html#guides" class="current">白話指南</a>
+      <a href="profile.html">我的資料</a>
+    </div>
+  </nav>
+</div>
+
+<div class="wrap">
+  <a class="back" href="index.html#guides">← 回指南列表</a>
+  <div id="content"><p class="empty">載入中…</p></div>
+</div>
+
+<script>
+const esc = s => String(s ?? '').replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
+
+(async () => {
+  const id = new URLSearchParams(location.search).get('id');
+  const box = document.getElementById('content');
+  if (!id) { box.innerHTML = '<p class="empty">沒有指定要看哪一篇。<a href="index.html#guides">回列表</a></p>'; return; }
+
+  let g;
+  try {
+    const r = await fetch('/guides/' + encodeURIComponent(id));
+    if (!r.ok) throw new Error();
+    g = await r.json();
+  } catch (e) {
+    box.innerHTML = '<p class="empty">找不到這篇指南，可能已經被移除了。<br><a href="index.html#guides">回列表看看其他篇</a></p>';
+    return;
+  }
+
+  document.title = g.title + '｜農民補給站';
+  // g.html 由伺服器產生：原始 HTML 在後端已跳脫，這裡放心插入
+  box.innerHTML = `<article>
+      <h1>${esc(g.title)}</h1>
+      <p class="meta">
+        ${g.category ? `<span class="tag">${esc(g.category)}</span>` : ''}
+        ${g.read_minutes ? `讀完約 ${esc(g.read_minutes)} 分鐘・` : ''}
+        更新於 ${esc(g.updated_at || '—')}
+      </p>
+      <div class="body">${g.html}</div>
+      <div class="foot">
+        本篇為白話說明，幫助你理解制度，<b>不具行政效力</b>。
+        實際資格與金額由承辦單位認定，有疑問請直接電洽公所農業課或當地農會。
+      </div>
+      <div class="actions">
+        <a class="btn" href="chat.html">說說我的狀況，看有什麼補助</a>
+        <a class="btn outline" href="browse.html">自己找補助</a>
+      </div>
+    </article>
+    <div class="more" id="more"></div>`;
+
+  // 其他指南
+  try {
+    const all = (await (await fetch('/guides')).json()).filter(x => x.id !== id);
+    if (all.length) {
+      document.getElementById('more').innerHTML = '<h2>其他指南</h2>' + all.map(x =>
+        `<a href="guide.html?id=${encodeURIComponent(x.id)}">${esc(x.title)}
+          <span>${esc(x.category || '')}${x.read_minutes ? `・讀完約 ${esc(x.read_minutes)} 分鐘` : ''}</span></a>`
+      ).join('');
+    }
+  } catch (e) {}
+})();
+</script>
+</body>
+</html>

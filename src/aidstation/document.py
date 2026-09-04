@@ -6,12 +6,14 @@
   「文到○日內」→ 必須反問收文日，回傳白話計算式。
 - 第一安全原則：解析不出就說不知道，絕不猜。
 
-OCR 尚未接上（正式版用 PaddleOCR 微調），本模組從文字開始處理；
-LINE／PWA 端先把影像轉文字再進來。RegexDocumentTranslator 為離線
-後備與 LLM 故障降級路徑，ClaudeDocumentTranslator 為正式路徑。
+影像入口：read_image() 用 Claude vision 把公文照片逐字轉成文字，
+再走同一條 translate() → build_plain_card() 流程。影像不落地，
+處理完即丟。沒有 API 金鑰時明講「認不出來」，不猜。
+RegexDocumentTranslator 為離線後備與 LLM 故障降級路徑。
 """
 from __future__ import annotations
 
+import base64
 import json
 import os
 import re
@@ -103,7 +105,7 @@ class ClaudeDocumentTranslator:
     )
 
     def __init__(self, model: str | None = None):
-        self.model = model or os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-5")
+        self.model = model or os.environ.get("ANTHROPIC_MODEL", "claude-opus-4-8")
         import anthropic
         self.client = anthropic.Anthropic()
         self.fallback = RegexDocumentTranslator()
@@ -119,6 +121,57 @@ class ClaudeDocumentTranslator:
         except Exception:
             return self.fallback.translate(text)
         return sanitize_doc(raw)
+
+
+class ImageReadError(RuntimeError):
+    """公文影像轉不出文字：沒接上模型、圖太糊、或根本不是公文。"""
+
+
+# 逐字抄寫，不翻譯不摘要——翻譯是下一段 translate() 的事，兩段分開才好除錯
+OCR_SYSTEM = (
+    "這是一張台灣公文的照片。把公文上的文字逐字打出來，保持原本的行序與段落。\n"
+    "規則：不要翻譯、不要摘要、不要補上原文沒有的字；看不清楚的字用「□」代替。\n"
+    "如果這張圖不是公文（風景、農田、人像、收據等），只回覆 NOT_A_DOCUMENT。"
+)
+IMAGE_MEDIA_TYPES = ("image/jpeg", "image/png", "image/webp", "image/gif")
+MAX_IMAGE_BYTES = 5 * 1024 * 1024  # Claude vision 單張上限
+
+
+def read_image(data: bytes, media_type: str = "image/jpeg",
+               model: str | None = None) -> str:
+    """公文照片 → 公文文字。認不出來就 raise，絕不回傳猜測內容。"""
+    if media_type not in IMAGE_MEDIA_TYPES:
+        raise ImageReadError("照片格式不支援，請用 JPG 或 PNG 重拍一張。")
+    if not data:
+        raise ImageReadError("沒有收到照片內容，請重新上傳。")
+    if len(data) > MAX_IMAGE_BYTES:
+        raise ImageReadError("照片太大了（超過 5MB），請用手機相機一般畫質重拍。")
+    if not os.environ.get("ANTHROPIC_API_KEY"):
+        raise ImageReadError("目前系統沒有接上辨識模型，請改用「貼上文字」把公文內容打進來。")
+
+    import anthropic
+    client = anthropic.Anthropic()
+    try:
+        msg = client.messages.create(
+            model=model or os.environ.get("ANTHROPIC_MODEL", "claude-opus-4-8"),
+            max_tokens=4000,
+            system=OCR_SYSTEM,
+            messages=[{"role": "user", "content": [
+                {"type": "image", "source": {"type": "base64",
+                                             "media_type": media_type,
+                                             "data": base64.standard_b64encode(data).decode()}},
+                {"type": "text", "text": "請把這張公文的文字逐字打出來。"},
+            ]}],
+        )
+    except Exception as exc:  # 網路／額度／模型故障
+        raise ImageReadError("辨識服務暫時不通，請稍後再試，或改用「貼上文字」。") from exc
+
+    text = "".join(b.text for b in msg.content if b.type == "text").strip()
+    if "NOT_A_DOCUMENT" in text:
+        raise ImageReadError("這張看起來不是公文。請拍公文那張紙，整張入鏡、字不要糊。")
+    if len(text) < 15:
+        raise ImageReadError("照片上的字看不清楚。請在光線亮的地方、整張入鏡再拍一次。")
+    return text
 
 
 def get_translator() -> DocumentTranslator:

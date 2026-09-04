@@ -294,23 +294,8 @@ footer { background: var(--ink); color: var(--green-bg); padding: 40px 24px 32px
   <section id="guides" class="guides reveal">
     <h2>白話指南</h2>
     <p class="block-sub">用講的也通的白話文，慢慢讀</p>
-    <div class="guide-list">
-      <a href="#guides" class="guide-item">
-        <span class="guide-num">01</span>
-        <span class="guide-body"><span class="guide-title">天災過後 72 小時，先做這三件事</span><span class="guide-meta">災後應變・讀完約 3 分鐘</span></span>
-        <span class="guide-arrow">→</span>
-      </a>
-      <a href="#guides" class="guide-item">
-        <span class="guide-num">02</span>
-        <span class="guide-body"><span class="guide-title">老農津貼怎麼算？常見三種誤會</span><span class="guide-meta">津貼給付・讀完約 4 分鐘</span></span>
-        <span class="guide-arrow">→</span>
-      </a>
-      <a href="#guides" class="guide-item">
-        <span class="guide-num">03</span>
-        <span class="guide-body"><span class="guide-title">農保、職保、農業保險差在哪</span><span class="guide-meta">保險入門・讀完約 5 分鐘</span></span>
-        <span class="guide-arrow">→</span>
-      </a>
-    </div>
+    <!-- 清單改由 /guides 帶出，內容在後台維護（web/admin.html） -->
+    <div class="guide-list" id="guide-list"></div>
   </section>
 
   <section id="people" class="people reveal">
@@ -349,6 +334,27 @@ footer { background: var(--ink); color: var(--green-bg); padding: 40px 24px 32px
 <script src="site-data.js"></script>
 <script src="site-chat.js"></script>
 <script>
+/* ===== 白話指南：清單從後端帶出，內容在後台維護 ===== */
+(async () => {
+  const box = document.getElementById('guide-list');
+  if (!box) return;
+  const esc = s => String(s ?? '').replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
+  try {
+    const list = await (await fetch('/guides')).json();
+    if (!list.length) { box.innerHTML = '<p class="block-sub">指南整理中，敬請期待。</p>'; return; }
+    box.innerHTML = list.map((g, i) => `
+      <a href="guide.html?id=${encodeURIComponent(g.id)}" class="guide-item">
+        <span class="guide-num">${String(i + 1).padStart(2, '0')}</span>
+        <span class="guide-body"><span class="guide-title">${esc(g.title)}</span><span class="guide-meta">${
+          [g.category, g.read_minutes ? `讀完約 ${g.read_minutes} 分鐘` : ''].filter(Boolean).map(esc).join('・')
+        }</span></span>
+        <span class="guide-arrow">→</span>
+      </a>`).join('');
+  } catch (e) {
+    box.innerHTML = '<p class="block-sub">指南載入失敗，請稍後再試。</p>';
+  }
+})();
+
 /* ===== 首屏內嵌對話：一進網站就能開始說 ===== */
 AidChat.init(document.getElementById('talk'), {
   greeting: '你好！我是農民補給站。\n遇到災損、想查補助，跟我說一句話就好，台語嘛通。\n也可以按下面的按鈕開始：',

@@ -20,6 +20,7 @@ from datetime import date
 import httpx
 from fastapi import APIRouter, HTTPException, Request
 
+from .document import ImageReadError, read_image
 from .flow import Flow, Reply, Session
 
 router = APIRouter()
@@ -51,6 +52,22 @@ def _to_line_message(reply: Reply) -> dict:
             for o in reply.options[:13]  # LINE quick reply 上限 13
         ]}
     return msg
+
+
+async def _fetch_line_image(message_id: str, token: str | None) -> tuple[bytes, str]:
+    """從 LINE Content API 取回農民傳來的公文照片（只在記憶體，不落地）。"""
+    if not token:
+        raise ImageReadError("目前是測試模式（沒設定 LINE token），無法取回照片。")
+    if not message_id:
+        raise ImageReadError("沒有收到照片編號，請重新傳一次。")
+    async with httpx.AsyncClient(timeout=30) as client:
+        resp = await client.get(
+            f"https://api-data.line.me/v2/bot/message/{message_id}/content",
+            headers={"Authorization": f"Bearer {token}"},
+        )
+    if resp.status_code != 200:
+        raise ImageReadError("照片下載失敗，請重新傳一次。")
+    return resp.content, resp.headers.get("content-type", "image/jpeg").split(";")[0]
 
 
 async def _reply_to_line(reply_token: str, messages: list[dict], token: str) -> None:
@@ -94,10 +111,12 @@ async def line_webhook(request: Request) -> dict:
                 else:
                     reply = flow.handle_text(session, text)
             elif message.get("type") == "image":
-                # TODO：以 channel token 下載影像 → OCR → flow.handle_document_text
-                # 影像不落地原則：處理完即刪，不寫入磁碟
-                reply = Reply("公文影像收到了。OCR 模組接上後，這裡會回傳白話翻譯。\n"
-                              "（目前開發中，可先用文字貼上公文內容測試）")
+                # 影像不落地：下載到記憶體 → 轉文字 → 丟掉，不寫入磁碟
+                try:
+                    data, media_type = await _fetch_line_image(message.get("id", ""), token)
+                    reply = flow.handle_document_text(session, read_image(data, media_type))
+                except ImageReadError as exc:
+                    reply = Reply(f"{exc}\n\n看不懂的地方也可以直接打電話問承辦，他們會幫你看。")
             elif message.get("type") == "audio":
                 # TODO：下載音檔 → 台語 ASR（Breeze-ASR）→ handle_text
                 reply = Reply("語音收到了。台語辨識模組接上後，這裡會直接聽懂。\n"
