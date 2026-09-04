@@ -1,0 +1,32 @@
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: "Microsoft JhengHei", system-ui, sans-serif; background: #f3f4f6; color: #111827; }
+.app-header { background: #0f766e; color: white; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
+.app-header h1 { font-size: 1.25rem; }
+.app-nav a { color: #e5e7eb; margin-left: 1rem; text-decoration: none; }
+.app-nav a.active { color: white; font-weight: 600; border-bottom: 2px solid white; }
+.container { padding: 2rem; }
+.hidden { display: none !important; }
+.card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; margin-top: 1rem; }
+.card { background: white; border: 1px solid #e5e7eb; border-radius: 0.75rem; padding: 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+.card h4 { margin-bottom: 0.5rem; }
+.toolbar { display: flex; gap: 0.5rem; margin-bottom: 1rem; align-items: center; }
+.spacer { flex: 1; }
+.btn { border: none; padding: 0.5rem 1rem; border-radius: 0.5rem; cursor: pointer; font-size: 0.95rem; }
+.btn.primary { background: #0f766e; color: white; }
+.btn.secondary { background: #e5e7eb; color: #111827; }
+.btn.success { background: #15803d; color: white; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.app-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.panel { background: white; border: 1px solid #e5e7eb; border-radius: 0.75rem; padding: 1rem; }
+.pdf-panel iframe { width: 100%; height: 75vh; border: 1px solid #e5e7eb; border-radius: 0.5rem; margin-top: 0.5rem; }
+.form-row { margin-bottom: 0.75rem; }
+.form-row label { display: block; margin-bottom: 0.25rem; font-weight: 500; }
+.form-row input { width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem; font-size: 1rem; }
+.form-row input.required { border-left: 4px solid #dc2626; }
+.validation-msg { margin-top: 1rem; padding: 0.75rem; border-radius: 0.5rem; }
+.validation-msg.ok { background: #dcfce7; color: #14532d; }
+.validation-msg.error { background: #fee2e2; color: #450a0a; }
+.validation-msg ul { margin-left: 1.2rem; margin-top: 0.25rem; }
+.modal { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; }
+.modal-content { background: white; border-radius: 0.75rem; padding: 1.25rem; max-width: 480px; width: 90%; }
+.modal-actions { margin-top: 1rem; display: flex; justify-content: flex-end; gap: 0.5rem; }
