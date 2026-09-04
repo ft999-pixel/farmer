@@ -1,0 +1,17 @@
+{
+  "id": "afa-green-payment-enrollment",
+  "name": "綠色環境給付申報（災前資格健檢引導目標）",
+  "category": "平時申報",
+  "authority": {"level": "中央", "agency": "農糧署", "office": "公所或農會受理", "tel": "049-0000000"},
+  "eligibility": {
+    "all": [
+      {"field": "is_farming", "op": "=", "value": true, "legal_ref": "綠色環境給付計畫（示範）"}
+    ]
+  },
+  "documents": [
+    {"name": "申報書", "where": "公所或農會現場填寫"}
+  ],
+  "window": {"type": "公告型", "open": "2027-01-01", "close": "2027-01-31", "note": "每年 1 月受理"},
+  "amount": {"unit": "依申報措施", "note": "轉契作獎勵／稻作直接給付等"},
+  "source": {"status": "sample", "note": "示範資料。關鍵價值：完成申報登錄後，災害救助免附土地文件（作業要點§4 豁免條款）——口頭租約實耕者的災前待辦。", "last_verified": "2026-08-10"}
+}

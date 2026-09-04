@@ -1,0 +1,19 @@
+{
+  "id": "afa-crop-insurance-sample",
+  "name": "農業保險保費補助（示範：芒果／水稻險）",
+  "category": "農業保險",
+  "authority": {"level": "中央", "agency": "農業金融署", "office": "產險公司／農漁會銷售", "tel": "02-0000000"},
+  "eligibility": {
+    "all": [
+      {"field": "crop", "op": "in", "value": ["芒果", "水稻"], "legal_ref": "示範：現售保單品項"},
+      {"field": "is_farming", "op": "=", "value": true, "legal_ref": "農業保險法§4"}
+    ]
+  },
+  "documents": [
+    {"name": "投保申請書", "where": "產險公司或農會"},
+    {"name": "耕作事實文件", "where": "公所或農會", "exempt_if": "policy_enrolled_2y"}
+  ],
+  "window": {"type": "常態", "note": "各品項有投保期，依保單而定"},
+  "amount": {"unit": "保費補助", "note": "中央補助 1/2 起，地方或有加碼"},
+  "source": {"status": "sample", "note": "示範資料，商品與補助比率以農金署及保單條款為準。", "last_verified": "2026-08-10"}
+}

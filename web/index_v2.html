@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>農民補給站｜找補助，免煩惱</title>
+<style>
+  @font-face {
+    font-family: "GenSenRounded";
+    src: url("fonts/GenSenRounded2TW-R.woff2") format("woff2");
+    font-weight: 400;
+    font-display: swap;
+  }
+  @font-face {
+    font-family: "GenSenRounded";
+    src: url("fonts/GenSenRounded2TW-M.woff2") format("woff2");
+    font-weight: 500;
+    font-display: swap;
+  }
+  @font-face {
+    font-family: "GenSenRounded";
+    src: url("fonts/GenSenRounded2TW-B.woff2") format("woff2");
+    font-weight: 700;
+    font-display: swap;
+  }
+  @font-face {
+    font-family: "GenSenRounded";
+    src: url("fonts/GenSenRounded2TW-H.woff2") format("woff2");
+    font-weight: 900;
+    font-display: swap;
+  }
+
+  :root {
+    --green: #02DF82;
+    --green-dark: #01B96B;
+    --ink: #06301F;
+    --ink-soft: #2E5E49;
+    --mint: #9FF5CF;
+    --mint-bg: #F0FDF6;
+    --forest: #056B43;
+    --orange: #D85A30;
+    --orange-bg: #FAECE7;
+    --orange-ink: #993C1D;
+    --warn-bg: #FEF3D8;
+    --warn-ink: #8A5A00;
+    --radius-block: 40px;
+    --radius-card: 12px;
+    --space: 8px;
+    --font: "GenSenRounded", "Yuanti TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: var(--font);
+    font-weight: 400;
+    background: var(--mint-bg);
+    color: var(--ink);
+    font-size: 18px;
+    line-height: 1.7;
+    text-wrap: pretty;
+  }
+
+  .demo-banner {
+    background: var(--warn-bg);
+    color: var(--warn-ink);
+    text-align: center;
+    font-size: 14px;
+    padding: 8px 16px;
+  }
+
+  .nav {
+    position: sticky;
+    top: 12px;
+    z-index: 10;
+    margin: 16px auto 0;
+    max-width: 1080px;
+    background: #fff;
+    border-radius: 999px;
+    padding: 10px 12px 10px 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    box-shadow: 0 1px 0 rgba(6, 48, 31, 0.08);
+  }
+  .nav .logo {
+    font-weight: 700;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+  }
+  .nav ul {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    list-style: none;
+    font-size: 15px;
+    color: var(--ink-soft);
+  }
+  .nav ul a { color: inherit; text-decoration: none; }
+  .nav ul a:hover { color: var(--ink); }
+
+  .btn {
+    font-family: var(--font);
+    border: none;
+    border-radius: 999px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: transform 0.08s ease;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn-primary { background: var(--green); color: var(--ink); }
+  .btn-outline { background: #fff; color: var(--ink); border: 2px solid var(--ink); }
+  .btn-white { background: #fff; color: var(--ink); }
+
+  .nav .btn { padding: 10px 24px; font-size: 15px; }
+
+  .hero {
+    position: relative;
+    max-width: 1080px;
+    margin: 0 auto;
+    text-align: center;
+    padding: 72px 24px 40px;
+    overflow: hidden;
+  }
+  .hero h1 {
+    font-weight: 900;
+    font-size: clamp(44px, 8vw, 76px);
+    line-height: 1.15;
+    letter-spacing: 2px;
+  }
+  .hero h1 .pop { color: var(--green-dark); }
+  .hero .sub {
+    color: var(--ink-soft);
+    font-size: clamp(16px, 2.2vw, 20px);
+    margin: 20px 0 28px;
+  }
+  .hero .cta-row {
+    display: flex;
+    gap: 14px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .hero .btn-primary { padding: 20px 40px; font-size: 22px; }
+  .hero .btn-outline { padding: 18px 34px; font-size: 20px; }
+
+  .pennant { position: absolute; }
+  .slogan {
+    position: absolute;
+    font-weight: 500;
+    font-size: 18px;
+    color: var(--forest);
+  }
+
+  .deadline-strip {
+    max-width: 720px;
+    margin: 0 auto 48px;
+    background: #fff;
+    border-radius: 999px;
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 16px;
+  }
+  .deadline-strip .flag { flex-shrink: 0; }
+  .deadline-strip .txt { flex: 1; }
+  .deadline-strip .note { color: var(--ink-soft); }
+  .deadline-strip .days {
+    background: var(--orange-bg);
+    color: var(--orange-ink);
+    font-size: 14px;
+    font-weight: 500;
+    padding: 4px 14px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+
+  .browse {
+    background: var(--ink);
+    border-radius: var(--radius-block) var(--radius-block) 0 0;
+    padding: 48px 24px 40px;
+  }
+  .browse .inner { max-width: 1080px; margin: 0 auto; }
+  .browse h2 {
+    color: #fff;
+    font-weight: 700;
+    font-size: 32px;
+  }
+  .browse h2 small {
+    font-weight: 500;
+    font-size: 16px;
+    color: var(--mint);
+    margin-left: 12px;
+  }
+  .browse .meta { color: var(--mint); font-size: 15px; margin: 4px 0 24px; }
+  .tiles {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+  }
+  @media (max-width: 720px) {
+    .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .nav ul { display: none; }
+  }
+  .tile {
+    background: #fff;
+    border-radius: var(--radius-card);
+    padding: 20px 12px;
+    text-align: center;
+    font-size: 16px;
+    cursor: pointer;
+    transition: transform 0.1s ease;
+  }
+  .tile:hover { transform: translateY(-3px); }
+  .tile .ph {
+    width: 32px;
+    height: 32px;
+    margin: 0 auto 8px;
+    border-radius: 8px;
+    background: var(--mint-bg);
+    color: var(--green-dark);
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .browse .more { text-align: center; margin-top: 24px; }
+  .browse .more .btn { padding: 14px 32px; font-size: 17px; }
+
+  .trust {
+    background: var(--ink);
+    padding: 0 24px 40px;
+  }
+  .trust ul {
+    max-width: 1080px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    gap: 28px;
+    flex-wrap: wrap;
+    list-style: none;
+    color: var(--mint);
+    font-size: 14px;
+  }
+</style>
+</head>
+<body>
+
+<div class="demo-banner">目前為示範資料，實際申請請洽農會或公所</div>
+
+<nav class="nav">
+  <span class="logo">
+    <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 2v16" stroke="#06301F" stroke-width="2" stroke-linecap="round"/><path d="M4 3h12l-3.5 4L16 11H4z" fill="#02DF82"/></svg>
+    農民補給站
+  </span>
+  <ul>
+    <li><a href="#browse">找補助</a></li>
+    <li><a href="#">看懂公文</a></li>
+    <li><a href="#">白話指南</a></li>
+    <li><a href="#">關於</a></li>
+  </ul>
+  <button class="btn btn-primary">說說你的狀況</button>
+</nav>
+
+<section class="hero">
+  <svg class="pennant" style="left:6%; top:60px; transform:rotate(-14deg);" width="52" height="52" viewBox="0 0 40 40" aria-hidden="true"><path d="M2 4h34L26 20 36 36H2z" fill="#02DF82" opacity="0.85"/></svg>
+  <svg class="pennant" style="left:15%; top:170px; transform:rotate(18deg);" width="28" height="28" viewBox="0 0 40 40" aria-hidden="true"><path d="M4 4l32 12-20 18z" fill="#9FF5CF"/></svg>
+  <svg class="pennant" style="right:7%; top:70px; transform:rotate(12deg);" width="38" height="38" viewBox="0 0 40 40" aria-hidden="true"><path d="M2 4h34L26 20 36 36H2z" fill="#056B43" opacity="0.75"/></svg>
+  <svg class="pennant" style="right:17%; top:185px; transform:rotate(-24deg);" width="24" height="24" viewBox="0 0 40 40" aria-hidden="true"><path d="M4 4l32 12-20 18z" fill="#02DF82" opacity="0.6"/></svg>
+  <span class="slogan" style="left:5%; top:130px; transform:rotate(-8deg);">台語嘛通！</span>
+  <span class="slogan" style="right:5%; top:140px; transform:rotate(6deg);">甲你鬥相共</span>
+
+  <h1>找補助，<br>免<span class="pop">煩惱</span>！</h1>
+  <p class="sub">說說你的狀況，幫你找出可以申請的補助</p>
+  <div class="cta-row">
+    <button class="btn btn-primary">說說你的狀況</button>
+    <button class="btn btn-outline">自己找補助</button>
+    <button class="btn btn-outline">看懂公文</button>
+  </div>
+</section>
+
+<div class="deadline-strip">
+  <svg class="flag" width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 2v16" stroke="#D85A30" stroke-width="2" stroke-linecap="round"/><path d="M3 3h13l-4 4.5L16 12H3z" fill="#D85A30"/></svg>
+  <span class="txt">水稻收入保險投保　<span class="note">農會受理中（示範）</span></span>
+  <span class="days">剩 5 天</span>
+</div>
+
+<section class="browse" id="browse">
+  <div class="inner">
+    <h2>自己找補助<small>慢慢看，不急</small></h2>
+    <p class="meta">農｜漁｜畜　·　全國＋你的縣市</p>
+    <div class="tiles">
+      <div class="tile"><div class="ph">[icon]</div>遇到天災怎麼辦</div>
+      <div class="tile"><div class="ph">[icon]</div>保險保障</div>
+      <div class="tile"><div class="ph">[icon]</div>蓋設施、買農機</div>
+      <div class="tile"><div class="ph">[icon]</div>借錢週轉</div>
+      <div class="tile"><div class="ph">[icon]</div>我要開始務農</div>
+      <div class="tile"><div class="ph">[icon]</div>種植與給付</div>
+      <div class="tile"><div class="ph">[icon]</div>驗證與外銷</div>
+      <div class="tile"><div class="ph">[icon]</div>生活照顧</div>
+    </div>
+    <div class="more"><button class="btn btn-white">看全部補助 →</button></div>
+  </div>
+</section>
+
+<footer class="trust">
+  <ul>
+    <li>每筆附來源與查核日期</li>
+    <li>資格以承辦單位認定為準</li>
+    <li>免費、不代辦、不用註冊也能查</li>
+  </ul>
+</footer>
+
+</body>
+</html>

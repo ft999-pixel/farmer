@@ -1,0 +1,21 @@
+# Render 部署設定。連上 GitHub 後 Render 會自動讀這個檔，不用在網頁上手動填欄位。
+# 密碼與金鑰不寫在這裡——sync: false 表示「我會自己到 Render 網頁上填」。
+services:
+  - type: web
+    name: aidstation
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    # 一定要 --host 0.0.0.0，只綁 127.0.0.1 的話 Render 連不進來，會顯示 502
+    startCommand: python -m uvicorn aidstation.api:app --host 0.0.0.0 --port $PORT --app-dir src
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11.9"
+      - key: ADMIN_PASSWORD     # 後台密碼，到 Render 網頁填，別用預設值
+        sync: false
+      - key: ADMIN_SECRET       # 後台登入 cookie 的簽章金鑰，填一串長亂碼
+        sync: false
+      - key: MEMBER_SECRET      # 會員登入 cookie 的簽章金鑰，填另一串長亂碼
+        sync: false
+      - key: ANTHROPIC_API_KEY  # 不填也能跑，公文翻譯會降級成關鍵字模式
+        sync: false

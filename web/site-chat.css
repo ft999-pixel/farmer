@@ -1,0 +1,120 @@
+/* 農民補給站——共用對話元件樣式（配 site-chat.js）
+   長輩規格：內文 ≥1.125rem、按鈕 ≥52px、高對比 */
+.aidchat {
+  display: flex; flex-direction: column;
+  background: #FFFFFF; border: 2px solid #D9FBEC; border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(6,48,31,0.10);
+  overflow: hidden; text-align: left;
+}
+.aidchat-log {
+  flex: 1; overflow-y: auto; padding: 20px;
+  display: flex; flex-direction: column; gap: 14px;
+  min-height: 260px; max-height: 520px;
+}
+.aidchat-msg {
+  max-width: 88%; padding: 14px 18px; border-radius: 14px;
+  font-size: 1.1875rem; line-height: 1.6; white-space: pre-wrap; word-break: break-word;
+}
+.aidchat-msg.bot {
+  background: #F0FDF6; border: 2px solid #D9FBEC; color: #06301F;
+  align-self: flex-start; border-bottom-left-radius: 4px;
+}
+.aidchat-msg.user {
+  background: #02DF82; color: #06301F; font-weight: 500;
+  align-self: flex-end; border-bottom-right-radius: 4px;
+}
+.aidchat-options { display: flex; flex-wrap: wrap; gap: 10px; align-self: flex-start; }
+.aidchat-opt {
+  font-family: inherit; font-size: 1.1875rem; font-weight: 500;
+  padding: 12px 24px; min-height: 52px;
+  border: 2px solid #01B96B; color: #06301F; background: #FFFFFF;
+  border-radius: 999px; cursor: pointer;
+}
+.aidchat-opt:hover { background: #F0FDF6; }
+.aidchat-opt:active { background: #D9FBEC; }
+.aidchat-opt.stuck { border-color: #D4537E; color: #D4537E; }
+.aidchat-opt.stuck:hover { background: #FDF2F6; }
+.aidchat-inputbar {
+  display: flex; gap: 10px; padding: 14px;
+  background: #FFFFFF; border-top: 2px solid #D9FBEC;
+}
+.aidchat-inp {
+  flex: 1; font-family: inherit; font-size: 1.1875rem; padding: 12px 16px;
+  border: 2px solid #D9FBEC; border-radius: 10px; min-height: 52px;
+  color: #06301F; box-sizing: border-box; min-width: 0;
+}
+.aidchat-inp:focus { outline: 3px solid #9FF5CF; border-color: #01B96B; }
+.aidchat-send {
+  font-family: inherit; font-size: 1.1875rem; font-weight: 500;
+  padding: 0 28px; min-height: 52px; border: none;
+  background: #02DF82; color: #06301F; border-radius: 10px; cursor: pointer;
+}
+.aidchat-send:hover { background: #01B96B; }
+
+/* ---- 結果三層 ---- */
+.aidchat-results { display: flex; flex-direction: column; gap: 12px; align-self: stretch; }
+.rc-said {
+  display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+  font-size: 1rem; color: #0A4A32;
+}
+.rc-said-label { font-weight: 500; }
+.rc-said-chip {
+  background: #D9FBEC; border-radius: 999px; padding: 5px 14px; font-weight: 500;
+}
+.rc-redo {
+  font-family: inherit; font-size: 1rem; font-weight: 500;
+  border: 2px solid #D9FBEC; background: #FFFFFF; color: #01B96B;
+  border-radius: 999px; padding: 5px 14px; min-height: 36px; cursor: pointer;
+}
+.rc-redo:hover { border-color: #01B96B; }
+.rc-tier-head { font-weight: 700; font-size: 1.25rem; margin-top: 6px; }
+.rc-tier-head.priority { color: #06301F; }
+.rc-tier-head.maybe { color: #0A4A32; }
+.rc-card {
+  background: #FFFFFF; border: 2px solid #D9FBEC; border-radius: 12px;
+  padding: 18px 20px; display: flex; flex-direction: column; gap: 10px;
+}
+.rc-card.priority { border: 3px solid #01B96B; }
+.rc-top { display: flex; align-items: flex-start; gap: 10px; flex-wrap: wrap; }
+.rc-title { font-weight: 700; font-size: 1.25rem; line-height: 1.4; margin: 0; flex: 1; min-width: 160px; }
+.rc-chip { font-weight: 500; font-size: 1rem; border-radius: 999px; padding: 5px 14px; white-space: nowrap; }
+.rc-chip.urgent { background: #D85A30; color: #FFFFFF; }
+.rc-chip.normal { background: #EDF1EF; color: #46564E; }
+.rc-line { font-size: 1.0625rem; color: #06301F; }
+.rc-amount { font-weight: 500; }
+.rc-docs { background: #F0FDF6; border-radius: 10px; padding: 12px 14px; }
+.rc-docs-head { font-weight: 700; font-size: 1.0625rem; margin-bottom: 8px; }
+.rc-doc {
+  display: flex; gap: 10px; align-items: baseline;
+  font-size: 1.0625rem; padding: 6px 0; cursor: pointer;
+}
+.rc-doc input { width: 20px; height: 20px; accent-color: #01B96B; flex: none; }
+.rc-exempt, .rc-where { display: block; font-style: normal; font-size: 0.9375rem; color: #01B96B; }
+.rc-missing {
+  background: #F0FDF6; border-radius: 10px; padding: 12px 14px;
+  font-size: 1.0625rem; color: #0A4A32; line-height: 1.6;
+}
+.rc-office { font-size: 1rem; color: #46564E; }
+.rc-tel {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 52px; padding: 8px 24px; border-radius: 10px;
+  background: #02DF82; color: #06301F; font-weight: 500; font-size: 1.1875rem;
+  text-decoration: none; align-self: flex-start;
+}
+.rc-tel:hover { background: #01B96B; color: #06301F; }
+.rc-fine { font-size: 0.9375rem; color: #46564E; }
+.rc-deadline-box {
+  border: 2px solid #D85A30; border-radius: 10px; padding: 12px 14px;
+  font-size: 1.125rem; font-weight: 500; color: #06301F; line-height: 1.6;
+}
+.rc-skip { border: 2px dashed #D9FBEC; border-radius: 10px; padding: 12px 16px; }
+.rc-skip summary {
+  cursor: pointer; font-size: 1.0625rem; font-weight: 500; color: #0A4A32;
+  min-height: 36px; display: flex; align-items: center;
+}
+.rc-skip-item { display: flex; flex-direction: column; gap: 2px; padding: 10px 0; border-top: 1px solid #D9FBEC; }
+.rc-skip-item:first-of-type { margin-top: 8px; }
+.rc-skip-name { font-weight: 500; font-size: 1.0625rem; }
+.rc-skip-why { font-size: 1rem; color: #46564E; }
+.rc-skip-note { font-size: 1rem; color: #0A4A32; padding-top: 10px; }
+.rc-disclaimer { font-size: 0.9375rem; color: #46564E; }

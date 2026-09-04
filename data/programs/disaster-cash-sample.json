@@ -1,0 +1,102 @@
+{
+  "id": "moa-disaster-cash-sample-2026",
+  "name": "農業天然災害現金救助（示範公告：芒果）",
+  "category": "災害救助",
+  "authority": {
+    "level": "中央",
+    "agency": "農糧署（示範）",
+    "office": "○○科",
+    "tel": "049-0000000"
+  },
+  "eligibility": {
+    "all": [
+      {
+        "field": "event",
+        "op": "=",
+        "value": "天然災害",
+        "legal_ref": "農業天然災害救助辦法§5"
+      },
+      {
+        "field": "crop",
+        "op": "in",
+        "value": [
+          "芒果"
+        ],
+        "legal_ref": "示範公告：救助品項"
+      },
+      {
+        "field": "township",
+        "op": "in",
+        "value": [
+          "玉井區",
+          "南化區",
+          "楠西區"
+        ],
+        "legal_ref": "示範公告：救助地區"
+      },
+      {
+        "field": "loss_rate",
+        "op": ">=",
+        "value": 0.2,
+        "legal_ref": "農業天然災害救助辦法§6"
+      },
+      {
+        "any": [
+          {
+            "field": "land_tenure",
+            "op": "=",
+            "value": "自有",
+            "legal_ref": "農產業天然災害救助作業要點§4"
+          },
+          {
+            "field": "land_doc",
+            "op": "in",
+            "value": [
+              "書面租約",
+              "土地使用同意書",
+              "從農工作證明"
+            ],
+            "legal_ref": "農產業天然災害救助作業要點§4"
+          },
+          {
+            "field": "policy_enrolled_2y",
+            "op": "=",
+            "value": true,
+            "legal_ref": "農產業天然災害救助作業要點§4",
+            "note": "豁免條款：當年度或前一年度以同地參與農業政策經系統登錄者，免附土地文件"
+          }
+        ]
+      }
+    ]
+  },
+  "documents": [
+    {
+      "name": "土地合法使用證明",
+      "where": "公所農業課",
+      "exempt_if": "policy_enrolled_2y"
+    },
+    {
+      "name": "存摺影本",
+      "where": "自備"
+    },
+    {
+      "name": "災損照片",
+      "where": "農業部災損拍照 APP（災後第一時間拍）"
+    }
+  ],
+  "window": {
+    "type": "公告型",
+    "open": "2026-08-01",
+    "close": "2026-08-14",
+    "close_rule": "公告翌日起10個工作日"
+  },
+  "amount": {
+    "unit": "每公頃",
+    "value": 90000
+  },
+  "source": {
+    "status": "sample",
+    "note": "示範資料，非現行公告。正式資料須來自農業部救助專區並經人工覆核。",
+    "last_verified": "2026-08-10"
+  }
+}

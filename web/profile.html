@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>我的資料｜農民補給站</title>
+<style>
+:root{
+  --green-bright:#02DF82; --green-mid:#01B96B; --green-pale:#9FF5CF;
+  --green-bg:#F0FDF6; --green-tint:#D9FBEC; --ink:#06301F; --ink-soft:#0A4A32;
+  --orange:#D85A30; --warn-bg:#FEF3D8; --line:#CBEEDC; --line-green:#06C755;
+}
+@font-face{font-family:'GenSen';src:url('fonts/GenSenRounded2TW-R.woff2') format('woff2');font-weight:400;font-display:swap;}
+@font-face{font-family:'GenSen';src:url('fonts/GenSenRounded2TW-M.woff2') format('woff2');font-weight:500;font-display:swap;}
+@font-face{font-family:'GenSen';src:url('fonts/GenSenRounded2TW-H.woff2') format('woff2');font-weight:700;font-display:swap;}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--green-bg);color:var(--ink);font-size:17px;
+  font-family:'GenSen','Yuanti TC','Microsoft JhengHei',sans-serif;}
+.nav-outer{max-width:900px;margin:0 auto;padding:14px 20px 0;}
+.nav-pill{display:flex;align-items:center;gap:18px;background:#fff;border:1px solid var(--line);
+  border-radius:999px;padding:10px 18px;flex-wrap:wrap;}
+.nav-logo{display:flex;align-items:center;gap:8px;text-decoration:none;color:var(--ink);font-weight:700;}
+.nav-links{display:flex;gap:18px;flex-wrap:wrap;font-size:1.0625rem;font-weight:500;}
+.nav-links a{text-decoration:none;color:var(--ink);white-space:nowrap;}
+.nav-links a:hover,.nav-links a.current{color:var(--green-mid);}
+.wrap{max-width:900px;margin:0 auto;padding:20px 20px 70px;}
+h1{font-size:30px;margin:0 0 8px;}
+.lead{color:var(--ink-soft);margin:0 0 18px;line-height:1.8;}
+section{background:#fff;border:1px solid var(--line);border-radius:18px;padding:22px;margin-top:18px;}
+h2{font-size:20px;margin:0 0 6px;}
+.hint{font-size:15px;color:var(--ink-soft);line-height:1.75;margin:0 0 14px;}
+button{font-family:inherit;font-size:17px;font-weight:500;padding:12px 22px;border-radius:999px;
+  border:2px solid var(--line);background:#fff;color:var(--ink);cursor:pointer;min-height:50px;}
+button.primary{background:var(--green-bright);border-color:var(--green-bright);color:var(--ink);font-weight:700;}
+button.danger{border-color:#EFC0B0;color:var(--orange);}
+button.line{background:var(--line-green);border-color:var(--line-green);color:#fff;font-weight:700;}
+label{display:block;font-size:15px;font-weight:500;color:var(--ink-soft);margin-bottom:6px;}
+input,select{font-family:inherit;font-size:17px;padding:12px 14px;border:2px solid var(--line);
+  border-radius:12px;background:#fff;color:var(--ink);width:100%;min-height:50px;}
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));}
+/* 複選勾選籤：手指點得到的大小 */
+.chips{display:flex;flex-wrap:wrap;gap:10px;}
+.chips label{display:flex;align-items:center;gap:8px;font-size:17px;font-weight:500;color:var(--ink);
+  background:#fff;border:2px solid var(--line);border-radius:999px;padding:11px 18px;margin:0;
+  cursor:pointer;min-height:50px;}
+.chips label:has(input:checked){border-color:var(--green-bright);background:var(--green-tint);}
+.chips input{width:22px;height:22px;min-height:0;accent-color:var(--green-mid);}
+/* 隱私橫幅：這頁最重要的一句話 */
+.privacy{background:var(--ink);color:var(--green-bg);border-radius:16px;padding:18px 22px;
+  margin-top:18px;line-height:1.8;}
+.privacy b{color:var(--green-bright);}
+.privacy .small{font-size:14.5px;color:var(--green-pale);display:block;margin-top:6px;}
+.pill{display:inline-block;font-size:14px;padding:3px 12px;border-radius:999px;background:var(--green-tint);}
+.pill.new{background:var(--green-bright);font-weight:700;}
+.pill.warn{background:var(--warn-bg);color:#8A5A00;}
+.card{border:2px solid var(--line);border-radius:16px;padding:18px;margin-bottom:14px;}
+.card.match{border-color:var(--green-bright);}
+.card h3{margin:0 0 6px;font-size:19px;}
+.card .meta{font-size:15px;color:var(--ink-soft);line-height:1.8;margin:8px 0 0;}
+.card .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;}
+.docs{margin:10px 0 0;padding-left:22px;font-size:15.5px;line-height:1.9;}
+.msg{padding:14px 18px;border-radius:14px;margin-bottom:16px;line-height:1.8;}
+.msg.ok{background:var(--green-tint);}
+.msg.warn{background:var(--warn-bg);}
+.linked{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.hide{display:none;}
+.disclaim{font-size:14.5px;color:var(--ink-soft);line-height:1.8;margin-top:18px;}
+/* 列印用申請表：畫面上不顯示，列印時只印它 */
+#printable{display:none;}
+@media print{
+  body{background:#fff;font-size:12pt;}
+  .nav-outer,.wrap{display:none !important;}
+  #printable{display:block !important;padding:0;}
+  #printable h2{font-size:16pt;margin:0 0 4pt;}
+  #printable table{width:100%;border-collapse:collapse;margin-top:10pt;}
+  #printable th,#printable td{border:1px solid #333;padding:6pt 8pt;text-align:left;font-size:11pt;}
+  #printable th{width:26%;background:#eee;}
+  #printable .note{font-size:9.5pt;margin-top:10pt;line-height:1.6;}
+  #printable .sign{margin-top:26pt;font-size:11pt;}
+}
+</style>
+</head>
+<body>
+<div class="nav-outer">
+  <nav class="nav-pill">
+    <a href="index.html" class="nav-logo" aria-label="農民補給站首頁">
+      <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><path d="M4 2 v18" stroke="#06301F" stroke-width="2.5" stroke-linecap="round"/><path d="M4 3 L18 7 L4 11 Z" fill="#02DF82"/></svg>
+      農民補給站
+    </a>
+    <div class="nav-links">
+      <a href="browse.html">找補助</a>
+      <a href="chat.html?tab=doc">看懂公文</a>
+      <a href="profile.html" class="current">我的資料</a>
+      <a href="index.html#about">關於</a>
+    </div>
+  </nav>
+</div>
+
+<div class="wrap">
+  <h1>我的資料</h1>
+  <p class="lead">填一次，以後不用每次重講。系統會幫你留意有沒有新的補助跟你有關，也能把申請表先填好給你帶去公所。</p>
+
+  <div class="privacy">
+    <b>存了會員資料，換手機也看得到。</b>
+    <span class="small">
+      我們會保存你填的：作物、鄉鎮、土地狀況這些查補助要用的條件，以及姓名、電話、地址（列印申請表用）。<br>
+      <b>身分證字號和銀行帳號我們刻意不收</b>，那些請你到現場親手寫。<br>
+      你的資料只用來幫你找補助跟填表，不會給別人。<b>隨時可以按最下面的「刪除我的資料」，一按就從我們的資料庫刪掉。</b><br>
+      不想留資料也沒關係——不登入一樣可以用「找補助」和「看懂公文」。
+    </span>
+  </div>
+
+  <div id="msg"></div>
+
+  <section>
+    <h2>登入</h2>
+    <p class="hint">
+      取一個好記的代號就能用，不用密碼、不用電子信箱。下次在任何裝置輸入同一個代號，資料就回來了。
+    </p>
+    <div id="login-box"></div>
+  </section>
+
+  <section>
+    <h2>你的基本資料</h2>
+    <p class="hint">這些是比較不會變的，填一次就好。不確定的可以留白，之後想到再回來補。</p>
+    <div class="grid" id="facts-form"></div>
+  </section>
+
+  <section style="border-style:dashed">
+    <h2>這次發生的事</h2>
+    <p class="hint">
+      每次遇到的災害都不一樣，所以<b>這一段不會存起來</b>，只用在這次查詢。
+      查平時的補助可以整段留白。
+    </p>
+    <div class="grid" id="event-form"></div>
+  </section>
+
+  <section>
+    <h2>聯絡資料（列印申請表時會填進去）</h2>
+    <p class="hint">只有列印申請表時才會用到，一樣只存在你手機裡。不想填就留白，印出來自己手寫也可以。</p>
+    <div class="grid">
+      <div><label for="c-name">姓名</label><input id="c-name" autocomplete="name"></div>
+      <div><label for="c-tel">聯絡電話</label><input id="c-tel" autocomplete="tel"></div>
+      <div style="grid-column:1/-1"><label for="c-addr">通訊地址</label><input id="c-addr" autocomplete="street-address"></div>
+    </div>
+    <p class="hint" style="margin-top:12px">身分證字號、銀行帳號這類資料我們刻意不收，也不會幫你填——那些請你到現場親手寫。</p>
+  </section>
+
+  <div style="margin-top:18px;display:flex;gap:12px;flex-wrap:wrap">
+    <button class="primary" id="save">存起來，看看有哪些補助</button>
+    <button id="clear" class="danger">刪除我的資料</button>
+  </div>
+
+  <section id="results-box" class="hide">
+    <h2>跟你有關的補助</h2>
+    <p class="hint" id="results-hint"></p>
+    <div id="results"></div>
+    <p class="disclaim">本系統建議不具行政效力，實際資格由承辦單位認定。有疑問請打上面的承辦電話問，最準。</p>
+  </section>
+</div>
+
+<div id="printable"></div>
+
+<script>
+const $ = id => document.getElementById(id);
+let FIELDS = null, profile = null, lastResults = [], loggedIn = false;
+
+const blank = () => ({code: null, contact: {}, facts: {}});
+
+async function api(path, opts){
+  const r = await fetch(path, {credentials: 'same-origin', ...opts});
+  let body = null;
+  try { body = await r.json(); } catch (e) {}
+  if (!r.ok) throw {status: r.status, detail: body && body.detail};
+  return body;
+}
+
+// 「看過哪些補助」純粹是畫面提示，留在本機就好，不必存進資料庫
+const SEEN_KEY = 'aidstation_seen';
+const loadSeen = () => { try { return JSON.parse(localStorage.getItem(SEEN_KEY) || '[]'); } catch (e) { return []; } };
+const saveSeen = ids => localStorage.setItem(SEEN_KEY, JSON.stringify(ids));
+
+async function persist(){
+  if (!loggedIn) return;
+  await api('/members/me', {method: 'POST', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({contact: profile.contact, facts: profile.facts})});
+}
+function esc(s){ return String(s ?? '').replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c])); }
+function msg(html, kind){ $('msg').innerHTML = html ? `<div class="msg ${kind}">${html}</div>` : ''; }
+
+// ---- 登入（Demo 版：只輸入代號，沒有密碼）---------------------------------
+function renderLogin(){
+  const box = $('login-box');
+  if (loggedIn) {
+    box.innerHTML = `<div class="linked">
+        <span class="pill">目前是：${esc(profile.code)}</span>
+        <button id="logout">換人／登出</button>
+      </div>
+      <p class="hint" style="margin-top:12px">登出只是離開，資料還留著。要真的刪掉請按最下面的「刪除我的資料」。</p>`;
+    $('logout').onclick = async () => {
+      await api('/members/logout', {method: 'POST'});
+      location.reload();
+    };
+  } else {
+    box.innerHTML = `<div class="grid">
+        <div><label for="code">你的代號</label><input id="code" placeholder="例如：阿明伯" autocomplete="username"></div>
+      </div>
+      <div style="margin-top:14px"><button class="primary" id="do-login">進去</button></div>
+      <p class="hint" style="margin-top:12px">
+        第一次輸入會幫你建一個新的；之後輸入同一個代號就會找回你的資料。<br>
+        ⚠️ 示範版沒有密碼，別人猜到你的代號就看得到你填的東西，先別填真實個資。
+      </p>`;
+    $('do-login').onclick = doLogin;
+    $('code').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+  }
+}
+
+async function doLogin(){
+  const code = $('code').value.trim();
+  if (!code) { msg('請先輸入代號。', 'warn'); return; }
+  try {
+    const m = await api('/members/login', {method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({code})});
+    profile = {code: m.code, contact: m.contact || {}, facts: m.facts || {}};
+    loggedIn = true;
+    msg(m.created ? `已經幫你建好「${esc(code)}」，填完記得按存起來。` : `歡迎回來，${esc(code)}。`, 'ok');
+    await afterLogin();
+  } catch (e) {
+    msg(esc((e.detail && (e.detail.message || e.detail)) || '登入失敗'), 'warn');
+  }
+}
+
+// 每次災害都不同，不該存進會員資料——只在當次查詢用
+const PER_EVENT = ['event', 'loss_rate'];
+// 可複選的欄位（一個農民可能同時種好幾種作物）
+const MULTI = ['crop'];
+let transient = {};   // 這次發生的事，只放記憶體，不寫 localStorage
+
+// ---- 狀況表單（依欄位字典自動生成）----------------------------------------
+function renderFacts(boxId, keys, store){
+  const box = $(boxId);
+  box.innerHTML = keys.map(key => {
+    const spec = FIELDS[key];
+    const v = store[key];
+    const label = `<label for="f-${key}">${esc(spec.question || spec.label)}</label>`;
+    // enum／bool 用選單（有 options 就用白話選項），數字用數字框，其餘文字框
+    // option_map 的值可能是數字（loss_rate 的「超過一半」→ 0.6），型別要跟著標記
+    const typed = spec.type === 'number' ? ' data-num="1"' : spec.type === 'bool' ? ' data-bool="1"' : '';
+    // 複選欄位用勾選籤，農民可以同時種好幾種作物
+    if (MULTI.includes(key) && spec.values) {
+      const chosen = Array.isArray(v) ? v : (v ? [v] : []);
+      return `<div style="grid-column:1/-1">${label}
+        <div class="chips" data-multi="${key}">${spec.values.map(x =>
+          `<label><input type="checkbox" value="${esc(x)}"${chosen.includes(x) ? ' checked' : ''}>${esc(x)}</label>`
+        ).join('')}</div>
+        <p class="hint" style="margin:8px 0 0">種幾種就勾幾種。只要其中一種符合，該項補助就會列出來。</p></div>`;
+    }
+    if (spec.options && spec.option_map) {
+      return `<div>${label}<select id="f-${key}" data-key="${key}"${typed}><option value="">（先不填）</option>${
+        spec.options.map(o => {
+          const val = spec.option_map[o];
+          return `<option value="${esc(val)}"${val === v ? ' selected' : ''}>${esc(o)}</option>`;
+        }).join('')}</select></div>`;
+    }
+    if (spec.values) {
+      return `<div>${label}<select id="f-${key}" data-key="${key}"${typed}><option value="">（先不填）</option>${
+        spec.values.map(x => `<option value="${esc(x)}"${x === v ? ' selected' : ''}>${esc(x)}</option>`).join('')
+      }</select></div>`;
+    }
+    if (spec.type === 'bool') {
+      return `<div>${label}<select id="f-${key}" data-key="${key}" data-bool="1">
+        <option value="">（先不填）</option>
+        <option value="true"${v === true ? ' selected' : ''}>有</option>
+        <option value="false"${v === false ? ' selected' : ''}>沒有</option></select></div>`;
+    }
+    if (spec.type === 'number') {
+      return `<div>${label}<input id="f-${key}" data-key="${key}" data-num="1" type="number" step="any"
+        inputmode="decimal" value="${v ?? ''}"></div>`;
+    }
+    return `<div>${label}<input id="f-${key}" data-key="${key}" value="${esc(v ?? '')}"></div>`;
+  }).join('');
+}
+
+function collectFacts(boxId){
+  const box = $(boxId), facts = {};
+  box.querySelectorAll('[data-key]').forEach(el => {
+    const raw = el.value;
+    if (raw === '') return;
+    if (el.dataset.bool) facts[el.dataset.key] = raw === 'true';
+    else if (el.dataset.num) facts[el.dataset.key] = Number(raw);
+    else facts[el.dataset.key] = raw;
+  });
+  box.querySelectorAll('[data-multi]').forEach(group => {
+    const picked = [...group.querySelectorAll('input:checked')].map(x => x.value);
+    if (picked.length) facts[group.dataset.multi] = picked;
+  });
+  return facts;
+}
+
+// ---- 比對與結果 ----------------------------------------------------------
+function amountText(a){
+  if (!a) return '';
+  return [a.unit, a.note].filter(Boolean).join('／');
+}
+function windowText(w){
+  if (!w) return '未註明';
+  if (w.close) return `${w.open ? w.open + ' 起，' : ''}${w.close} 截止`;
+  return w.type === '常態型' ? '隨時可辦' : (w.note || w.close_rule || '未註明');
+}
+
+function renderResults(results){
+  lastResults = results;
+  const relevant = results.filter(r => r.status !== '不符合');
+  const seen = new Set(loadSeen());
+  const fresh = relevant.filter(r => !seen.has(r.program_id));
+
+  $('results-hint').innerHTML = relevant.length
+    ? `依你填的狀況，有 <b>${relevant.length}</b> 項看起來跟你有關${
+        fresh.length ? `，其中 <b>${fresh.length}</b> 項是你上次來之後新出現的` : ''}。`
+    : '目前比對不到相關的補助。你可以到「找補助」自己看看，或按「我卡住了」找可以問的單位。';
+
+  $('results').innerHTML = relevant.map(r => {
+    const isNew = !seen.has(r.program_id);
+    const a = r.authority || {};
+    const docs = (r.documents || []).filter(d => !d.exempt);
+    const exempt = (r.documents || []).filter(d => d.exempt);
+    return `<div class="card match">
+      <h3>${esc(r.name)} ${isNew ? '<span class="pill new">新</span>' : ''}</h3>
+      <span class="pill">${r.status === '符合' ? '看起來和你蠻有關的' : '可能有關，再補幾項資料就知道'}</span>
+      <p class="meta">
+        ⏰ 期限：${esc(windowText(r.window))}<br>
+        🏛 承辦：${esc(a.agency || '未註明')}${a.tel ? `（<a href="tel:${esc(a.tel)}">${esc(a.tel)}</a>）` : ''}
+        ${amountText(r.amount) ? `<br>💰 ${esc(amountText(r.amount))}` : ''}
+      </p>
+      ${docs.length ? `<div class="meta">📄 要帶的東西：<ul class="docs">${
+        docs.map(d => `<li>${esc(d.name)}${d.where ? `（${esc(d.where)}）` : ''}</li>`).join('')}</ul></div>` : ''}
+      ${exempt.length ? `<p class="meta">✅ 你可以免附：${exempt.map(d => esc(d.name)).join('、')}</p>` : ''}
+      <div class="actions">
+        <button class="primary" data-print="${esc(r.program_id)}">列印申請表（已幫你填好）</button>
+        ${a.tel ? `<button onclick="location.href='tel:${esc(a.tel)}'">打電話問承辦</button>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+
+  $('results').querySelectorAll('[data-print]').forEach(b =>
+    b.onclick = () => printForm(b.dataset.print));
+
+  // 看過了就記起來，下次只有真正新增的才標「新」
+  saveSeen(relevant.map(r => r.program_id));
+  $('results-box').classList.remove('hide');
+}
+
+function allFacts(){ return {...profile.facts, ...transient}; }
+
+async function match(){
+  const r = await fetch('/match', {
+    method: 'POST', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({facts: allFacts()}),
+  });
+  if (!r.ok) throw new Error('比對失敗');
+  return (await r.json()).results;
+}
+
+// ---- 預填申請表（純前端產生，資料不離開這台裝置）--------------------------
+function printForm(programId){
+  const r = lastResults.find(x => x.program_id === programId);
+  if (!r) return;
+  const c = profile.contact || {}, a = r.authority || {};
+  const label = k => (FIELDS[k] && FIELDS[k].label) || k;
+  // 把內部值換回白話（loss_rate 的 0.6 → 「超過一半」），不然表上印出來沒人看得懂
+  const shown = (k, v) => {
+    if (v === true) return '有';
+    if (v === false) return '沒有';
+    const map = FIELDS[k] && FIELDS[k].option_map;
+    if (map) {
+      const hit = Object.entries(map).find(([, mapped]) => mapped === v);
+      if (hit) return hit[0];
+    }
+    return v;
+  };
+  const factRows = Object.entries(allFacts())
+    .filter(([, v]) => v !== '' && v != null && !(Array.isArray(v) && !v.length))
+    .map(([k, v]) => {
+      const text = Array.isArray(v) ? v.map(x => shown(k, x)).join('、') : shown(k, v);
+      return `<tr><th>${esc(label(k))}</th><td>${esc(text)}</td></tr>`;
+    }).join('');
+  const docs = (r.documents || []).filter(d => !d.exempt)
+    .map(d => `<li>☐ ${esc(d.name)}${d.where ? `（${esc(d.where)}）` : ''}</li>`).join('');
+
+  $('printable').innerHTML = `
+    <h2>${esc(r.name)}　申請資料表</h2>
+    <div>受理機關：${esc(a.agency || '')}　${esc(a.office || '')}　${esc(a.tel || '')}</div>
+    <table>
+      <tr><th>姓名</th><td>${esc(c.name || '')}</td></tr>
+      <tr><th>聯絡電話</th><td>${esc(c.tel || '')}</td></tr>
+      <tr><th>通訊地址</th><td>${esc(c.addr || '')}</td></tr>
+      ${factRows}
+      <tr><th>申請期限</th><td>${esc(windowText(r.window))}</td></tr>
+    </table>
+    <div class="note"><b>要帶的東西</b><ul>${docs || '<li>—</li>'}</ul></div>
+    <div class="note">
+      ※ 這張是<b>自己整理用的資料表</b>，不是正式申請書。正式表格請向受理機關索取，本表可帶去現場對照抄寫。<br>
+      ※ 身分證字號、銀行帳號請到現場親手填寫，本系統刻意不收也不代填。<br>
+      ※ 實際資格由承辦單位認定；本表內容由申請人自行填寫，系統不負認定責任。
+    </div>
+    <div class="sign">申請人簽名：＿＿＿＿＿＿＿＿＿　　日期：＿＿＿年＿＿月＿＿日</div>`;
+  window.print();
+}
+
+// ---- 啟動 ---------------------------------------------------------------
+$('save').onclick = async () => {
+  profile.facts = collectFacts('facts-form');       // 只存基本資料
+  transient = collectFacts('event-form');           // 這次的事：只放記憶體，不進資料庫
+  profile.contact = {name: $('c-name').value.trim(), tel: $('c-tel').value.trim(),
+                     addr: $('c-addr').value.trim()};
+  try {
+    await persist();
+    msg(loggedIn ? '已經存好了，換手機輸入同一個代號就找得回來。（「這次發生的事」不會存）'
+                 : '還沒登入，這次的結果看完就沒了。想留起來請先在上面輸入代號。', 'ok');
+    renderResults(await match());
+    $('results-box').scrollIntoView({behavior: 'smooth'});
+  } catch (e) { msg('存檔或比對時出了問題，請稍後再試。', 'warn'); }
+};
+
+$('clear').onclick = async () => {
+  if (!loggedIn) { msg('你還沒登入，沒有資料需要刪除。', 'warn'); return; }
+  if (!confirm(`確定刪除「${profile.code}」的資料？\n會從我們的資料庫整筆刪掉，沒辦法復原。`)) return;
+  await api('/members/me', {method: 'DELETE'});
+  localStorage.removeItem(SEEN_KEY);
+  profile = blank(); transient = {}; loggedIn = false;
+  renderAllForms();
+  $('c-name').value = $('c-tel').value = $('c-addr').value = '';
+  $('results-box').classList.add('hide');
+  msg('已刪除。我們的資料庫裡不留任何你的資料了。', 'ok');
+};
+
+function renderAllForms(){
+  renderLogin();
+  const stable = Object.keys(FIELDS).filter(k => !PER_EVENT.includes(k));
+  renderFacts('facts-form', stable, profile.facts);
+  renderFacts('event-form', PER_EVENT.filter(k => FIELDS[k]), transient);
+  const c = profile.contact || {};
+  $('c-name').value = c.name || ''; $('c-tel').value = c.tel || ''; $('c-addr').value = c.addr || '';
+}
+
+async function afterLogin(){
+  // 舊版可能把「這次發生的事」存進去了，載入時清掉——那些不該留在會員資料裡
+  PER_EVENT.forEach(k => delete profile.facts[k]);
+  renderAllForms();
+  if (Object.keys(profile.facts).length) {
+    try { renderResults(await match()); } catch (e) {}
+  }
+}
+
+(async () => {
+  profile = blank();
+  FIELDS = await (await fetch('/fields')).json();
+  const me = await api('/members/me');
+  if (me.logged_in) {
+    profile = {code: me.code, contact: me.contact || {}, facts: me.facts || {}};
+    loggedIn = true;
+    await afterLogin();
+  } else {
+    renderAllForms();
+  }
+})();
+</script>
+</body>
+</html>

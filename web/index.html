@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>農民補給站｜找補助，免煩惱</title>
+<meta name="description" content="說說你的狀況，幫你找出可以申請的農業補助。台語嘛通。">
+<link rel="stylesheet" href="site-chat.css">
+<style>
+/* ===== 設計 tokens（Claude Design 交接檔） ===== */
+:root {
+  --green-bright: #02DF82;   /* 主色：按鈕底、旗幟、跳色字（上面一律配深綠字） */
+  --green-mid:    #01B96B;
+  --green-pale:   #9FF5CF;
+  --green-bg:     #F0FDF6;
+  --green-tint:   #D9FBEC;
+  --ink:          #06301F;   /* 深墨綠：內文與深色區塊 */
+  --ink-soft:     #0A4A32;
+  --orange:       #D85A30;   /* 只用於期限急迫 */
+  --warn-bg:      #FEF3D8;   /* 只用於示範資料警示條 */
+  --grad-main: linear-gradient(90deg, #02DF82, #00C9A7);
+}
+@font-face { font-family: 'GenSen'; src: url('fonts/GenSenRounded2TW-R.woff2') format('woff2'); font-weight: 400; font-display: swap; }
+@font-face { font-family: 'GenSen'; src: url('fonts/GenSenRounded2TW-M.woff2') format('woff2'); font-weight: 500; font-display: swap; }
+@font-face { font-family: 'GenSen'; src: url('fonts/GenSenRounded2TW-H.woff2') format('woff2'); font-weight: 700; font-display: swap; }
+@font-face { font-family: 'GenSen'; src: url('fonts/GenSenRounded2TW-H.woff2') format('woff2'); font-weight: 900; font-display: swap; }
+
+html { font-size: 16px; }
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: 'GenSen', 'Yuanti TC', 'Microsoft JhengHei', sans-serif;
+  color: var(--ink);
+  background: linear-gradient(180deg, #D9FBEC 0%, #F2FEF8 40%, #FFFFFF 100%);
+}
+a { color: var(--green-mid); }
+a:hover { color: var(--ink); }
+.page { min-height: 100vh; overflow-x: hidden; }
+
+/* ===== 示範資料警示條（全站） ===== */
+.demo-banner {
+  background: var(--warn-bg); color: var(--ink); text-align: center;
+  padding: 10px 16px; font-size: 1rem; font-weight: 500;
+}
+
+/* ===== 導覽列 ===== */
+.nav-wrap {
+  position: sticky; top: 0; z-index: 50;
+  background: rgba(255,255,255,0.94); backdrop-filter: blur(8px);
+  border-bottom: 2px solid var(--green-tint);
+}
+.nav-bar {
+  display: flex; align-items: center; gap: 20px; flex-wrap: wrap;
+  max-width: 1080px; margin: 0 auto; padding: 14px 24px;
+}
+.nav-logo {
+  display: flex; align-items: center; gap: 8px; text-decoration: none;
+  color: var(--ink); font-weight: 900; font-size: 1.25rem; white-space: nowrap;
+}
+.nav-links { display: flex; gap: 18px; flex-wrap: wrap; font-size: 1.0625rem; font-weight: 500; }
+.nav-links a { text-decoration: none; color: var(--ink); white-space: nowrap; }
+.nav-links a:hover { color: var(--green-mid); }
+.nav-spacer { flex: 1; }
+.fs-switch {
+  display: flex; align-items: center; gap: 4px;
+  background: var(--green-bg); border-radius: 8px; padding: 4px;
+}
+.fs-switch button {
+  border: none; cursor: pointer; border-radius: 6px; padding: 6px 14px;
+  font-family: inherit; font-weight: 500; background: transparent;
+  color: var(--ink); min-height: 36px;
+}
+.fs-switch button[data-fs="小"] { font-size: 0.875rem; }
+.fs-switch button[data-fs="中"] { font-size: 1rem; }
+.fs-switch button[data-fs="大"] { font-size: 1.125rem; }
+.fs-switch button.active { background: var(--green-bright); }
+.nav-cta {
+  display: inline-flex; align-items: center; min-height: 44px; padding: 6px 22px;
+  background: var(--green-bright); color: var(--ink); font-weight: 500;
+  font-size: 1.0625rem; border-radius: 8px; text-decoration: none; white-space: nowrap;
+}
+.nav-cta:hover { background: var(--green-mid); color: var(--ink); }
+
+/* ===== Hero ===== */
+.hero { position: relative; max-width: 1080px; margin: 0 auto; padding: 72px 24px 48px; text-align: center; }
+@keyframes floaty {
+  0%,100% { transform: translateY(0) rotate(var(--r,0deg)); }
+  50%     { transform: translateY(-8px) rotate(var(--r,0deg)); }
+}
+.pennant { position: absolute; animation: floaty var(--dur,6s) ease-in-out var(--delay,0s) infinite; }
+.slogan { color: var(--ink); font-weight: 900; font-size: 1.25rem; padding: 4px 10px; white-space: nowrap; }
+.slogan--marker { background: linear-gradient(transparent 55%, var(--green-pale) 55%); }
+.slogan--underline { border-bottom: 4px solid var(--green-bright); }
+.hero .slogan-left  { position: absolute; left: 4%;  top: 9%;  transform: rotate(-8deg); }
+.hero .slogan-right { position: absolute; right: 4%; top: 11%; transform: rotate(7deg); color: var(--green-mid); padding: 4px 10px; }
+.hero h1 {
+  font-weight: 900; font-size: clamp(2.5rem, 7vw, 4.5rem); line-height: 1.15;
+  margin: 0 0 20px; letter-spacing: 0.02em;
+}
+.grad-text {
+  background: var(--grad-main);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.squiggle-wrap { position: relative; display: inline-block; }
+.squiggle { position: absolute; left: 0; bottom: -10px; width: 100%; height: 12px; }
+.hero-sub { font-size: 1.375rem; font-weight: 500; margin: 0 0 28px; color: var(--ink-soft); }
+.hero-chat {
+  position: relative; z-index: 1;
+  max-width: 720px; margin: 0 auto 24px; text-align: left;
+  box-shadow: 0 16px 40px rgba(6,48,31,0.14); border-radius: 12px;
+}
+.hero-chat .aidchat-log { min-height: 220px; max-height: 380px; }
+.hero-actions { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+.btn-outline {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 60px; padding: 8px 36px; border-radius: 12px;
+  background: #FFFFFF; border: 3px solid var(--green-mid); color: var(--ink);
+  font-weight: 500; font-size: 1.25rem; text-decoration: none; white-space: nowrap;
+}
+.btn-outline:hover { background: var(--green-bg); color: var(--ink); }
+
+/* ===== 跑馬燈 ===== */
+@keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+.marquee { overflow: hidden; margin: 0 0 48px; padding: 8px 0; }
+.marquee-track { display: flex; gap: 48px; width: max-content; animation: marquee 22s linear infinite; }
+.marquee-item { display: flex; align-items: center; gap: 48px; white-space: nowrap; }
+.marquee-text { font-weight: 900; font-size: 2.25rem; letter-spacing: 0.04em; }
+.marquee-text--fill { color: var(--green-pale); }
+.marquee-text--stroke { color: transparent; -webkit-text-stroke: 2px var(--green-mid); }
+
+/* ===== 近期截止條 ===== */
+.deadline-strip {
+  background: var(--green-bg);
+  border-top: 2px solid var(--green-tint); border-bottom: 2px solid var(--green-tint);
+  margin: 0 0 64px; padding: 16px 24px;
+}
+.deadline-inner { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; max-width: 760px; margin: 0 auto; }
+.deadline-text { font-size: 1.125rem; font-weight: 500; flex: 1; min-width: 200px; }
+.chip-urgent {
+  background: var(--orange); color: #FFFFFF; font-weight: 500; font-size: 1.0625rem;
+  border-radius: 6px; padding: 6px 16px; white-space: nowrap;
+}
+.chip-normal {
+  background: #EDF1EF; color: #46564E; font-weight: 500; font-size: 1.0625rem;
+  border-radius: 6px; padding: 6px 16px; white-space: nowrap;
+}
+
+/* ===== 自己找補助（深綠區塊＋分類磚） ===== */
+.browse-block { margin: 0 0 72px; }
+.browse-block-inner { position: relative; background: linear-gradient(160deg, #0A4A32, #06301F); padding: 64px 24px 56px; }
+.browse-block .slogan-corner {
+  position: absolute; right: 8%; top: 20px; transform: rotate(6deg);
+  color: var(--green-pale); font-weight: 900; font-size: 1.25rem;
+  border-bottom: 4px solid var(--green-bright); padding: 2px 6px; white-space: nowrap;
+}
+.browse-block h2 { color: #FFFFFF; font-weight: 700; font-size: 2rem; margin: 0 0 8px; text-align: center; }
+.browse-block .block-sub { color: var(--green-pale); font-size: 1.125rem; margin: 0 0 40px; text-align: center; }
+.tile-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  max-width: 1080px; margin: 0 auto;
+  border-top: 1px solid rgba(159,245,207,0.25); border-left: 1px solid rgba(159,245,207,0.25);
+}
+.tile {
+  padding: 28px 18px 24px; text-decoration: none; color: #FFFFFF;
+  display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center;
+  border-right: 1px solid rgba(159,245,207,0.25); border-bottom: 1px solid rgba(159,245,207,0.25);
+}
+.tile:hover { background: rgba(2,223,130,0.14); color: #FFFFFF; }
+.tile-name { font-weight: 700; font-size: 1.1875rem; line-height: 1.3; }
+.tile-count { font-size: 1rem; color: var(--green-bright); font-weight: 500; }
+
+/* ===== 白話指南 ===== */
+.guides { max-width: 880px; margin: 0 auto 72px; padding: 0 24px; }
+.guides h2 { font-weight: 700; font-size: 2rem; margin: 0 0 8px; text-align: center; }
+.guides .block-sub { font-size: 1.125rem; color: var(--ink-soft); margin: 0 0 24px; text-align: center; }
+.guide-list { display: flex; flex-direction: column; border-top: 2px solid var(--green-tint); }
+.guide-item {
+  display: flex; align-items: baseline; gap: 20px; padding: 24px 8px;
+  text-decoration: none; color: var(--ink); border-bottom: 2px solid var(--green-tint);
+}
+.guide-item:hover { background: var(--green-bg); color: var(--ink); }
+.guide-num { font-weight: 900; font-size: 1.5rem; color: var(--green-bright); }
+.guide-body { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+.guide-title { font-weight: 700; font-size: 1.375rem; line-height: 1.4; }
+.guide-meta { font-size: 1rem; color: var(--green-mid); }
+.guide-arrow { font-weight: 900; color: var(--green-mid); font-size: 1.25rem; }
+
+/* ===== 陪你辦好事情的人 ===== */
+.people { max-width: 1080px; margin: 0 auto 72px; padding: 0 24px; text-align: center; }
+.people .slogan-badge {
+  display: inline-block; transform: rotate(-3deg); font-weight: 900; font-size: 1.5rem;
+  padding: 4px 12px; background: linear-gradient(transparent 55%, var(--green-pale) 55%);
+  margin-bottom: 8px; white-space: nowrap;
+}
+.people h2 { font-weight: 700; font-size: 2rem; margin: 0 0 24px; }
+.people-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 28px; text-align: left; }
+.person { display: flex; flex-direction: column; gap: 12px; }
+.person img { width: 100%; aspect-ratio: 4/3; object-fit: cover; border-radius: 6px; display: block; }
+.person-title { font-weight: 700; font-size: 1.1875rem; border-left: 5px solid var(--green-bright); padding-left: 10px; }
+.person-desc { font-size: 1.0625rem; color: var(--ink-soft); padding-left: 15px; margin-top: 4px; }
+
+/* ===== 頁尾 ===== */
+footer { background: var(--ink); color: var(--green-bg); padding: 40px 24px 32px; }
+.footer-inner { max-width: 1080px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px; }
+.trust-row { display: flex; gap: 12px 28px; flex-wrap: wrap; justify-content: center; font-size: 1.0625rem; }
+.trust-row span { white-space: nowrap; }
+.trust-dot { color: var(--green-bright); }
+.footer-note { text-align: center; font-size: 1rem; color: var(--green-pale); margin: 0; }
+
+/* ===== 動態偏好 ===== */
+@media (prefers-reduced-motion: reduce) {
+  .pennant, .marquee-track { animation: none; }
+  .reveal { opacity: 1 !important; transform: none !important; transition: none !important; }
+}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="demo-banner">目前為示範資料，實際申請請洽農會或公所</div>
+
+  <div class="nav-wrap">
+    <nav class="nav-bar">
+      <a href="index.html" class="nav-logo" aria-label="農民補給站首頁">
+        <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><path d="M4 2 v18" stroke="#06301F" stroke-width="2.5" stroke-linecap="round"/><path d="M4 3 L18 7 L4 11 Z" fill="#02DF82"/></svg>
+        農民補給站
+      </a>
+      <div class="nav-links">
+        <a href="browse.html">找補助</a>
+        <a href="chat.html?tab=doc">看懂公文</a>
+        <a href="#guides">白話指南</a>
+        <a href="profile.html">我的資料</a>
+        <a href="dashboard.html">卡點儀表板</a>
+        <a href="#about">關於</a>
+      </div>
+      <div class="nav-spacer"></div>
+      <div class="fs-switch" role="group" aria-label="字級切換">
+        <button data-fs="小">小</button>
+        <button data-fs="中">中</button>
+        <button data-fs="大">大</button>
+      </div>
+      <a href="#talk" class="nav-cta">說說你的狀況</a>
+    </nav>
+  </div>
+
+  <header class="hero">
+    <div aria-hidden="true">
+      <svg class="pennant" width="46" height="46" viewBox="0 0 46 46" style="left:4%; top:34%; --r:-24deg; --dur:5s;"><path d="M6 4 L40 16 L10 34 Z" fill="#02DF82"/></svg>
+      <svg class="pennant" width="34" height="34" viewBox="0 0 34 34" style="left:14%; top:52%; --r:18deg; --dur:6s; --delay:0.6s;"><path d="M4 4 L30 12 L8 26 Z" fill="#9FF5CF"/></svg>
+      <svg class="pennant" width="40" height="40" viewBox="0 0 40 40" style="right:6%; top:38%; --r:32deg; --dur:5.5s; --delay:0.3s;"><path d="M6 6 L34 14 L10 30 Z" fill="#01B96B"/></svg>
+      <svg class="pennant" width="28" height="28" viewBox="0 0 28 28" style="right:16%; top:58%; --r:-14deg; --dur:6.5s; --delay:1s;"><path d="M3 3 L25 10 L6 22 Z" fill="#02DF82"/></svg>
+      <svg class="pennant" width="30" height="30" viewBox="0 0 30 30" style="left:44%; top:2%; --r:10deg; --dur:7s; --delay:0.2s;"><path d="M4 4 L26 11 L7 24 Z" fill="#06301F"/></svg>
+    </div>
+    <div class="slogan slogan--marker slogan-left">台語嘛通！</div>
+    <div class="slogan slogan--underline slogan-right">甲你鬥相共</div>
+    <h1>找補助，<span class="squiggle-wrap"><span class="grad-text">免煩惱</span><svg class="squiggle" viewBox="0 0 120 12" preserveAspectRatio="none" aria-hidden="true"><path d="M2 8 Q 17 2 32 8 T 62 8 T 92 8 T 118 7" fill="none" stroke="#02DF82" stroke-width="4" stroke-linecap="round"/></svg></span>！</h1>
+    <p class="hero-sub">說說你的狀況，幫你找出可以申請的補助</p>
+    <div class="hero-chat" id="talk"></div>
+    <div class="hero-actions">
+      <a href="browse.html" class="btn-outline">自己找補助</a>
+      <a href="chat.html?tab=doc" class="btn-outline">看懂公文</a>
+    </div>
+  </header>
+
+  <div class="marquee" aria-hidden="true">
+    <div class="marquee-track">
+      <span class="marquee-item"><span class="marquee-text marquee-text--fill">甲你鬥相共</span><svg width="26" height="26" viewBox="0 0 26 26"><path d="M3 3 L23 9 L6 21 Z" fill="#9FF5CF"/></svg></span>
+      <span class="marquee-item"><span class="marquee-text marquee-text--stroke">CHEER FOR FARMERS</span><svg width="26" height="26" viewBox="0 0 26 26"><path d="M3 3 L23 9 L6 21 Z" fill="#9FF5CF"/></svg></span>
+      <span class="marquee-item"><span class="marquee-text marquee-text--fill">台語嘛通！</span><svg width="26" height="26" viewBox="0 0 26 26"><path d="M3 3 L23 9 L6 21 Z" fill="#9FF5CF"/></svg></span>
+      <span class="marquee-item"><span class="marquee-text marquee-text--stroke">CHEER FOR FARMERS</span><svg width="26" height="26" viewBox="0 0 26 26"><path d="M3 3 L23 9 L6 21 Z" fill="#9FF5CF"/></svg></span>
+      <span class="marquee-item"><span class="marquee-text marquee-text--fill">甲你鬥相共</span><svg width="26" height="26" viewBox="0 0 26 26"><path d="M3 3 L23 9 L6 21 Z" fill="#9FF5CF"/></svg></span>
+      <span class="marquee-item"><span class="marquee-text marquee-text--stroke">CHEER FOR FARMERS</span><svg width="26" height="26" viewBox="0 0 26 26"><path d="M3 3 L23 9 L6 21 Z" fill="#9FF5CF"/></svg></span>
+      <span class="marquee-item"><span class="marquee-text marquee-text--fill">台語嘛通！</span><svg width="26" height="26" viewBox="0 0 26 26"><path d="M3 3 L23 9 L6 21 Z" fill="#9FF5CF"/></svg></span>
+      <span class="marquee-item"><span class="marquee-text marquee-text--stroke">CHEER FOR FARMERS</span><svg width="26" height="26" viewBox="0 0 26 26"><path d="M3 3 L23 9 L6 21 Z" fill="#9FF5CF"/></svg></span>
+    </div>
+  </div>
+
+  <div class="deadline-strip reveal" id="deadline-strip" hidden>
+    <div class="deadline-inner">
+      <svg width="20" height="20" viewBox="0 0 22 22" aria-hidden="true"><path d="M4 2 v18" stroke="#01B96B" stroke-width="2.5" stroke-linecap="round"/><path d="M4 3 L18 7 L4 11 Z" fill="#02DF82"/></svg>
+      <span class="deadline-text" id="deadline-text"></span>
+      <span id="deadline-chip"></span>
+    </div>
+  </div>
+
+  <section id="browse" class="browse-block reveal">
+    <div class="browse-block-inner">
+      <div class="slogan-corner">慢慢看，不急</div>
+      <h2>自己找補助</h2>
+      <p class="block-sub">按一個最像你狀況的，慢慢看</p>
+      <div class="tile-grid" id="tile-grid"></div>
+    </div>
+  </section>
+
+  <section id="guides" class="guides reveal">
+    <h2>白話指南</h2>
+    <p class="block-sub">用講的也通的白話文，慢慢讀</p>
+    <div class="guide-list">
+      <a href="#guides" class="guide-item">
+        <span class="guide-num">01</span>
+        <span class="guide-body"><span class="guide-title">天災過後 72 小時，先做這三件事</span><span class="guide-meta">災後應變・讀完約 3 分鐘</span></span>
+        <span class="guide-arrow">→</span>
+      </a>
+      <a href="#guides" class="guide-item">
+        <span class="guide-num">02</span>
+        <span class="guide-body"><span class="guide-title">老農津貼怎麼算？常見三種誤會</span><span class="guide-meta">津貼給付・讀完約 4 分鐘</span></span>
+        <span class="guide-arrow">→</span>
+      </a>
+      <a href="#guides" class="guide-item">
+        <span class="guide-num">03</span>
+        <span class="guide-body"><span class="guide-title">農保、職保、農業保險差在哪</span><span class="guide-meta">保險入門・讀完約 5 分鐘</span></span>
+        <span class="guide-arrow">→</span>
+      </a>
+    </div>
+  </section>
+
+  <section id="people" class="people reveal">
+    <div class="slogan-badge">甲你鬥相共</div>
+    <h2>陪你一起把事情辦好的人</h2>
+    <div class="people-grid">
+      <div class="person">
+        <img src="img/people-1.webp" alt="農會承辦人員與農民討論文件">
+        <div><div class="person-title">農會承辦窗口</div><div class="person-desc">收件、審件、告訴你缺什麼文件</div></div>
+      </div>
+      <div class="person">
+        <img src="img/people-2.webp" alt="公所農業課人員到田間勘查">
+        <div><div class="person-title">公所農業課</div><div class="person-desc">災損勘查、土地文件都問得到</div></div>
+      </div>
+      <div class="person">
+        <img src="img/people-3.webp" alt="在地農友在田邊聊天分享經驗">
+        <div><div class="person-title">在地農友</div><div class="person-desc">申請過的人，經驗最實在</div></div>
+      </div>
+    </div>
+  </section>
+
+  <footer id="about">
+    <div class="footer-inner">
+      <div class="trust-row">
+        <span>每筆補助都附來源與查核日期</span>
+        <span class="trust-dot">・</span>
+        <span>資格以承辦單位認定為準</span>
+        <span class="trust-dot">・</span>
+        <span>免費、不代辦、不用註冊也能查</span>
+      </div>
+      <p class="footer-note">農民補給站（示範原型）・資料為範例內容</p>
+    </div>
+  </footer>
+</div>
+
+<script src="site-data.js"></script>
+<script src="site-chat.js"></script>
+<script>
+/* ===== 首屏內嵌對話：一進網站就能開始說 ===== */
+AidChat.init(document.getElementById('talk'), {
+  greeting: '你好！我是農民補給站。\n遇到災損、想查補助，跟我說一句話就好，台語嘛通。\n也可以按下面的按鈕開始：',
+  starters: ['颱風豪雨把作物打壞了', '我農作時受傷了', '想查平時有什麼補助']
+});
+</script>
+<script>
+/* ===== 字級切換（小15／中16／大19，全站共用 localStorage 鍵 aid-fs） ===== */
+(function () {
+  const MAP = { '小': '15px', '中': '16px', '大': '19px' };
+  const btns = document.querySelectorAll('.fs-switch button');
+  function apply(v) {
+    document.documentElement.style.fontSize = MAP[v];
+    btns.forEach(b => b.classList.toggle('active', b.dataset.fs === v));
+  }
+  let saved = localStorage.getItem('aid-fs');
+  if (!MAP[saved]) saved = '中';
+  apply(saved);
+  btns.forEach(b => b.addEventListener('click', () => {
+    localStorage.setItem('aid-fs', b.dataset.fs);
+    apply(b.dataset.fs);
+  }));
+})();
+
+/* ===== 近期截止條：從示範資料算出最近的期限 ===== */
+(function () {
+  const items = AID.programs.map(p => ({ p, d: AID.deadlineInfo(p) }));
+  const active = items.filter(x => x.d.kind === 'active').sort((a, b) => a.d.days - b.d.days);
+  const upcoming = items.filter(x => x.d.kind === 'upcoming').sort((a, b) => a.d.open - b.d.open);
+  const pick = active[0] || upcoming[0];
+  if (!pick) return;
+  const strip = document.getElementById('deadline-strip');
+  document.getElementById('deadline-text').textContent =
+    pick.p.name.replace(/（.*?）/g, '') + '　' + (pick.d.kind === 'active' ? '受理中' : '即將開放');
+  const chip = document.getElementById('deadline-chip');
+  chip.textContent = pick.d.label;
+  chip.className = pick.d.kind === 'active' ? 'chip-urgent' : 'chip-normal';
+  strip.hidden = false;
+})();
+
+/* ===== 分類磚：筆數由示範資料計算 ===== */
+(function () {
+  const grid = document.getElementById('tile-grid');
+  const counts = {};
+  AID.programs.forEach(p => { counts[p.uiCategory] = (counts[p.uiCategory] || 0) + 1; });
+  AID.categories.forEach(cat => {
+    const n = counts[cat.name] || 0;
+    const a = document.createElement('a');
+    a.className = 'tile';
+    a.href = 'browse.html?cat=' + encodeURIComponent(cat.name);
+    a.innerHTML =
+      '<span style="display:inline-flex;">' + AID.icon(cat.icon) + '</span>' +
+      '<span class="tile-name">' + cat.name + '</span>' +
+      '<span class="tile-count">' + (n > 0 ? n + ' 筆' : '籌備中') + '</span>';
+    grid.appendChild(a);
+  });
+})();
+
+/* ===== 捲動進場動畫 ===== */
+(function () {
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const els = document.querySelectorAll('.reveal');
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.style.opacity = '1';
+        e.target.style.transform = 'translateY(0)';
+        io.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.12 });
+  els.forEach(el => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(28px)';
+    el.style.transition = 'opacity 0.7s ease, transform 0.7s ease';
+    io.observe(el);
+  });
+})();
+</script>
+</body>
+</html>

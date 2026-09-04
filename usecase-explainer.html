@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Farmer Aid Station — Use-Situation Explainer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chiron+GoRound+TC:wght@400;500;700;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F7FBF8;
+  --bg2:#EAF6EE;
+  --card:#ffffff;
+  --teal:#02DF82;
+  --teal-soft:rgba(2,223,130,0.10);
+  --coral:#D85A30;
+  --coral-soft:rgba(216,90,48,0.10);
+  --navy:#06301F;
+  --text:#06301F;
+  --muted:rgba(6,48,31,0.70);
+  --border:rgba(6,48,31,0.08);
+  --shadow:0 2px 20px rgba(6,48,31,0.06);
+  --font-heading:'Chiron GoRound TC','Instrument Serif',sans-serif;
+  --font-body:'Chiron GoRound TC',sans-serif;
+  --font-mono:'DM Mono',monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden}
+body{
+  background:radial-gradient(1200px 800px at 20% 10%,var(--bg2),var(--bg) 60%);
+  color:var(--text);font-family:var(--font-body);
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ============ AMBIENT ============ */
+#ambient{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.pt{position:absolute;border-radius:50%;background:var(--teal);opacity:.18;animation:drift linear infinite}
+@keyframes drift{
+  0%{transform:translate3d(0,0,0) scale(1);opacity:.05}
+  50%{opacity:.22}
+  100%{transform:translate3d(var(--dx),var(--dy),0) scale(1.4);opacity:.03}
+}
+.blob{position:absolute;border-radius:50%;filter:blur(90px);opacity:.5}
+.blob.a{width:46vw;height:46vw;background:var(--teal-soft);left:-10vw;top:-8vw;animation:blobA 34s ease-in-out infinite}
+.blob.b{width:38vw;height:38vw;background:var(--coral-soft);right:-8vw;bottom:-10vw;animation:blobB 42s ease-in-out infinite}
+@keyframes blobA{0%,100%{transform:translate(0,0)}50%{transform:translate(6vw,5vh)}}
+@keyframes blobB{0%,100%{transform:translate(0,0)}50%{transform:translate(-7vw,-4vh)}}
+#sceneFlash{position:fixed;inset:0;z-index:5;pointer-events:none;opacity:0;
+  background:radial-gradient(circle at 50% 45%,rgba(2,223,130,.30),transparent 62%)}
+#sceneFlash.fire{animation:flash .85s ease-out}
+@keyframes flash{0%{opacity:0}18%{opacity:1}100%{opacity:0}}
+
+/* ============ DAY COUNTER ============ */
+#day{position:fixed;top:20px;right:24px;z-index:6;font-family:var(--font-mono);
+  font-size:12px;letter-spacing:.16em;color:var(--muted);opacity:0;transition:opacity .6s ease}
+#day.on{opacity:1}
+#day .n{color:var(--navy);font-weight:500}
+#day .paid{color:var(--teal);margin-left:8px}
+#day.flip .n{animation:flipn .5s ease}
+@keyframes flipn{0%{transform:translateY(0);opacity:1}45%{transform:translateY(-10px);opacity:0}55%{transform:translateY(10px);opacity:0}100%{transform:translateY(0);opacity:1}}
+
+/* ============ STAGE ============ */
+#stage{position:fixed;left:0;right:0;top:0;bottom:44px;perspective:1800px;z-index:2;overflow:hidden}
+.scene{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:48px 5vw 26px;text-align:center;transform-style:preserve-3d;
+  opacity:0;transform:translateZ(-260px) scale(.95);pointer-events:none;
+  transition:opacity .85s cubic-bezier(.22,.61,.36,1),transform .85s cubic-bezier(.22,.61,.36,1)}
+.scene.active{opacity:1;transform:none}
+.scene.zoom-out{opacity:0;transform:translateZ(340px) scale(1.08)}
+
+[data-at]{opacity:0;transform:translateY(18px);
+  transition:opacity .75s ease,transform .75s cubic-bezier(.22,.61,.36,1)}
+[data-at].lit{opacity:1;transform:none}
+[data-at].keep{transform:none}
+
+/* ============ TEXT ============ */
+.subtitle{font-family:var(--font-mono);font-size:11px;letter-spacing:.24em;text-transform:uppercase;
+  color:var(--teal);margin-bottom:14px;font-weight:500}
+.subtitle::before{content:'';display:inline-block;width:22px;height:1px;background:var(--teal);
+  vertical-align:middle;margin-right:10px;opacity:.6}
+.title{font-family:var(--font-heading);font-weight:900;color:var(--navy);
+  font-size:clamp(28px,4.4vw,54px);line-height:1.18;letter-spacing:-.01em;max-width:16ch;margin:0 auto}
+.title.wide{max-width:22ch}
+.hl{color:var(--teal);position:relative}
+.note{font-family:var(--font-body);font-size:14px;line-height:1.7;color:var(--muted);
+  max-width:640px;margin:20px auto 0}
+.note code{font-family:var(--font-mono);font-size:12px;background:var(--teal-soft);
+  color:var(--navy);padding:2px 7px;border-radius:6px}
+.zh{font-family:var(--font-body);color:var(--navy)}
+.en{display:block;font-size:.72em;color:var(--muted);font-weight:400;margin-top:3px}
+
+.disclaim{position:absolute;bottom:14px;left:0;right:0;font-size:11px;color:var(--muted);
+  font-family:var(--font-body);letter-spacing:.02em}
+.disclaim b{font-weight:500;color:var(--navy)}
+
+/* ============ SHARED PIECES ============ */
+.card{background:var(--card);border:1px solid var(--border);border-radius:18px;
+  box-shadow:var(--shadow);padding:16px 20px;text-align:left}
+.pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:6px 14px;
+  font-size:12px;font-family:var(--font-mono);font-weight:500}
+.pill.deadline{background:var(--coral-soft);color:var(--coral);animation:breathe 2s ease-in-out infinite}
+@keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.055)}}
+.btn-big{display:inline-flex;align-items:center;gap:10px;background:var(--teal);color:var(--navy);
+  font-weight:500;font-size:15px;padding:12px 22px;border-radius:14px;
+  box-shadow:0 0 0 0 rgba(2,223,130,.5);animation:halo 2.6s ease-out infinite}
+@keyframes halo{0%{box-shadow:0 0 0 0 rgba(2,223,130,.45)}70%{box-shadow:0 0 0 16px rgba(2,223,130,0)}100%{box-shadow:0 0 0 0 rgba(2,223,130,0)}}
+
+/* ============ S01 orchard ============ */
+.orchard{position:relative;width:min(880px,92vw);height:min(300px,36vh);
+  transform-style:preserve-3d;margin-bottom:26px}
+.ridge{position:absolute;left:-6%;right:-6%;bottom:38%;height:70px;
+  background:linear-gradient(180deg,rgba(6,48,31,.10),rgba(6,48,31,.03));
+  clip-path:polygon(0 100%,8% 46%,20% 72%,33% 30%,47% 66%,60% 38%,74% 70%,88% 44%,100% 82%,100% 100%);
+  transform:translateZ(-400px) scale(1.5);animation:pan 26s linear infinite alternate}
+@keyframes pan{0%{transform:translateZ(-400px) scale(1.5) translateX(-2%)}100%{transform:translateZ(-400px) scale(1.5) translateX(2%)}}
+.tree{position:absolute;bottom:30%;width:64px;height:88px;transform-origin:50% 100%;
+  background:radial-gradient(circle at 50% 35%,rgba(6,48,31,.34),rgba(6,48,31,.16) 62%,transparent 70%);
+  border-radius:50% 50% 44% 44%;animation:sway 8s ease-in-out infinite}
+.tree::after{content:'';position:absolute;left:50%;bottom:-14px;width:5px;height:20px;
+  margin-left:-2.5px;background:rgba(6,48,31,.3);border-radius:2px}
+@keyframes sway{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(4deg)}}
+.mango{position:absolute;width:26px;height:20px;border-radius:52% 52% 48% 48%;
+  background:linear-gradient(140deg,#F2C14E,#D8873A);box-shadow:0 6px 14px rgba(6,48,31,.18);
+  animation:bob 6s ease-in-out infinite}
+.mango::after{content:'';position:absolute;top:-4px;left:60%;width:2px;height:6px;background:rgba(6,48,31,.4);border-radius:2px}
+@keyframes bob{0%,100%{transform:translateY(0) rotate(var(--r,0deg))}50%{transform:translateY(-4px) rotate(var(--r,0deg))}}
+
+/* ============ S02 program wall ============ */
+.wall{position:relative;width:min(900px,94vw);height:min(320px,38vh);transform-style:preserve-3d;
+  animation:wallturn 16s ease-in-out infinite alternate;margin-bottom:22px}
+@keyframes wallturn{0%{transform:rotateY(-3deg)}100%{transform:rotateY(3deg)}}
+.pchip{position:absolute;left:50%;top:50%;padding:8px 14px;border-radius:10px;background:var(--card);
+  border:1px solid var(--border);box-shadow:var(--shadow);font-size:12px;color:var(--navy);
+  white-space:nowrap;transform-style:preserve-3d}
+.pchip.fuzzy{color:transparent;text-shadow:0 0 7px rgba(6,48,31,.45)}
+.reach{position:absolute;left:50%;bottom:-6%;width:120px;height:150px;margin-left:-140px;
+  border-radius:60px 60px 26px 26px;background:linear-gradient(180deg,rgba(6,48,31,.16),rgba(6,48,31,.04));
+  transform:rotate(-14deg);animation:reachy 5s ease-in-out infinite}
+@keyframes reachy{0%,100%{transform:rotate(-14deg) translateY(6px)}50%{transform:rotate(-11deg) translateY(0)}}
+.calpage{position:absolute;right:6%;top:8%;width:74px;height:88px;background:var(--card);
+  border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow);
+  display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);
+  font-size:11px;color:var(--coral);letter-spacing:.1em;animation:tearoff 3.4s ease-in-out infinite}
+@keyframes tearoff{0%{transform:rotateX(0) translateY(0);opacity:1}
+  60%{transform:rotateX(-72deg) translateY(-40px);opacity:0}
+  61%,100%{transform:rotateX(0) translateY(0);opacity:1}}
+
+/* ============ S03 bubble ============ */
+.bubble{position:relative;width:min(620px,90vw);padding:30px 34px 26px;border-radius:28px;
+  background:var(--card);border:2px solid var(--teal);box-shadow:0 18px 46px rgba(6,48,31,.10);
+  transform:rotateX(-6deg);animation:float6 5s ease-in-out infinite;margin-bottom:24px}
+@keyframes float6{0%,100%{transform:rotateX(-6deg) translateY(0)}50%{transform:rotateX(-6deg) translateY(-7px)}}
+.bubble::after{content:'';position:absolute;left:56px;bottom:-16px;width:30px;height:30px;
+  background:var(--card);border-right:2px solid var(--teal);border-bottom:2px solid var(--teal);
+  transform:rotate(45deg);border-radius:0 0 6px 0}
+.wave{display:flex;align-items:flex-end;gap:5px;height:34px;justify-content:center;margin-bottom:16px}
+.wave i{width:5px;background:var(--teal);border-radius:3px;animation:bar 1.2s linear infinite}
+@keyframes bar{0%,100%{height:8px}50%{height:32px}}
+.say{font-family:var(--font-heading);font-weight:700;font-size:clamp(26px,3.6vw,44px);color:var(--navy);letter-spacing:.02em}
+.sayen{font-size:15px;color:var(--muted);margin-top:8px}
+
+/* ============ S04/S05 facts ============ */
+.facts{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-bottom:26px}
+.fchip{padding:10px 18px;border-radius:12px;font-family:var(--font-mono);font-size:13px;
+  background:var(--card);border:1.5px solid var(--teal);color:var(--navy);box-shadow:var(--shadow)}
+.fchip.blank{border-style:dashed;border-color:rgba(6,48,31,.28);color:var(--muted);
+  animation:pulseblank 1.6s ease-in-out infinite}
+@keyframes pulseblank{0%,100%{border-color:rgba(6,48,31,.20);opacity:.72}50%{border-color:var(--teal);opacity:1}}
+.qwrap{position:relative;display:flex;flex-direction:column;align-items:center;gap:14px}
+.thread{width:2px;height:44px;background:linear-gradient(180deg,transparent,var(--teal));
+  position:relative;overflow:hidden}
+.thread::after{content:'';position:absolute;left:-1px;width:4px;height:14px;background:var(--teal);
+  filter:blur(2px);animation:flow 1.6s linear infinite}
+@keyframes flow{0%{top:100%}100%{top:-20%}}
+.qcard{width:min(560px,92vw);padding:24px 26px;border-radius:20px;background:var(--card);
+  border:1px solid var(--border);box-shadow:0 14px 40px rgba(6,48,31,.09);transform:rotateX(-9deg)}
+.qtext{font-family:var(--font-heading);font-weight:700;font-size:26px;color:var(--navy)}
+.qopts{display:flex;gap:10px;justify-content:center;margin-top:18px;flex-wrap:wrap}
+.qopt{padding:12px 22px;border-radius:14px;border:1.5px solid var(--border);background:var(--bg);
+  font-size:16px;color:var(--navy)}
+.qopt.pick{background:var(--teal);border-color:var(--teal);font-weight:500}
+.dots{display:flex;gap:7px;justify-content:center;margin-top:18px;align-items:center}
+.dots i{width:8px;height:8px;border-radius:50%;background:var(--teal)}
+.dots i.empty{background:transparent;border:1.5px solid rgba(6,48,31,.25);animation:pulseblank 1.8s ease-in-out infinite}
+.dots span{font-family:var(--font-mono);font-size:11px;color:var(--muted);margin-left:8px}
+
+/* ============ S06 tiers ============ */
+.shelf{width:min(880px,94vw);display:flex;flex-direction:column;gap:12px;margin-bottom:18px;transform-style:preserve-3d}
+.tier{border-radius:18px;padding:14px 18px;background:var(--card);border:1px solid var(--border);
+  box-shadow:var(--shadow);transform:rotateX(-8deg);text-align:left;animation:tierfloat 7s ease-in-out infinite}
+.tier.t1{border:2px solid var(--teal);animation-delay:0s}
+.tier.t2{animation-delay:.4s}
+.tier.t3{background:rgba(6,48,31,.035);animation-delay:.8s}
+@keyframes tierfloat{0%,100%{transform:rotateX(-8deg) translateY(0)}50%{transform:rotateX(-8deg) translateY(-5px)}}
+.tier-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.tier-name{font-weight:700;font-size:17px;color:var(--navy)}
+.tier-name em{font-style:normal;display:block;font-size:11px;color:var(--muted);font-weight:400;
+  font-family:var(--font-mono);letter-spacing:.06em;margin-top:2px}
+.mini{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.mini span{flex:1;min-width:90px;height:34px;border-radius:9px;background:var(--bg2);border:1px solid var(--border)}
+.tier.t1 .mini span{background:var(--teal-soft);border-color:rgba(2,223,130,.35)}
+.expand{font-family:var(--font-mono);font-size:11px;color:var(--muted)}
+
+/* ============ S07 priority card ============ */
+.big-card{width:min(620px,94vw);padding:24px 26px;border-radius:22px;background:var(--card);
+  border:2px solid var(--teal);box-shadow:0 22px 54px rgba(6,48,31,.12);text-align:left;transform:rotateX(-4deg)}
+.bc-title{font-family:var(--font-heading);font-weight:900;font-size:23px;color:var(--navy);line-height:1.3}
+.why{margin-top:10px;font-size:13px;color:var(--navy);background:var(--teal-soft);
+  border-radius:10px;padding:8px 12px}
+.why em{font-style:normal;color:var(--muted);display:block;font-size:11px;margin-top:2px;font-family:var(--font-mono)}
+.docs{margin-top:14px;display:flex;flex-direction:column;gap:8px}
+.docs div{display:flex;align-items:center;gap:9px;font-size:14px;color:var(--navy)}
+.tick{width:19px;height:19px;border-radius:6px;background:var(--teal);color:var(--navy);
+  display:grid;place-items:center;font-size:11px;font-weight:700;flex:none}
+.bc-foot{margin-top:16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:space-between}
+.office{font-size:12px;color:var(--muted);font-family:var(--font-mono)}
+.basis{margin-top:12px;display:inline-block;font-family:var(--font-mono);font-size:10.5px;
+  color:var(--muted);border:1px dashed var(--border);border-radius:8px;padding:4px 10px}
+
+/* ============ S08 skip ============ */
+.skips{width:min(820px,94vw);display:flex;flex-direction:column;gap:10px;margin-bottom:16px}
+.skip{padding:12px 16px;border-radius:14px;background:rgba(6,48,31,.04);border:1px solid var(--border);
+  text-align:left;font-size:14px;color:var(--muted);animation:tierfloat 8s ease-in-out infinite}
+.skip b{color:var(--navy);font-weight:500}
+.skip.up{background:var(--card);box-shadow:var(--shadow);transform:translateZ(30px)}
+.exit{margin-top:6px;position:relative;display:inline-block;font-size:15px;color:var(--navy);font-weight:500}
+.exit::after{content:'';position:absolute;left:0;bottom:-5px;height:2px;width:100%;background:var(--teal);
+  transform-origin:left;animation:sweep 3.2s ease-in-out infinite}
+@keyframes sweep{0%{transform:scaleX(0)}45%{transform:scaleX(1)}80%{transform:scaleX(1)}100%{transform:scaleX(0);transform-origin:right}}
+
+/* ============ S09/S10/S11 document ============ */
+.docstage{position:relative;width:min(760px,94vw);height:min(320px,38vh);transform-style:preserve-3d;margin-bottom:20px}
+.envelope{position:absolute;left:50%;top:8%;width:190px;height:120px;margin-left:-95px;
+  background:var(--card);border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow);
+  transform:rotateY(28deg) rotateX(-12deg)}
+.envelope::after{content:'';position:absolute;inset:0;border-top:56px solid rgba(6,48,31,.06);
+  border-left:95px solid transparent;border-right:95px solid transparent;box-sizing:border-box}
+.paper{position:absolute;left:50%;top:12%;width:min(430px,72vw);height:min(240px,30vh);margin-left:calc(min(430px,72vw)/-2);
+  background:var(--card);border:1px solid var(--border);border-radius:12px;box-shadow:0 18px 44px rgba(6,48,31,.12);
+  padding:20px 22px;overflow:hidden;transform:rotateX(-20deg);animation:papertilt 7s ease-in-out infinite}
+@keyframes papertilt{0%,100%{transform:rotateX(-20deg) rotateZ(-1deg)}50%{transform:rotateX(-16deg) rotateZ(1deg)}}
+.blurline{height:9px;border-radius:4px;background:rgba(6,48,31,.22);margin-bottom:9px;filter:blur(2.4px)}
+.sharp{font-size:15px;font-weight:700;color:var(--coral);letter-spacing:.04em;
+  background:var(--coral-soft);display:inline-block;padding:3px 10px;border-radius:7px;
+  filter:none;animation:blink 2.5s ease-in-out infinite;margin:6px 0 9px}
+@keyframes blink{0%,100%{opacity:.6}50%{opacity:1}}
+.phone{position:absolute;left:50%;top:2%;width:150px;height:270px;margin-left:-75px;
+  border-radius:24px;background:var(--navy);border:5px solid var(--navy);box-shadow:0 26px 60px rgba(6,48,31,.28);
+  transform:rotateY(-20deg) rotateX(6deg);animation:float8 4s ease-in-out infinite;overflow:hidden}
+@keyframes float8{0%,100%{transform:rotateY(-20deg) rotateX(6deg) translateY(0)}50%{transform:rotateY(-20deg) rotateX(6deg) translateY(-9px)}}
+.phone .screen{position:absolute;inset:0;background:var(--bg);border-radius:19px;padding:14px 12px}
+.focusbox{position:absolute;inset:26px 16px;border:2px solid var(--teal);border-radius:8px;
+  animation:focusin 3s ease-in-out infinite}
+@keyframes focusin{0%{inset:14px 6px;opacity:.4}55%{inset:28px 18px;opacity:1}100%{inset:28px 18px;opacity:1}}
+.scanline{position:absolute;left:0;right:0;height:3px;background:var(--teal);
+  box-shadow:0 0 18px 5px rgba(2,223,130,.55);animation:scan 2.6s ease-in-out infinite}
+@keyframes scan{0%{top:0;opacity:0}10%{opacity:1}90%{opacity:1}100%{top:100%;opacity:0}}
+.ba{display:flex;gap:18px;align-items:center;justify-content:center;width:min(880px,94vw);
+  transform-style:preserve-3d;margin-bottom:18px;flex-wrap:wrap}
+.before{width:min(300px,42vw);padding:16px;border-radius:14px;background:var(--card);border:1px solid var(--border);
+  transform:rotateY(22deg) translateZ(-90px);filter:blur(1.6px);opacity:.72;animation:sink 9s ease-in-out infinite}
+@keyframes sink{0%,100%{transform:rotateY(22deg) translateZ(-90px) translateY(0)}50%{transform:rotateY(22deg) translateZ(-110px) translateY(8px)}}
+.after{width:min(400px,54vw);padding:20px;border-radius:18px;background:var(--card);border:2px solid var(--teal);
+  box-shadow:0 20px 50px rgba(6,48,31,.12);transform:rotateY(-10deg) translateZ(50px);text-align:left}
+.after .line{display:flex;gap:10px;align-items:flex-start;font-size:15px;color:var(--navy);margin-bottom:11px}
+.after .line b{color:var(--teal);font-family:var(--font-mono);font-size:12px;padding-top:3px}
+.after .ask{background:var(--teal-soft);border-radius:10px;padding:10px 12px;font-size:15px;color:var(--navy)}
+.answer{display:inline-block;margin-top:10px;font-family:var(--font-mono);font-size:12px;
+  background:var(--navy);color:var(--bg);padding:5px 12px;border-radius:8px}
+
+/* ============ S12 stuck ============ */
+.spot{position:relative;width:min(760px,94vw);height:min(300px,36vh);display:grid;place-items:center;transform-style:preserve-3d}
+.form-ghost{position:absolute;inset:0;border-radius:18px;background:rgba(6,48,31,.05);
+  border:1px dashed var(--border);padding:22px;opacity:.6}
+.form-ghost i{display:block;height:10px;border-radius:4px;background:rgba(6,48,31,.13);margin-bottom:12px}
+.form-ghost i:nth-child(4){width:40%}
+.form-ghost i:nth-child(5),.form-ghost i:nth-child(6){opacity:.35}
+.stuckbtn{position:relative;z-index:2;transform:translateZ(80px);
+  background:var(--teal);color:var(--navy);font-family:var(--font-heading);font-weight:900;
+  font-size:clamp(24px,3.4vw,38px);padding:20px 42px;border-radius:22px;
+  box-shadow:0 22px 60px rgba(2,223,130,.34);animation:halo 2.4s ease-out infinite}
+.stuckbtn em{display:block;font-style:normal;font-family:var(--font-mono);font-size:12px;
+  font-weight:400;letter-spacing:.1em;margin-top:6px;opacity:.72}
+.opts{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:26px}
+.opt{padding:13px 20px;border-radius:15px;background:var(--card);border:1px solid var(--border);
+  box-shadow:var(--shadow);font-size:15px;color:var(--navy);animation:bob 5s ease-in-out infinite}
+.opt:nth-child(2){animation-delay:.5s}.opt:nth-child(3){animation-delay:1s}
+.opt em{display:block;font-style:normal;font-size:11px;color:var(--muted);font-family:var(--font-mono);margin-top:3px}
+
+/* ============ S13 branches ============ */
+.branch{display:flex;gap:26px;justify-content:center;align-items:center;width:min(940px,96vw);
+  transform-style:preserve-3d;flex-wrap:wrap;margin-bottom:16px}
+.bl{width:min(320px,44vw);transform:rotateY(12deg) translateZ(40px);text-align:left}
+.bl .card{margin-bottom:9px;font-size:14px}
+.blabel{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.16em;color:var(--teal);
+  text-transform:uppercase;margin-bottom:9px}
+.br{width:min(380px,50vw);transform:rotateY(-12deg) translateZ(-30px)}
+.map{position:relative;height:150px;border-radius:16px;background:var(--bg2);border:1px solid var(--border);
+  transform:rotateX(52deg);box-shadow:0 22px 44px rgba(6,48,31,.12);overflow:hidden}
+.map i{position:absolute;width:12px;height:12px;border-radius:3px;background:var(--teal);
+  animation:blink 2.4s ease-in-out infinite}
+.bars{display:flex;flex-direction:column;gap:7px;margin-top:22px}
+.bars div{display:flex;align-items:center;gap:9px;font-size:11.5px;color:var(--muted);font-family:var(--font-mono)}
+.bars span{height:9px;border-radius:5px;background:var(--teal);animation:grow 4s ease-in-out infinite}
+.bars div:nth-child(2) span{background:var(--coral);animation-delay:.4s}
+.bars div:nth-child(3) span{background:rgba(6,48,31,.3);animation-delay:.8s}
+@keyframes grow{0%,100%{opacity:.75}50%{opacity:1;transform:scaleX(1.03);transform-origin:left}}
+
+/* ============ S14 outro ============ */
+.orbit{position:absolute;inset:0;pointer-events:none}
+.orbit i{position:absolute;left:50%;top:50%;width:14px;height:14px;border-radius:4px;
+  background:var(--teal);opacity:.24;transform-origin:0 0;animation:orb 24s linear infinite}
+@keyframes orb{0%{transform:rotate(0deg) translateX(var(--r)) rotate(0deg)}100%{transform:rotate(360deg) translateX(var(--r)) rotate(-360deg)}}
+.extruded{font-family:var(--font-heading);font-weight:900;font-size:clamp(40px,7vw,86px);color:var(--navy);
+  letter-spacing:.02em;text-shadow:
+    1px 1px 0 rgba(2,223,130,.9),2px 2px 0 rgba(2,223,130,.75),3px 3px 0 rgba(2,223,130,.6),
+    4px 4px 0 rgba(2,223,130,.45),5px 5px 0 rgba(2,223,130,.3),6px 6px 0 rgba(2,223,130,.18),
+    7px 7px 22px rgba(6,48,31,.22);
+  animation:lightmove 9s ease-in-out infinite}
+@keyframes lightmove{0%,100%{filter:brightness(1)}50%{filter:brightness(1.06)}}
+.slogan{font-family:var(--font-heading);font-weight:700;font-size:clamp(24px,3.6vw,40px);
+  color:var(--teal);margin-top:16px;transform:rotate(-2.2deg)}
+.sub-en{font-size:15px;color:var(--muted);margin-top:12px;letter-spacing:.03em}
+
+/* ============ CONTROLS ============ */
+#bar{position:fixed;left:0;right:0;bottom:0;height:44px;z-index:10;
+  background:rgba(255,255,255,.86);backdrop-filter:blur(14px);border-top:1px solid var(--border);
+  display:flex;align-items:center;gap:8px;padding:0 12px}
+#prog{position:absolute;left:0;right:0;top:-3px;height:3px;background:rgba(6,48,31,.09);cursor:pointer}
+#fill{height:100%;width:0;background:var(--teal);transition:width .1s linear}
+.dot{position:absolute;top:50%;width:7px;height:7px;margin:-3.5px 0 0 -3.5px;border-radius:50%;
+  background:rgba(6,48,31,.22);transition:background .3s,transform .3s}
+.dot.past{background:var(--teal)}
+.dot.next{background:var(--coral);animation:dotpulse 1.5s ease-in-out infinite}
+@keyframes dotpulse{0%,100%{transform:scale(1)}50%{transform:scale(1.75)}}
+.cb{width:30px;height:30px;flex:none;border:none;border-radius:9px;background:transparent;color:var(--muted);
+  cursor:pointer;font-size:13px;display:grid;place-items:center;transition:background .2s,color .2s}
+.cb:hover{background:var(--teal-soft);color:var(--navy)}
+.cb.on{background:var(--teal);color:var(--navy)}
+#cap{flex:1;min-width:0;font-size:12.5px;color:var(--navy);white-space:nowrap;overflow:hidden;
+  text-overflow:ellipsis;padding:0 6px}
+#cap.cap-in{animation:capin .45s ease}
+@keyframes capin{0%{opacity:0;transform:translateY(5px)}100%{opacity:1;transform:none}}
+#time{font-family:var(--font-mono);font-size:11px;color:var(--muted);flex:none;letter-spacing:.04em}
+
+@media (max-width:640px){
+  .title{font-size:26px;max-width:18ch}
+  .note{font-size:13px}
+  .ba,.branch{flex-direction:column}
+  .before,.after,.bl,.br{width:min(420px,90vw);transform:none;filter:none}
+  .before{opacity:.6;filter:blur(1.4px)}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition-duration:.01ms!important}
+  .scene{transition:opacity .2s linear!important}
+}
+</style>
+</head>
+<body>
+
+<div id="ambient"><div class="blob a"></div><div class="blob b"></div></div>
+<div id="sceneFlash"></div>
+<div id="day"><span class="n">DAY 1</span><span class="paid" id="paid" style="display:none">領到了 · paid</span></div>
+
+<div id="stage"></div>
+
+<div id="bar">
+  <div id="prog"><div id="fill"></div></div>
+  <button class="cb" id="prev" aria-label="previous scene">◀</button>
+  <button class="cb on" id="play" aria-label="play or pause">▶</button>
+  <button class="cb" id="next" aria-label="next scene">▶</button>
+  <div id="cap"></div>
+  <div id="time">0:00 / 1:25</div>
+</div>
+
+<script>
+const TOTAL = 85;
+
+const scenes = [
+/* 01 */ {start:0, end:7, html:`
+  <div class="orchard">
+    <div class="ridge" data-at="0"></div>
+    <div class="tree keep" data-at="0.5" style="left:6%"></div>
+    <div class="tree keep" data-at="0.5" style="left:24%;animation-delay:-1.4s"></div>
+    <div class="tree keep" data-at="0.5" style="left:46%;animation-delay:-3s;height:104px"></div>
+    <div class="tree keep" data-at="0.5" style="left:68%;animation-delay:-2s"></div>
+    <div class="tree keep" data-at="0.5" style="left:86%;animation-delay:-4.2s"></div>
+    <div class="mango keep" data-at="1.5" style="left:14%;bottom:14%;--r:-12deg"></div>
+    <div class="mango keep" data-at="1.7" style="left:33%;bottom:8%;--r:8deg;animation-delay:-1s"></div>
+    <div class="mango keep" data-at="1.9" style="left:52%;bottom:16%;--r:-4deg;animation-delay:-2s"></div>
+    <div class="mango keep" data-at="2.1" style="left:70%;bottom:6%;--r:16deg;animation-delay:-3s"></div>
+    <div class="mango keep" data-at="2.3" style="left:88%;bottom:13%;--r:-9deg;animation-delay:-1.6s"></div>
+  </div>
+  <div class="subtitle" data-at="2.5">A morning in August</div>
+  <h1 class="title" data-at="3.5">The help already <span class="hl">exists</span>.</h1>
+  <p class="note" data-at="5">Dozens of programs. Different agencies, different forms, different deadlines. None of them come looking for him.</p>
+`},
+/* 02 */ {start:7, end:14, html:`
+  <div class="wall">
+    <div class="pchip" data-at="0" style="transform:translate3d(-50%,-50%,0) translate(-190px,-70px)">天然災害現金救助</div>
+    <div class="pchip" data-at="0.12" style="transform:translate3d(-50%,-50%,-90px) translate(120px,-96px)">農業保險保費補助</div>
+    <div class="pchip" data-at="0.24" style="transform:translate3d(-50%,-50%,-160px) translate(-240px,44px)">蓋設施買農機</div>
+    <div class="pchip" data-at="0.36" style="transform:translate3d(-50%,-50%,-230px) translate(190px,58px)">青年從農貸款</div>
+    <div class="pchip fuzzy" data-at="0.48" style="transform:translate3d(-50%,-50%,-320px) translate(-100px,-130px)">農糧署補助辦法</div>
+    <div class="pchip fuzzy" data-at="0.56" style="transform:translate3d(-50%,-50%,-380px) translate(60px,110px)">產銷履歷驗證</div>
+    <div class="pchip fuzzy" data-at="0.64" style="transform:translate3d(-50%,-50%,-440px) translate(-300px,-30px)">有機農業獎勵</div>
+    <div class="pchip fuzzy" data-at="0.72" style="transform:translate3d(-50%,-50%,-500px) translate(250px,-60px)">農民健康保險</div>
+    <div class="pchip fuzzy" data-at="0.8" style="transform:translate3d(-50%,-50%,-560px) translate(-160px,120px)">農業設施容許使用</div>
+    <div class="pchip fuzzy" data-at="0.88" style="transform:translate3d(-50%,-50%,-620px) translate(150px,-140px)">農地重劃補助</div>
+    <div class="pchip fuzzy" data-at="0.96" style="transform:translate3d(-50%,-50%,-690px) translate(-260px,-110px)">共同運銷獎勵</div>
+    <div class="pchip fuzzy" data-at="1.04" style="transform:translate3d(-50%,-50%,-760px) translate(280px,90px)">外銷供果園</div>
+    <div class="pchip fuzzy" data-at="1.12" style="transform:translate3d(-50%,-50%,-830px) translate(-60px,150px)">農機安全講習</div>
+    <div class="pchip fuzzy" data-at="1.2" style="transform:translate3d(-50%,-50%,-900px) translate(90px,-40px)">災後復耕種苗</div>
+    <div class="pchip fuzzy" data-at="1.28" style="transform:translate3d(-50%,-50%,-980px) translate(-210px,60px)">農業經營專區</div>
+    <div class="pchip fuzzy" data-at="1.36" style="transform:translate3d(-50%,-50%,-1060px) translate(210px,-120px)">小型農機補助</div>
+    <div class="pchip fuzzy" data-at="1.44" style="transform:translate3d(-50%,-50%,-1140px) translate(-120px,-160px)">生產設施改善</div>
+    <div class="pchip fuzzy" data-at="1.52" style="transform:translate3d(-50%,-50%,-1200px) translate(40px,60px)">農村再生計畫</div>
+    <div class="reach keep" data-at="4.5"></div>
+    <div class="calpage keep" data-at="5.5">DEADLINE</div>
+  </div>
+  <div class="subtitle" data-at="2">Forty-one programs running</div>
+  <h1 class="title wide" data-at="3">He is not short of <span class="hl">help</span>. He is short of a <span class="hl">way in</span>.</h1>
+`},
+/* 03 */ {start:14, end:20, html:`
+  <div class="bubble" data-at="0">
+    <div class="wave" data-at="0.8">
+      <i style="animation-delay:0s"></i><i style="animation-delay:.12s"></i><i style="animation-delay:.24s"></i>
+      <i style="animation-delay:.36s"></i><i style="animation-delay:.48s"></i><i style="animation-delay:.6s"></i>
+      <i style="animation-delay:.72s"></i>
+    </div>
+    <div class="say" data-at="1.5">阮的檨仔攏落了了</div>
+    <div class="sayen" data-at="3">"My mangoes are all down."</div>
+  </div>
+  <div class="subtitle" data-at="4">No form. No search box.</div>
+  <h1 class="title" data-at="4.5">He just <span class="hl">says it</span>.</h1>
+  <p class="note" data-at="5.5">In Taiwanese. In one sentence. That is the entire input.</p>
+`},
+/* 04 */ {start:20, end:26, html:`
+  <div class="bubble keep" data-at="0" style="transform:scale(.62) translateZ(-300px);opacity:.5;margin-bottom:6px;padding:14px 22px">
+    <div class="say" style="font-size:22px">阮的檨仔攏落了了</div>
+  </div>
+  <div class="facts">
+    <div class="fchip" data-at="0.6">crop: 芒果 / mango</div>
+    <div class="fchip" data-at="1.2">event: 颱風災損 / typhoon</div>
+    <div class="fchip blank keep" data-at="1.8">township: —</div>
+    <div class="fchip blank keep" data-at="2.4">land: —</div>
+  </div>
+  <div class="subtitle" data-at="3.5">Understood, not interrogated</div>
+  <h1 class="title wide" data-at="4">One sentence. <span class="hl">Two facts</span>. Two blanks.</h1>
+  <p class="note" data-at="5">The model only extracts and rewrites. It never decides which programs to recommend — a rule engine does.</p>
+`},
+/* 05 */ {start:26, end:32, html:`
+  <div class="qwrap">
+    <div class="fchip blank keep" data-at="0" style="animation:none;border-color:var(--teal);color:var(--navy)">township: —</div>
+    <div class="thread keep" data-at="0"></div>
+    <div class="qcard keep" data-at="0.8">
+      <div class="qtext">你的田在哪個鄉鎮？<span class="en">Which township is your land in?</span></div>
+      <div class="qopts">
+        <div class="qopt" data-at="1.6">南化區</div>
+        <div class="qopt pick" data-at="2.6">玉井區</div>
+        <div class="qopt" data-at="1.6">其他</div>
+      </div>
+      <div class="dots" data-at="3.4"><i></i><i></i><i class="empty"></i><i class="empty"></i><span>3–5 questions, one at a time</span></div>
+    </div>
+  </div>
+  <h1 class="title wide" data-at="4.2" style="margin-top:22px">The blanks decide <span class="hl">the next question</span>.</h1>
+  <p class="note" data-at="5">Never a wall of fields. One question, chosen to narrow things fastest.</p>
+`},
+/* 06 */ {start:32, end:39, html:`
+  <div class="subtitle" data-at="0">What comes back</div>
+  <h1 class="title" data-at="0.5" style="margin-bottom:22px">Not a verdict. A <span class="hl">short list</span>.</h1>
+  <div class="shelf">
+    <div class="tier t1 keep" data-at="1.5">
+      <div class="tier-head">
+        <div class="tier-name">建議優先看<em>Recommended to check first</em></div>
+        <div class="pill deadline" data-at="5">剩 9 天 · 9 days left</div>
+      </div>
+      <div class="mini"><span></span><span></span></div>
+    </div>
+    <div class="tier t2 keep" data-at="2.8">
+      <div class="tier-head"><div class="tier-name">可能有關，再回答一題就知道<em>Possibly relevant — one more question</em></div></div>
+      <div class="mini"><span></span><span></span><span></span></div>
+    </div>
+    <div class="tier t3 keep" data-at="4">
+      <div class="tier-head"><div class="tier-name">這次先不用看<em>Skip for now</em></div><div class="expand">6 筆 · 點開看原因</div></div>
+    </div>
+  </div>
+  <div class="disclaim" data-at="6">實際資格由承辦單位認定 · <b>Final eligibility is determined by the responsible agency.</b></div>
+`},
+/* 07 */ {start:39, end:46, html:`
+  <div class="big-card keep" data-at="0">
+    <div class="bc-title">農業天然災害現金救助（芒果）</div>
+    <div class="why" data-at="0.8">推薦原因：你說「芒果」「颱風」「玉井區」<em>Why this: you said mango, typhoon, Yujing.</em></div>
+    <div class="docs">
+      <div data-at="1.6"><span class="tick">✓</span>身分證影本</div>
+      <div data-at="2.1"><span class="tick">✓</span>土地文件或使用同意書</div>
+      <div data-at="2.6"><span class="tick">✓</span>農作物受損照片</div>
+    </div>
+    <div class="bc-foot">
+      <div class="btn-big keep" data-at="3">☎ 打給承辦人 049-XXX-XXX</div>
+      <div class="pill deadline keep" data-at="5">剩 9 天 · 9 days left</div>
+    </div>
+    <div class="office" data-at="4">玉井區公所 農業課 · district office, agriculture desk</div>
+    <div class="basis" data-at="6">依據 · tap to show legal citation</div>
+  </div>
+  <p class="note" data-at="6.3">Which documents. Which desk. Which phone number. How many days left.</p>
+`},
+/* 08 */ {start:46, end:52, html:`
+  <div class="skips">
+    <div class="skip up keep" data-at="1"><b>稻作直接給付</b> — 這筆限定水稻，你種的是芒果 · <i>rice-only</i></div>
+    <div class="skip up keep" data-at="2"><b>農機補助（第一梯次）</b> — 申請期已於 7/30 結束 · <i>closed July 30</i></div>
+    <div class="skip keep" data-at="2.6"><b>青年從農貸款</b> — 年齡條件不符 · <i>age condition</i></div>
+    <div class="skip keep" data-at="2.9"><b>有機驗證獎勵</b> — 未取得驗證 · <i>no certification</i></div>
+  </div>
+  <div class="exit" data-at="3.2">條件常有例外，打電話問最準<span class="en">Exceptions happen. A phone call is still the surest answer.</span></div>
+  <h1 class="title" data-at="4.2" style="margin-top:20px">Even the <span class="hl">no</span> gets a reason.</h1>
+  <div class="disclaim" data-at="5">實際資格由承辦單位認定 · <b>Final eligibility is determined by the responsible agency.</b></div>
+`},
+/* 09 */ {start:52, end:58, html:`
+  <div class="docstage">
+    <div class="envelope keep" data-at="0.6"></div>
+    <div class="paper keep" data-at="1.8">
+      <div class="blurline" style="width:88%"></div>
+      <div class="blurline" style="width:72%"></div>
+      <div class="blurline" style="width:94%"></div>
+      <div class="sharp">文到十五日內</div>
+      <div class="blurline" style="width:80%"></div>
+      <div class="blurline" style="width:90%"></div>
+      <div class="blurline" style="width:64%"></div>
+      <div class="blurline" style="width:86%"></div>
+    </div>
+  </div>
+  <div class="subtitle" data-at="4.4">Four days later</div>
+  <h1 class="title wide" data-at="5">Written for <span class="hl">offices</span>. Not for him.</h1>
+`},
+/* 10 */ {start:58, end:64, html:`
+  <div class="docstage">
+    <div class="paper keep" data-at="0" style="opacity:.9">
+      <div class="blurline" style="width:88%"></div><div class="blurline" style="width:72%"></div>
+      <div class="blurline" style="width:94%"></div><div class="blurline" style="width:80%"></div>
+      <div class="blurline" style="width:90%"></div><div class="blurline" style="width:64%"></div>
+      <div class="scanline keep" data-at="2.4"></div>
+    </div>
+    <div class="phone keep" data-at="0">
+      <div class="screen">
+        <div class="focusbox keep" data-at="1"></div>
+      </div>
+    </div>
+  </div>
+  <h1 class="title" data-at="4.4">One photo. <span class="hl">That's the whole step.</span></h1>
+  <p class="note" data-at="5.2">Plain text in, plain text out. No voice-over, no extra buttons.</p>
+`},
+/* 11 */ {start:64, end:68, html:`
+  <div class="ba">
+    <div class="before keep" data-at="0">
+      <div class="blurline" style="width:90%"></div><div class="blurline" style="width:74%"></div>
+      <div class="blurline" style="width:96%"></div><div class="blurline" style="width:68%"></div>
+      <div class="blurline" style="width:88%"></div>
+    </div>
+    <div class="after keep" data-at="0">
+      <div class="line" data-at="0.6"><b>01</b><div>他們要你補一份文件<span class="en">They want one more document.</span></div></div>
+      <div class="line" data-at="1.2"><b>02</b><div>去區公所農業課拿<span class="en">Get it at the district office.</span></div></div>
+      <div class="ask" data-at="1.8">你哪一天收到這封信？<span class="en">What day did the letter reach you?</span>
+        <span class="answer keep" data-at="2.4">8/22</span>
+        <span class="pill deadline keep" data-at="2.8" style="margin-left:8px">剩 11 天 · 11 days left</span>
+      </div>
+    </div>
+  </div>
+  <p class="note" data-at="3.2">公告型自己倒數，文到型得先問 — notices count down on their own; case letters have to ask.</p>
+`},
+/* 12 */ {start:68, end:74, html:`
+  <div class="spot">
+    <div class="form-ghost keep" data-at="0"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    <div class="stuckbtn keep" data-at="1">我卡住了<em>"I'M STUCK."</em></div>
+  </div>
+  <div class="opts">
+    <div class="opt" data-at="2.6">太麻煩<em>Too complicated</em></div>
+    <div class="opt" data-at="2.9">文件生不出來<em>Can't get the documents</em></div>
+    <div class="opt" data-at="3.2">看不懂<em>Don't understand</em></div>
+  </div>
+  <div class="subtitle" data-at="4.2" style="margin-top:24px">When it stops working</div>
+  <h1 class="title wide" data-at="4.8">A button that says <span class="hl">"I give up"</span> — out loud.</h1>
+`},
+/* 13 */ {start:74, end:80, html:`
+  <div class="branch">
+    <div class="bl keep" data-at="0.8">
+      <div class="blabel">→ to him</div>
+      <div class="card">先看看這幾筆，可能比較好辦<span class="en">Here are others that may be easier.</span></div>
+      <div class="card">災後復耕種苗補助 · 文件只要兩樣</div>
+    </div>
+    <div class="br keep" data-at="2">
+      <div class="blabel">→ to the map</div>
+      <div class="map">
+        <i style="left:18%;top:24%"></i><i style="left:44%;top:38%;animation-delay:.5s"></i>
+        <i style="left:62%;top:18%;animation-delay:1s"></i><i style="left:30%;top:62%;animation-delay:1.4s"></i>
+        <i style="left:72%;top:58%;animation-delay:.8s"></i><i style="left:52%;top:74%;animation-delay:1.8s"></i>
+      </div>
+      <div class="blabel" data-at="3" style="margin-top:14px;color:var(--navy)">卡點統計 · where people quit</div>
+      <div class="bars" data-at="3.8">
+        <div><span style="width:64%"></span>太麻煩 41%</div>
+        <div><span style="width:48%"></span>文件生不出來 33%</div>
+        <div><span style="width:34%"></span>看不懂 26%</div>
+      </div>
+    </div>
+  </div>
+  <p class="note" data-at="4.6">Every abandonment used to be silence. Now it is anonymous data, pointed at the exact step that failed.</p>
+  <div class="disclaim" data-at="5.2">實際資格由承辦單位認定 · <b>Final eligibility is determined by the responsible agency.</b></div>
+`},
+/* 14 */ {start:80, end:85, html:`
+  <div class="orbit keep" data-at="0">
+    <i style="--r:220px;animation-delay:0s"></i><i style="--r:270px;animation-delay:-3s"></i>
+    <i style="--r:190px;animation-delay:-6s"></i><i style="--r:310px;animation-delay:-9s"></i>
+    <i style="--r:240px;animation-delay:-12s"></i><i style="--r:290px;animation-delay:-15s"></i>
+    <i style="--r:200px;animation-delay:-18s"></i><i style="--r:330px;animation-delay:-21s"></i>
+  </div>
+  <div class="extruded" data-at="1.8">農民補給站</div>
+  <div class="slogan" data-at="2.8">甲你鬥相共</div>
+  <div class="sub-en" data-at="3.4">Farmer Aid Station — plain answers, on the farmer's side.</div>
+  <div class="disclaim" data-at="4.2">實際資格由承辦單位認定 · <b>Final eligibility is determined by the responsible agency.</b></div>
+`}
+];
+
+const subs = [
+  {s:0.5,e:3.5,t:"The typhoon passed at three in the morning."},
+  {s:3.5,e:7,t:"By sunrise, the relief programs were already open."},
+  {s:7,e:10.5,t:"Forty-one programs. Eight agencies. Zero of them will call him."},
+  {s:10.5,e:14,t:"And one of them closes in nine days."},
+  {s:14,e:17,t:"He doesn't search. He doesn't filter."},
+  {s:17,e:20,t:"He says one sentence, in the language he actually speaks."},
+  {s:20,e:23,t:"The sentence becomes structured facts."},
+  {s:23,e:26,t:"Two of them come back blank. That is not a failure."},
+  {s:26,e:29,t:"Whatever is missing becomes the next question."},
+  {s:29,e:32,t:"One at a time. Three to five, and it is done."},
+  {s:32,e:35.5,t:"Not “you qualify.” Not “you don't.”"},
+  {s:35.5,e:39,t:"Three shelves: look at these first, these might apply, skip these."},
+  {s:39,e:42.5,t:"Every card says why it is there."},
+  {s:42.5,e:46,t:"Which documents. Which desk. Which phone number. How many days left."},
+  {s:46,e:49,t:"The ones it sets aside still tell him why."},
+  {s:49,e:52,t:"And it never closes the door — a phone call is still the surest answer."},
+  {s:52,e:55,t:"Four days later, a letter arrives."},
+  {s:55,e:58,t:"One line in it is sharp. The rest may as well be a wall."},
+  {s:58,e:61,t:"He photographs it. That is the entire interaction."},
+  {s:61,e:64,t:"Text goes in. Plain words come back."},
+  {s:64,e:66,t:"“Within fifteen days of receipt” — of which receipt?"},
+  {s:66,e:68,t:"So it asks him first, then starts counting."},
+  {s:68,e:71,t:"Somewhere in the paperwork, he stalls."},
+  {s:71,e:74,t:"One tap. Three honest options."},
+  {s:74,e:77,t:"To him: other programs, easier ones."},
+  {s:77,e:80,t:"To the map: the first record of where people actually quit."},
+  {s:80,e:83,t:"Day 14. The money is in."},
+  {s:83,e:85,t:"Farmer Aid Station — plain answers, on the farmer's side."}
+];
+
+/* ---------- build ---------- */
+const stage = document.getElementById('stage');
+const els = scenes.map(sc=>{
+  const d = document.createElement('section');
+  d.className = 'scene';
+  d.innerHTML = sc.html;
+  stage.appendChild(d);
+  return d;
+});
+
+const amb = document.getElementById('ambient');
+for(let i=0;i<18;i++){
+  const p = document.createElement('div');
+  p.className='pt';
+  const sz = 3+Math.random()*7;
+  p.style.width=sz+'px'; p.style.height=sz+'px';
+  p.style.left=(Math.random()*100)+'%';
+  p.style.top=(Math.random()*100)+'%';
+  p.style.setProperty('--dx',(Math.random()*160-80)+'px');
+  p.style.setProperty('--dy',(-60-Math.random()*180)+'px');
+  p.style.animationDuration=(16+Math.random()*22)+'s';
+  p.style.animationDelay=(-Math.random()*30)+'s';
+  amb.appendChild(p);
+}
+
+const prog=document.getElementById('prog'), fill=document.getElementById('fill');
+scenes.forEach((sc,i)=>{
+  if(i===0) return;
+  const dot=document.createElement('div');
+  dot.className='dot';
+  dot.style.left=(sc.start/TOTAL*100)+'%';
+  dot.dataset.i=i;
+  prog.appendChild(dot);
+});
+const dots=[...prog.querySelectorAll('.dot')];
+
+/* ---------- state ---------- */
+let t=0, playing=true, last=performance.now(), cur=-1, capText='';
+const cap=document.getElementById('cap'), timeEl=document.getElementById('time');
+const flash=document.getElementById('sceneFlash');
+const dayEl=document.getElementById('day'), dayN=dayEl.querySelector('.n'), paidEl=document.getElementById('paid');
+let lastDay='';
+
+const fmt=s=>{s=Math.max(0,Math.floor(s));return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')};
+
+function sceneAt(time){
+  for(let i=scenes.length-1;i>=0;i--) if(time>=scenes[i].start) return i;
+  return 0;
+}
+
+function setScene(i){
+  if(i===cur) return;
+  if(cur>=0){ els[cur].classList.remove('active'); els[cur].classList.add('zoom-out');
+    const old=cur; setTimeout(()=>els[old].classList.remove('zoom-out'),900); }
+  cur=i;
+  els[i].querySelectorAll('[data-at]').forEach(e=>e.classList.remove('lit'));
+  els[i].classList.remove('zoom-out');
+  els[i].classList.add('active');
+  flash.classList.remove('fire'); void flash.offsetWidth; flash.classList.add('fire');
+  dots.forEach(d=>{ const di=+d.dataset.i;
+    d.classList.toggle('past', di<=i);
+    d.classList.toggle('next', di===i+1); });
+}
+
+function dayFor(time){
+  if(time<6) return '';
+  if(time<52) return 'DAY 1';
+  if(time<68) return 'DAY 5';
+  if(time<80.8) return 'DAY 9';
+  return 'DAY 14';
+}
+
+function tick(now){
+  const dt=(now-last)/1000; last=now;
+  if(playing){ t+=dt; if(t>=TOTAL){ t=TOTAL; playing=false; document.getElementById('play').classList.remove('on'); } }
+
+  const i=sceneAt(t);
+  setScene(i);
+
+  const rel=t-scenes[i].start;
+  els[i].querySelectorAll('[data-at]').forEach(e=>{
+    if(rel >= parseFloat(e.dataset.at)) e.classList.add('lit');
+    else e.classList.remove('lit');
+  });
+
+  const s=subs.find(x=>t>=x.s&&t<x.e);
+  const txt=s?s.t:'';
+  if(txt!==capText){ capText=txt; cap.textContent=txt;
+    cap.classList.remove('cap-in'); void cap.offsetWidth; cap.classList.add('cap-in'); }
+
+  const d=dayFor(t);
+  if(d!==lastDay){
+    lastDay=d;
+    dayEl.classList.toggle('on', !!d);
+    if(d){ dayN.textContent=d; dayEl.classList.remove('flip'); void dayEl.offsetWidth; dayEl.classList.add('flip'); }
+    paidEl.style.display = (d==='DAY 14') ? 'inline' : 'none';
+  }
+
+  fill.style.width=(t/TOTAL*100)+'%';
+  timeEl.textContent=fmt(t)+' / '+fmt(TOTAL);
+  requestAnimationFrame(tick);
+}
+requestAnimationFrame(tick);
+
+/* ---------- controls ---------- */
+const playBtn=document.getElementById('play');
+function toggle(){ if(t>=TOTAL) t=0; playing=!playing; playBtn.classList.toggle('on',playing); playBtn.textContent=playing?'❚❚':'▶'; }
+playBtn.onclick=toggle;
+playBtn.textContent='❚❚';
+document.getElementById('prev').onclick=()=>{ const i=sceneAt(t); t = (t-scenes[i].start<1.2 && i>0) ? scenes[i-1].start : scenes[i].start; cur=-1; setScene(sceneAt(t)); };
+document.getElementById('next').onclick=()=>{ const i=sceneAt(t); if(i<scenes.length-1) t=scenes[i+1].start; else t=TOTAL; };
+prog.onclick=e=>{ const r=prog.getBoundingClientRect(); t=Math.min(TOTAL,Math.max(0,(e.clientX-r.left)/r.width*TOTAL)); cur=-1; setScene(sceneAt(t)); };
+addEventListener('keydown',e=>{
+  if(e.code==='Space'){e.preventDefault();toggle();}
+  if(e.code==='ArrowLeft'){e.preventDefault();document.getElementById('prev').click();}
+  if(e.code==='ArrowRight'){e.preventDefault();document.getElementById('next').click();}
+});
+let sx=null;
+addEventListener('touchstart',e=>sx=e.touches[0].clientX,{passive:true});
+addEventListener('touchend',e=>{
+  if(sx===null) return;
+  const dx=e.changedTouches[0].clientX-sx; sx=null;
+  if(Math.abs(dx)<56) return;
+  document.getElementById(dx<0?'next':'prev').click();
+},{passive:true});
+</script>
+</body>
+</html>

@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>卡點儀表板｜農民補給站</title>
+<style>
+:root{
+  --green-bright:#02DF82; --green-mid:#01B96B; --green-pale:#9FF5CF;
+  --green-bg:#F0FDF6; --green-tint:#D9FBEC;
+  --ink:#06301F; --ink-soft:#0A4A32; --orange:#D85A30;
+  --line:#CBEEDC;
+}
+@font-face{font-family:'GenSen';src:url('fonts/GenSenRounded2TW-R.woff2') format('woff2');font-weight:400;font-display:swap;}
+@font-face{font-family:'GenSen';src:url('fonts/GenSenRounded2TW-M.woff2') format('woff2');font-weight:500;font-display:swap;}
+@font-face{font-family:'GenSen';src:url('fonts/GenSenRounded2TW-H.woff2') format('woff2');font-weight:700;font-display:swap;}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--green-bg);color:var(--ink);
+  font-family:'GenSen','Yuanti TC','Microsoft JhengHei',sans-serif;}
+.wrap{max-width:1080px;margin:0 auto;padding:20px 20px 60px;}
+/* 導覽列：與 index／browse／chat 同一套（同站分頁，不是外掛頁面） */
+.nav-outer{max-width:1080px;margin:0 auto;padding:14px 20px 0;}
+.nav-pill{display:flex;align-items:center;gap:18px;background:#fff;border:1px solid var(--line);
+  border-radius:999px;padding:10px 18px;flex-wrap:wrap;}
+.nav-logo{display:flex;align-items:center;gap:8px;text-decoration:none;color:var(--ink);font-weight:700;}
+.nav-links{display:flex;gap:18px;flex-wrap:wrap;font-size:1.0625rem;font-weight:500;}
+.nav-links a{text-decoration:none;color:var(--ink);white-space:nowrap;}
+.nav-links a:hover,.nav-links a.current{color:var(--green-mid);}
+.nav-spacer{flex:1;}
+header h1{font-size:26px;font-weight:700;margin:0 0 6px;}
+header p{margin:0;color:var(--ink-soft);font-size:14px;line-height:1.7;}
+.toolbar{display:flex;gap:8px;align-items:center;margin:18px 0 4px;flex-wrap:wrap;}
+.toolbar button{font-family:inherit;font-size:14px;font-weight:500;padding:7px 14px;
+  border:1.5px solid var(--line);border-radius:999px;background:#fff;color:var(--ink-soft);cursor:pointer;}
+.toolbar button[aria-pressed="true"]{background:var(--green-bright);border-color:var(--green-bright);color:var(--ink);font-weight:700;}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:16px 0 8px;}
+.kpi{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 16px;}
+.kpi b{display:block;font-size:28px;font-weight:700;line-height:1.2;}
+.kpi span{font-size:13px;color:var(--ink-soft);}
+section{background:#fff;border:1px solid var(--line);border-radius:18px;padding:20px 22px;margin-top:18px;}
+section h2{font-size:17px;font-weight:700;margin:0 0 2px;}
+section .hint{font-size:13px;color:var(--ink-soft);margin:0 0 16px;line-height:1.6;}
+/* 圖一：橫向長條 */
+.bar-row{display:grid;grid-template-columns:120px 1fr 52px;gap:10px;align-items:center;margin-bottom:9px;}
+.bar-row .name{font-size:14px;text-align:right;font-weight:500;}
+.bar-track{background:var(--green-tint);border-radius:8px;height:26px;overflow:hidden;display:flex;}
+.bar-track i{display:block;height:100%;transition:width .5s ease;}
+.bar-row .num{font-size:14px;font-weight:700;}
+.legend{display:flex;flex-wrap:wrap;gap:12px;margin-top:12px;font-size:13px;}
+.legend span{display:flex;align-items:center;gap:5px;}
+.legend .dot{border-radius:50%;}
+/* 圖二：甜甜圈＋明細表 */
+.donut-wrap{display:flex;align-items:center;gap:28px;flex-wrap:wrap;}
+.donut{width:220px;height:220px;flex:none;}
+.cat-table{border-collapse:collapse;font-size:14px;flex:1;min-width:280px;}
+.cat-table td{padding:9px 10px;border-bottom:1px solid var(--green-tint);white-space:nowrap;}
+.cat-table td:first-child{display:flex;align-items:center;gap:7px;font-weight:500;}
+.cat-table .dot{width:11px;height:11px;border-radius:50%;display:block;flex:none;}
+.cat-table .n{font-weight:700;text-align:right;}
+.cat-table .pct{color:var(--ink-soft);text-align:right;}
+.cat-table .note{font-size:12.5px;color:var(--ink-soft);width:100%;white-space:normal;}
+.cat-table .note b{color:var(--ink);}
+@media (max-width:560px){
+  .donut-wrap{gap:16px;justify-content:center;}
+  .cat-table{min-width:0;}
+  .cat-table td{padding:7px 6px;}
+  section{padding:16px 14px;}
+}
+/* 熱力圖色階說明 */
+.heat-key{display:flex;align-items:center;gap:4px;margin-top:14px;font-size:12.5px;color:var(--ink-soft);}
+.heat-key i{width:26px;height:13px;border-radius:3px;display:block;}
+.legend i{width:12px;height:12px;border-radius:3px;display:block;}
+/* 圖三：熱力圖 */
+table.heat{border-collapse:separate;border-spacing:3px;font-size:13px;}
+table.heat th{font-weight:500;color:var(--ink-soft);padding:4px 6px;}
+table.heat th.col{font-size:12px;line-height:1.25;vertical-align:bottom;width:62px;}
+table.heat th.row{text-align:right;white-space:nowrap;}
+table.heat td{text-align:center;padding:10px 4px;border-radius:7px;font-weight:700;}
+.empty{color:var(--ink-soft);font-size:14px;padding:20px 0;text-align:center;}
+footer{margin-top:26px;font-size:12px;color:var(--ink-soft);line-height:1.8;}
+a.back{color:var(--ink-soft);font-size:14px;text-decoration:none;}
+</style>
+</head>
+<body>
+<div class="nav-outer">
+  <nav class="nav-pill">
+    <a href="index.html" class="nav-logo" aria-label="農民補給站首頁">
+      <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><path d="M4 2 v18" stroke="#06301F" stroke-width="2.5" stroke-linecap="round"/><path d="M4 3 L18 7 L4 11 Z" fill="#02DF82"/></svg>
+      農民補給站
+    </a>
+    <div class="nav-links">
+      <a href="browse.html">找補助</a>
+      <a href="chat.html?tab=doc">看懂公文</a>
+      <a href="index.html#guides">白話指南</a>
+      <a href="dashboard.html" class="current">卡點儀表板</a>
+      <a href="index.html#about">關於</a>
+    </div>
+    <div class="nav-spacer"></div>
+  </nav>
+</div>
+
+<div class="wrap">
+<header>
+  <h1>卡點儀表板</h1>
+  <p>資料來源：農民按下「我卡住了」的三選項回報，以及上傳公文經白話化後抽出的駁回／補正理由。<br>
+     所有資料在寫入當下即去識別化——庫裡有卡點，沒有人。</p>
+</header>
+
+<div class="toolbar">
+  <span style="font-size:14px;color:var(--ink-soft);">期間</span>
+  <button data-weeks="4">近 4 週</button>
+  <button data-weeks="8" aria-pressed="true">近 8 週</button>
+  <button data-weeks="26">近半年</button>
+</div>
+
+<div class="cards" id="kpi"></div>
+
+<section>
+  <h2>① 卡點原因排行</h2>
+  <p class="hint">哪一種理由最常擋住民眾。綠色是公文寫的理由，黃色是農民自己講的，同一條左右接續。條越長＝越該優先處理。</p>
+  <div id="chart-bar"></div>
+</section>
+
+<section>
+  <h2>② 哪一類補助最卡人</h2>
+  <p class="hint">卡點在四類補助之間怎麼分。占比最大的那一塊，是流程最該先簡化的；右表同時標出該類最常見的卡點。</p>
+  <div id="chart-cat"></div>
+</section>
+
+<section>
+  <h2>③ 中央 vs 縣市</h2>
+  <p class="hint">同一個卡點原因，發生在中央公文還是地方公所。兩點距離＝差距大小：偏地方＝執行面問題（承辦訓練、表單），偏中央＝政策面問題（資格設計、公告寫法）。</p>
+  <div id="chart-level"></div>
+</section>
+
+<section>
+  <h2>④ 補助類別 × 卡點原因</h2>
+  <p class="hint">哪一類補助卡在哪一步。顏色越深＝該格次數越多，直接指出該簡化哪份文件、該改寫哪張公告。</p>
+  <div id="chart-heat"></div>
+</section>
+
+<footer>
+  本儀表板為輔助決策用途，數字反映的是「有回報的卡點」，非全體申請案件母體。<br>
+  實際資格與案件狀態由承辦單位認定。
+</footer>
+</div>
+
+<script>
+// 前 4 色刻意拉開色相（預設顯示前 4 名），後面才回到綠色系
+const PALETTE = ['#01B96B','#D85A30','#2E86C1','#F2B705','#0A4A32','#B47CD8','#5C8A72','#02DF82'];
+const $ = id => document.getElementById(id);
+let weeks = 8;
+
+function colorOf(i){ return PALETTE[i % PALETTE.length]; }
+
+function renderKpi(s){
+  const top = s.ranking[0];
+  const topCat = s.by_category[0];
+  const t = s.by_level.totals, known = t['中央'] + t['縣市'];
+  const localPct = known ? Math.round(t['縣市'] / known * 100) + '%' : '—';
+  $('kpi').innerHTML = `
+    <div class="kpi"><b>${s.total}</b><span>期間內回報卡點</span></div>
+    <div class="kpi"><b style="font-size:20px">${top ? top.reason : '—'}</b><span>最常見卡點${top ? '（' + top.count + ' 筆）' : ''}</span></div>
+    <div class="kpi"><b style="font-size:20px">${topCat ? topCat.category : '—'}</b><span>最卡人的補助類別${topCat ? '（' + topCat.count + ' 筆）' : ''}</span></div>
+    <div class="kpi"><b>${localPct}</b><span>卡點發生在地方公所</span></div>`;
+}
+
+const C_DOC = '#01B96B', C_STUCK = '#F2B705';   // 來源固定兩色，跨列可比
+const C_CENTRAL = '#0A4A32', C_LOCAL = '#F2B705';
+
+// 熱力圖：五階跨色相（淺黃→橙→紅），比單一綠色透明度好分辨得多
+const HEAT = [
+  ['#FFF6D6', '#06301F'], ['#FFE08A', '#06301F'], ['#FFB74D', '#06301F'],
+  ['#F97B3D', '#fff'], ['#D8341F', '#fff'],
+];
+function heatColor(ratio){
+  return HEAT[Math.min(HEAT.length - 1, Math.floor(ratio * HEAT.length - 1e-9))];
+}
+
+function renderBar(s){
+  const box = $('chart-bar');
+  if (!s.ranking.length) { box.innerHTML = '<p class="empty">期間內沒有卡點回報。</p>'; return; }
+  const max = s.ranking[0].count;
+  const bars = s.ranking.map(r => {
+    const doc = r.by_source['公文'] || 0, stuck = r.count - doc;
+    const w = c => (c / max * 100).toFixed(1) + '%';
+    return `<div class="bar-row" title="公文 ${doc} 筆／我卡住了 ${stuck} 筆">
+      <div class="name">${r.reason}</div>
+      <div class="bar-track" style="width:100%">
+        <i style="width:${w(doc)};background:${C_DOC}"></i>
+        <i style="width:${w(stuck)};background:${C_STUCK}"></i>
+      </div>
+      <div class="num">${r.count}</div></div>`;
+  }).join('');
+  box.innerHTML = bars + `<div class="legend" style="margin-top:14px">
+    <span><i style="background:${C_DOC}"></i>公文寫的理由</span>
+    <span><i style="background:${C_STUCK}"></i>農民自述（我卡住了）</span></div>`;
+}
+
+// ② 補助類別：類別數少且是「占整體多少」→ 甜甜圈比長條更快看出比重
+function renderCategory(s){
+  const box = $('chart-cat');
+  const rows = s.by_category;
+  if (!rows.length) { box.innerHTML = '<p class="empty">尚無標記補助類別的卡點。</p>'; return; }
+  const total = rows.reduce((n, r) => n + r.count, 0);
+  const R = 92, RI = 56, C = 110;
+  const pt = (r, a) => [C + r * Math.cos(a), C + r * Math.sin(a)];
+  let start = -Math.PI / 2;
+  const arcs = rows.map((r, i) => {
+    const ang = r.count / total * Math.PI * 2;
+    const end = start + ang;
+    const big = ang > Math.PI ? 1 : 0;
+    const [x0, y0] = pt(R, start), [x1, y1] = pt(R, end);
+    const [x2, y2] = pt(RI, end), [x3, y3] = pt(RI, start);
+    const d = `M${x0} ${y0}A${R} ${R} 0 ${big} 1 ${x1} ${y1}L${x2} ${y2}A${RI} ${RI} 0 ${big} 0 ${x3} ${y3}Z`;
+    start = end;
+    return `<path d="${d}" fill="${colorOf(i)}" stroke="#fff" stroke-width="2"><title>${r.category} ${r.count} 筆</title></path>`;
+  }).join('');
+  const rowsHtml = rows.map((r, i) => `
+    <tr>
+      <td><i class="dot" style="background:${colorOf(i)}"></i>${r.category}</td>
+      <td class="n">${r.count}</td>
+      <td class="pct">${Math.round(r.count / total * 100)}%</td>
+      <td class="note">最常卡在 <b>${r.top_reason}</b>（${r.top_count} 筆）</td>
+    </tr>`).join('');
+  box.innerHTML = `<div class="donut-wrap">
+      <svg viewBox="0 0 220 220" class="donut">${arcs}
+        <text x="${C}" y="${C - 4}" text-anchor="middle" font-size="30" font-weight="700" fill="#06301F">${total}</text>
+        <text x="${C}" y="${C + 18}" text-anchor="middle" font-size="13" fill="#0A4A32">筆卡點</text>
+      </svg>
+      <table class="cat-table">${rowsHtml}</table>
+    </div>`;
+}
+
+// ③ 中央 vs 縣市：重點是「兩者差多少、偏哪邊」→ 啞鈴圖直接把差距畫成一段線
+function renderLevel(s){
+  const box = $('chart-level'), d = s.by_level;
+  if (!d.rows.length) {
+    box.innerHTML = '<p class="empty">尚無可判斷機關層級的卡點。公文回報時帶上發文機關即可統計。</p>';
+    return;
+  }
+  const rows = [...d.rows].sort((a, b) => (b['縣市'] - b['中央']) - (a['縣市'] - a['中央']));
+  const max = Math.max(1, ...rows.map(r => Math.max(r['中央'], r['縣市'])));
+  const W = 900, RH = 38, L = 140, Rp = 105, H = rows.length * RH + 34;
+  const x = v => L + v / max * (W - L - Rp);
+  const grid = [0, .25, .5, .75, 1].map(f => {
+    const v = Math.round(max * f);
+    return `<line x1="${x(v)}" y1="6" x2="${x(v)}" y2="${rows.length * RH}" stroke="#E4F6EC"/>
+            <text x="${x(v)}" y="${H - 8}" text-anchor="middle" font-size="11" fill="#0A4A32">${v}</text>`;
+  }).join('');
+  const body = rows.map((r, i) => {
+    const y = i * RH + RH / 2;
+    const a = r['中央'], b = r['縣市'];
+    const [lo, hi] = a <= b ? [a, b] : [b, a];
+    const lean = b > a ? '地方' : (a > b ? '中央' : '');
+    return `<text x="${L - 12}" y="${y + 4}" text-anchor="end" font-size="13.5" font-weight="500" fill="#06301F">${r.reason}</text>
+      <line x1="${x(lo)}" y1="${y}" x2="${x(hi)}" y2="${y}" stroke="#BFDCCC" stroke-width="3" stroke-linecap="round"/>
+      <circle cx="${x(a)}" cy="${y}" r="7" fill="${C_CENTRAL}"><title>中央 ${a} 筆</title></circle>
+      <circle cx="${x(b)}" cy="${y}" r="7" fill="${C_LOCAL}"><title>縣市 ${b} 筆</title></circle>
+      <text x="${x(hi) + 14}" y="${y + 4}" font-size="12" font-weight="700" fill="#0A4A32">${lean ? lean + ' +' + (hi - lo) : '持平'}</text>`;
+  }).join('');
+  box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto">${grid}${body}</svg>
+    <div class="legend" style="margin-top:6px">
+      <span><i class="dot" style="background:${C_CENTRAL}"></i>中央（合計 ${d.totals['中央']}）</span>
+      <span><i class="dot" style="background:${C_LOCAL}"></i>縣市（合計 ${d.totals['縣市']}）</span>
+      <span style="color:var(--ink-soft)">線段長度＝兩者差距，依偏向地方的程度排序</span>
+    </div>` + (d.unknown ? `<p class="hint" style="margin:8px 0 0">另有 ${d.unknown} 筆無法判斷層級，未列入本圖。</p>` : '');
+}
+
+function renderHeat(s){
+  const box = $('chart-heat');
+  const m = s.matrix;
+  if (!m.categories.length) {
+    box.innerHTML = '<p class="empty">尚無「補助類別」標記的卡點。公文回報時帶上 category 欄位即可統計。</p>';
+    return;
+  }
+  const max = Math.max(1, ...m.cells.flat());
+  const cell = v => {
+    if (!v) return `<td style="background:#F4F8F6;color:#C2D3CA">·</td>`;
+    const [bg, fg] = heatColor(v / max);
+    return `<td style="background:${bg};color:${fg}">${v}</td>`;
+  };
+  box.innerHTML = `<table class="heat"><tr><th></th>${
+    m.reasons.map(r => `<th class="col">${r}</th>`).join('')}</tr>${
+    m.categories.map((c, i) => `<tr><th class="row">${c}</th>${
+      m.cells[i].map(cell).join('')}</tr>`).join('')}</table>
+    <div class="heat-key">
+      <span>少</span>
+      ${HEAT.map(([bg]) => `<i style="background:${bg}"></i>`).join('')}
+      <span>多（最高 ${max} 筆）</span>
+    </div>`;
+}
+
+async function load(){
+  const s = await (await fetch(`/blockers/stats?weeks=${weeks}`)).json();
+  renderKpi(s); renderBar(s); renderCategory(s); renderLevel(s); renderHeat(s);
+}
+
+document.querySelectorAll('.toolbar button').forEach(b => b.onclick = () => {
+  document.querySelectorAll('.toolbar button').forEach(x => x.removeAttribute('aria-pressed'));
+  b.setAttribute('aria-pressed', 'true');
+  weeks = +b.dataset.weeks;
+  load();
+});
+load();
+</script>
+</body>
+</html>

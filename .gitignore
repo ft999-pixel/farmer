@@ -1,0 +1,31 @@
+# 金鑰與環境設定——絕對不進版本庫
+.env
+
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+venv/
+.venv/
+
+# 卡點統計（執行期資料，各環境自己累積；示範資料也不該進版本庫）
+data/blockers.jsonl
+
+# 會員資料庫（裡面是真人資料，絕對不進版本庫）
+data/members.db
+
+# 後台執行期產物：舊檔備份與稽核紀錄（各環境自己的，不進版本庫）
+data/backups/
+data/admin_audit.jsonl
+
+# 設計稿與素材壓縮檔（幾十 MB，部署用不到，別讓它拖慢每次上傳）
+*.zip
+
+# 編輯器的技能設定，不是專案程式碼
+.claude/skills/
+
+# 公文影像（影像不落地原則：本來就不該存在，但保險起見擋掉）
+*.jpg
+*.jpeg
+*.png
+!提案圖表/*.png

@@ -1,0 +1,19 @@
+{
+  "id": "moa-occupational-injury",
+  "name": "農民職業災害保險給付",
+  "category": "農民福利",
+  "authority": {"level": "中央", "agency": "農業部（勞保局核付）", "office": "基層農會受理", "tel": "02-0000000"},
+  "eligibility": {
+    "all": [
+      {"field": "insured_farmer", "op": "=", "value": true, "legal_ref": "農民職業災害保險試辦辦法§3"},
+      {"field": "event", "op": "=", "value": "職業傷害", "legal_ref": "農民職業災害保險試辦辦法§8"}
+    ]
+  },
+  "documents": [
+    {"name": "診斷證明書", "where": "就醫院所"},
+    {"name": "給付申請書", "where": "基層農會"}
+  ],
+  "window": {"type": "常態", "note": "受傷後儘速向農會申請"},
+  "amount": {"unit": "依給付類別", "note": "傷病／就醫津貼等"},
+  "source": {"status": "sample", "note": "示範資料，給付項目以勞保局公告為準。", "last_verified": "2026-08-10"}
+}

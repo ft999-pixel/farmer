@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>補助總覽｜農民補給站</title>
+<meta name="description" content="自己找補助：依產業別、分類、地區篩選，快截止的排在前面。">
+<style>
+:root {
+  --green-bright: #02DF82;
+  --green-mid:    #01B96B;
+  --green-pale:   #9FF5CF;
+  --green-bg:     #F0FDF6;
+  --green-tint:   #D9FBEC;
+  --ink:          #06301F;
+  --ink-soft:     #0A4A32;
+  --orange:       #D85A30;
+  --warn-bg:      #FEF3D8;
+  --grad-main: linear-gradient(90deg, #02DF82, #00C9A7);
+}
+@font-face { font-family: 'GenSen'; src: url('fonts/GenSenRounded2TW-R.woff2') format('woff2'); font-weight: 400; font-display: swap; }
+@font-face { font-family: 'GenSen'; src: url('fonts/GenSenRounded2TW-M.woff2') format('woff2'); font-weight: 500; font-display: swap; }
+@font-face { font-family: 'GenSen'; src: url('fonts/GenSenRounded2TW-H.woff2') format('woff2'); font-weight: 700; font-display: swap; }
+@font-face { font-family: 'GenSen'; src: url('fonts/GenSenRounded2TW-H.woff2') format('woff2'); font-weight: 900; font-display: swap; }
+
+html { font-size: 16px; }
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: 'GenSen', 'Yuanti TC', 'Microsoft JhengHei', sans-serif;
+  color: var(--ink);
+  background: linear-gradient(180deg, #D9FBEC 0%, #F2FEF8 30%, #FFFFFF 100%);
+}
+a { color: var(--green-mid); }
+a:hover { color: var(--ink); }
+select { font-family: inherit; }
+.page { min-height: 100vh; }
+
+.demo-banner {
+  background: var(--warn-bg); color: var(--ink); text-align: center;
+  padding: 10px 16px; font-size: 1rem; font-weight: 500;
+}
+
+/* ===== 飄浮膠囊導覽列 ===== */
+.nav-wrap { position: sticky; top: 12px; z-index: 50; display: flex; justify-content: center; padding: 12px 16px 0; }
+.nav-pill {
+  display: flex; align-items: center; gap: 20px; flex-wrap: wrap;
+  background: rgba(255,255,255,0.92); backdrop-filter: blur(8px);
+  border-radius: 999px; padding: 10px 14px 10px 22px;
+  box-shadow: 0 8px 30px rgba(6,48,31,0.12); max-width: 960px; width: 100%;
+}
+.nav-logo {
+  display: flex; align-items: center; gap: 8px; text-decoration: none;
+  color: var(--ink); font-weight: 900; font-size: 1.25rem; white-space: nowrap;
+}
+.nav-links { display: flex; gap: 18px; flex-wrap: wrap; font-size: 1.0625rem; font-weight: 500; }
+.nav-links a { text-decoration: none; color: var(--ink); white-space: nowrap; }
+.nav-links a:hover { color: var(--green-mid); }
+.nav-links a.current { color: var(--green-mid); }
+.nav-spacer { flex: 1; }
+.fs-switch { display: flex; align-items: center; gap: 4px; background: var(--green-bg); border-radius: 999px; padding: 4px; }
+.fs-switch button {
+  border: none; cursor: pointer; border-radius: 999px; padding: 6px 12px;
+  font-family: inherit; font-weight: 500; background: transparent; color: var(--ink); min-height: 36px;
+}
+.fs-switch button[data-fs="小"] { font-size: 0.875rem; }
+.fs-switch button[data-fs="中"] { font-size: 1rem; }
+.fs-switch button[data-fs="大"] { font-size: 1.125rem; }
+.fs-switch button.active { background: var(--green-bright); }
+.nav-cta {
+  display: inline-flex; align-items: center; min-height: 44px; padding: 6px 22px;
+  background: var(--green-bright); color: var(--ink); font-weight: 500;
+  font-size: 1.0625rem; border-radius: 999px; text-decoration: none; white-space: nowrap;
+}
+.nav-cta:hover { background: var(--green-mid); color: var(--ink); }
+
+/* ===== 主內容 ===== */
+main { max-width: 880px; margin: 0 auto; padding: 48px 20px 80px; }
+h1 { font-weight: 900; font-size: clamp(2rem, 5vw, 3rem); margin: 0 0 8px; }
+.grad-text { background: var(--grad-main); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.page-sub { font-size: 1.25rem; font-weight: 500; color: var(--ink-soft); margin: 0 0 32px; }
+
+/* ===== 篩選 ===== */
+.filters { display: flex; flex-direction: column; gap: 16px; margin: 0 0 28px; }
+.filter-label { font-size: 1rem; font-weight: 500; color: var(--ink-soft); margin: 0 0 6px; }
+.pill-row { display: flex; gap: 10px; flex-wrap: wrap; }
+.pill {
+  border: 2px solid var(--green-mid); background: #FFFFFF; color: var(--ink);
+  font-family: inherit; font-weight: 500; font-size: 1.0625rem;
+  border-radius: 999px; padding: 8px 22px; min-height: 44px; cursor: pointer;
+}
+.pill:hover { background: var(--green-bg); }
+.pill.active { background: var(--green-bright); border-color: var(--green-bright); }
+.chip-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.cat-chip {
+  border: 2px solid var(--green-tint); background: #FFFFFF; color: var(--ink);
+  font-family: inherit; font-weight: 500; font-size: 1rem;
+  border-radius: 999px; padding: 7px 16px; min-height: 40px; cursor: pointer;
+}
+.cat-chip:hover { border-color: var(--green-mid); }
+.cat-chip.active { background: var(--green-bright); border-color: var(--green-bright); }
+.select-row { display: flex; gap: 12px; flex-wrap: wrap; }
+.select-row label { display: flex; align-items: center; gap: 8px; font-size: 1rem; font-weight: 500; color: var(--ink-soft); }
+.select-row select {
+  font-size: 1.0625rem; font-weight: 500; color: var(--ink);
+  border: 2px solid var(--green-tint); border-radius: 10px;
+  padding: 10px 12px; min-height: 44px; background: #FFFFFF;
+}
+.select-row select:focus { outline: 3px solid var(--green-pale); border-color: var(--green-mid); }
+
+/* ===== 結果 ===== */
+.result-count { font-size: 1rem; color: var(--ink-soft); margin: 0 0 14px; }
+.card-list { display: flex; flex-direction: column; gap: 16px; }
+.aid-card {
+  background: #FFFFFF; border: 2px solid var(--green-tint); border-radius: 12px;
+  padding: 22px 24px; display: flex; flex-direction: column; gap: 10px;
+  box-shadow: 0 4px 16px rgba(6,48,31,0.06);
+}
+.aid-card:hover { border-color: var(--green-mid); }
+.card-top { display: flex; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+.card-title { font-weight: 700; font-size: 1.375rem; line-height: 1.35; margin: 0; flex: 1; min-width: 200px; }
+.chip-urgent {
+  background: var(--orange); color: #FFFFFF; font-weight: 500; font-size: 1.0625rem;
+  border-radius: 999px; padding: 6px 16px; white-space: nowrap;
+}
+.chip-normal {
+  background: #EDF1EF; color: #46564E; font-weight: 500; font-size: 1.0625rem;
+  border-radius: 999px; padding: 6px 16px; white-space: nowrap;
+}
+.card-cat { font-size: 0.9375rem; font-weight: 500; color: var(--green-mid); }
+.card-meta { font-size: 1.125rem; font-weight: 500; color: var(--ink); }
+.card-meta .dot { color: var(--green-mid); margin: 0 6px; }
+.card-fine { font-size: 0.9375rem; color: #46564E; }
+
+.empty-state {
+  text-align: center; padding: 56px 20px; background: var(--green-bg);
+  border-radius: 12px; font-size: 1.125rem; font-weight: 500; color: var(--ink-soft);
+}
+.empty-state .empty-hint { font-size: 1rem; color: var(--green-mid); margin-top: 8px; }
+
+/* ===== 頁尾 ===== */
+footer { background: var(--ink); color: var(--green-bg); padding: 40px 24px 32px; }
+.footer-inner { max-width: 1080px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px; }
+.trust-row { display: flex; gap: 12px 28px; flex-wrap: wrap; justify-content: center; font-size: 1.0625rem; }
+.trust-row span { white-space: nowrap; }
+.trust-dot { color: var(--green-bright); }
+.footer-note { text-align: center; font-size: 1rem; color: var(--green-pale); margin: 0; }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="demo-banner">目前為示範資料，實際申請請洽農會或公所</div>
+
+  <div class="nav-wrap">
+    <nav class="nav-pill">
+      <a href="index.html" class="nav-logo" aria-label="農民補給站首頁">
+        <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><path d="M4 2 v18" stroke="#06301F" stroke-width="2.5" stroke-linecap="round"/><path d="M4 3 L18 7 L4 11 Z" fill="#02DF82"/></svg>
+        農民補給站
+      </a>
+      <div class="nav-links">
+        <a href="browse.html" class="current">找補助</a>
+        <a href="chat.html?tab=doc">看懂公文</a>
+        <a href="index.html#guides">白話指南</a>
+        <a href="profile.html">我的資料</a>
+        <a href="dashboard.html">卡點儀表板</a>
+        <a href="index.html#about">關於</a>
+      </div>
+      <div class="nav-spacer"></div>
+      <div class="fs-switch" role="group" aria-label="字級切換">
+        <button data-fs="小">小</button>
+        <button data-fs="中">中</button>
+        <button data-fs="大">大</button>
+      </div>
+      <a href="chat.html" class="nav-cta">說說你的狀況</a>
+    </nav>
+  </div>
+
+  <main>
+    <h1>自己找<span class="grad-text">補助</span></h1>
+    <p class="page-sub">慢慢看，不急。快截止的排在前面。</p>
+
+    <div class="filters">
+      <div>
+        <p class="filter-label">產業別</p>
+        <div class="pill-row" id="industry-row" role="group" aria-label="產業別篩選">
+          <button class="pill active" data-industry="全部">全部</button>
+          <button class="pill" data-industry="農">農</button>
+          <button class="pill" data-industry="漁">漁</button>
+          <button class="pill" data-industry="畜">畜</button>
+        </div>
+      </div>
+      <div>
+        <p class="filter-label">分類（再按一次取消）</p>
+        <div class="chip-row" id="cat-row" role="group" aria-label="分類篩選"></div>
+      </div>
+      <div class="select-row">
+        <label>地區
+          <select id="region-select" aria-label="地區篩選"></select>
+        </label>
+        <label>排序
+          <select id="sort-select" aria-label="排序方式">
+            <option value="deadline">快截止的排前面</option>
+            <option value="name">照名稱排</option>
+          </select>
+        </label>
+      </div>
+    </div>
+
+    <p class="result-count" id="result-count"></p>
+    <div class="card-list" id="card-list"></div>
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+      <div class="trust-row">
+        <span>每筆補助都附來源與查核日期</span>
+        <span class="trust-dot">・</span>
+        <span>資格以承辦單位認定為準</span>
+        <span class="trust-dot">・</span>
+        <span>免費、不代辦、不用註冊也能查</span>
+      </div>
+      <p class="footer-note">農民補給站（示範原型）・資料為範例內容</p>
+    </div>
+  </footer>
+</div>
+
+<script src="site-data.js"></script>
+<script>
+/* ===== 字級切換（與首頁共用 aid-fs） ===== */
+(function () {
+  const MAP = { '小': '15px', '中': '16px', '大': '19px' };
+  const btns = document.querySelectorAll('.fs-switch button');
+  function apply(v) {
+    document.documentElement.style.fontSize = MAP[v];
+    btns.forEach(b => b.classList.toggle('active', b.dataset.fs === v));
+  }
+  let saved = localStorage.getItem('aid-fs');
+  if (!MAP[saved]) saved = '中';
+  apply(saved);
+  btns.forEach(b => b.addEventListener('click', () => {
+    localStorage.setItem('aid-fs', b.dataset.fs);
+    apply(b.dataset.fs);
+  }));
+})();
+
+/* ===== 篩選＋排序＋卡片渲染 ===== */
+(function () {
+  const REGIONS = ['全國','基隆市','臺北市','新北市','桃園市','新竹縣','新竹市','苗栗縣','臺中市','彰化縣','南投縣','雲林縣','嘉義縣','嘉義市','臺南市','高雄市','屏東縣','宜蘭縣','花蓮縣','臺東縣','澎湖縣','金門縣','連江縣'];
+
+  const state = {
+    industry: '全部',
+    cat: null,
+    region: '全國',
+    sort: 'deadline'
+  };
+
+  // 分類 chips
+  const catRow = document.getElementById('cat-row');
+  AID.categories.forEach(c => {
+    const b = document.createElement('button');
+    b.className = 'cat-chip';
+    b.textContent = c.name;
+    b.dataset.cat = c.name;
+    b.addEventListener('click', () => {
+      state.cat = (state.cat === c.name) ? null : c.name;
+      catRow.querySelectorAll('.cat-chip').forEach(x =>
+        x.classList.toggle('active', x.dataset.cat === state.cat));
+      render();
+    });
+    catRow.appendChild(b);
+  });
+
+  // 從首頁分類磚帶入 ?cat=
+  const urlCat = new URLSearchParams(location.search).get('cat');
+  if (urlCat && AID.categories.some(c => c.name === urlCat)) {
+    state.cat = urlCat;
+    catRow.querySelectorAll('.cat-chip').forEach(x =>
+      x.classList.toggle('active', x.dataset.cat === urlCat));
+  }
+
+  // 產業別膠囊
+  document.getElementById('industry-row').addEventListener('click', e => {
+    const b = e.target.closest('.pill');
+    if (!b) return;
+    state.industry = b.dataset.industry;
+    document.querySelectorAll('#industry-row .pill').forEach(x =>
+      x.classList.toggle('active', x === b));
+    render();
+  });
+
+  // 地區下拉
+  const regionSel = document.getElementById('region-select');
+  REGIONS.forEach(r => {
+    const o = document.createElement('option');
+    o.value = o.textContent = r;
+    regionSel.appendChild(o);
+  });
+  regionSel.addEventListener('change', () => { state.region = regionSel.value; render(); });
+
+  document.getElementById('sort-select').addEventListener('change', e => {
+    state.sort = e.target.value; render();
+  });
+
+  const ORDER = { active: 0, upcoming: 1, always: 2, closed: 3 };
+
+  function render() {
+    const list = document.getElementById('card-list');
+    const count = document.getElementById('result-count');
+    let items = AID.programs.map(p => ({ p, d: AID.deadlineInfo(p) }));
+
+    items = items.filter(({ p }) =>
+      (state.industry === '全部' || p.industry === state.industry) &&
+      (!state.cat || p.uiCategory === state.cat) &&
+      (state.region === '全國' || p.region === '全國' || p.region === state.region));
+
+    if (state.sort === 'name') {
+      items.sort((a, b) => a.p.name.localeCompare(b.p.name, 'zh-Hant'));
+    } else {
+      items.sort((a, b) => {
+        const ka = ORDER[a.d.kind], kb = ORDER[b.d.kind];
+        if (ka !== kb) return ka - kb;
+        if (a.d.kind === 'active') return a.d.days - b.d.days;
+        if (a.d.kind === 'upcoming') return a.d.open - b.d.open;
+        return a.p.name.localeCompare(b.p.name, 'zh-Hant');
+      });
+    }
+
+    list.innerHTML = '';
+    count.textContent = items.length > 0 ? '共 ' + items.length + ' 筆' : '';
+
+    if (items.length === 0) {
+      list.innerHTML =
+        '<div class="empty-state">這個條件下目前沒有補助' +
+        '<div class="empty-hint">換個條件試試，或直接「說說你的狀況」，我們幫你找</div></div>';
+      return;
+    }
+
+    items.forEach(({ p, d }) => {
+      const chipClass = d.kind === 'active' ? 'chip-urgent' : 'chip-normal';
+      const chipText = d.kind === 'always' ? '常態受理' : d.label;
+      const card = document.createElement('article');
+      card.className = 'aid-card';
+      card.innerHTML =
+        '<div class="card-cat">' + p.uiCategory + '</div>' +
+        '<div class="card-top">' +
+          '<h2 class="card-title">' + p.name + '</h2>' +
+          '<span class="' + chipClass + '">' + chipText + '</span>' +
+        '</div>' +
+        '<div class="card-meta">' + p.amountText +
+          '<span class="dot">・</span>' + p.office +
+          '<span class="dot">・</span>' + p.region + '</div>' +
+        '<div class="card-fine">' + p.agency + '・最後查核 ' + p.lastVerified + '</div>';
+      list.appendChild(card);
+    });
+  }
+
+  render();
+})();
+</script>
+</body>
+</html>

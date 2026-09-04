@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>補助資料維護｜農民補給站</title>
+<style>
+:root{
+  --green-bright:#02DF82; --green-mid:#01B96B; --green-pale:#9FF5CF;
+  --green-bg:#F0FDF6; --green-tint:#D9FBEC; --ink:#06301F; --ink-soft:#0A4A32;
+  --orange:#D85A30; --warn-bg:#FEF3D8; --line:#CBEEDC;
+}
+@font-face{font-family:'GenSen';src:url('fonts/GenSenRounded2TW-R.woff2') format('woff2');font-weight:400;font-display:swap;}
+@font-face{font-family:'GenSen';src:url('fonts/GenSenRounded2TW-M.woff2') format('woff2');font-weight:500;font-display:swap;}
+@font-face{font-family:'GenSen';src:url('fonts/GenSenRounded2TW-H.woff2') format('woff2');font-weight:700;font-display:swap;}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--green-bg);color:var(--ink);
+  font-family:'GenSen','Yuanti TC','Microsoft JhengHei',sans-serif;}
+.nav-outer{max-width:1080px;margin:0 auto;padding:14px 20px 0;}
+.nav-pill{display:flex;align-items:center;gap:18px;background:#fff;border:1px solid var(--line);
+  border-radius:999px;padding:10px 18px;flex-wrap:wrap;}
+.nav-logo{display:flex;align-items:center;gap:8px;text-decoration:none;color:var(--ink);font-weight:700;}
+.nav-links{display:flex;gap:18px;flex-wrap:wrap;font-size:1.0625rem;font-weight:500;}
+.nav-links a{text-decoration:none;color:var(--ink);white-space:nowrap;}
+.nav-links a:hover,.nav-links a.current{color:var(--green-mid);}
+.nav-spacer{flex:1;}
+.wrap{max-width:1080px;margin:0 auto;padding:20px 20px 60px;}
+h1{font-size:26px;margin:0 0 6px;}
+.sub{color:var(--ink-soft);font-size:14px;margin:0 0 18px;line-height:1.7;}
+section{background:#fff;border:1px solid var(--line);border-radius:16px;padding:20px 22px;margin-top:16px;}
+h2{font-size:17px;margin:0 0 14px;}
+button{font-family:inherit;font-size:14px;font-weight:500;padding:8px 16px;border-radius:999px;
+  border:1.5px solid var(--line);background:#fff;color:var(--ink-soft);cursor:pointer;}
+button.primary{background:var(--green-bright);border-color:var(--green-bright);color:var(--ink);font-weight:700;}
+button.danger{border-color:#EFC0B0;color:var(--orange);}
+button.mini{padding:4px 10px;font-size:12.5px;}
+input,select,textarea{font-family:inherit;font-size:14px;padding:8px 10px;border:1.5px solid var(--line);
+  border-radius:9px;background:#fff;color:var(--ink);width:100%;}
+textarea{resize:vertical;min-height:64px;}
+label{display:block;font-size:13px;font-weight:500;color:var(--ink-soft);margin-bottom:4px;}
+.grid{display:grid;gap:12px;}
+.g2{grid-template-columns:repeat(auto-fit,minmax(210px,1fr));}
+.g3{grid-template-columns:repeat(auto-fit,minmax(150px,1fr));}
+table{width:100%;border-collapse:collapse;font-size:14px;}
+th{text-align:left;font-size:12.5px;color:var(--ink-soft);font-weight:500;padding:6px 8px;}
+td{padding:10px 8px;border-top:1px solid var(--green-tint);}
+tr.stale td{background:var(--warn-bg);}
+.tag{display:inline-block;font-size:12px;padding:2px 9px;border-radius:999px;background:var(--green-tint);}
+.tag.warn{background:#F8DCCF;color:var(--orange);}
+.row-actions{display:flex;gap:6px;justify-content:flex-end;}
+.msg{padding:11px 14px;border-radius:11px;font-size:14px;margin-bottom:14px;line-height:1.7;}
+.msg.err{background:#FBE4DA;color:#8C2C0E;}
+.msg.ok{background:var(--green-tint);color:var(--ink-soft);}
+.msg ul{margin:6px 0 0;padding-left:20px;}
+.hint{font-size:12.5px;color:var(--ink-soft);margin:4px 0 0;line-height:1.6;}
+/* 條件建構器 */
+.node{border:1.5px solid var(--line);border-radius:12px;padding:12px;background:#FBFEFC;}
+.node.group{border-style:dashed;}
+.node+.node{margin-top:8px;}
+.node-head{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap;}
+.node-head .grow{flex:1;}
+.leaf-grid{display:grid;grid-template-columns:1.1fr .8fr 1.4fr auto;gap:8px;align-items:start;}
+.leaf-grid>div:last-child{padding-top:22px;}
+.children{padding-left:14px;border-left:3px solid var(--green-tint);}
+.chips{display:flex;flex-wrap:wrap;gap:6px;}
+.chips label{display:flex;align-items:center;gap:4px;font-size:13px;font-weight:400;color:var(--ink);
+  background:#fff;border:1.5px solid var(--line);border-radius:999px;padding:5px 11px;margin:0;cursor:pointer;}
+.chips input{width:auto;}
+.list-row{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;margin-bottom:8px;}
+.editor-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px;}
+.editor-head h2{margin:0;flex:1;}
+.hide{display:none;}
+.audit{font-size:13.5px;}
+.audit td{padding:7px 8px;}
+@media (max-width:640px){ .leaf-grid{grid-template-columns:1fr;} .list-row{grid-template-columns:1fr;} }
+</style>
+</head>
+<body>
+<div class="nav-outer">
+  <nav class="nav-pill">
+    <a href="index.html" class="nav-logo" aria-label="農民補給站首頁">
+      <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><path d="M4 2 v18" stroke="#06301F" stroke-width="2.5" stroke-linecap="round"/><path d="M4 3 L18 7 L4 11 Z" fill="#02DF82"/></svg>
+      農民補給站
+    </a>
+    <div class="nav-links">
+      <a href="browse.html">找補助</a>
+      <a href="chat.html?tab=doc">看懂公文</a>
+      <a href="dashboard.html">卡點儀表板</a>
+      <a href="admin.html" class="current">資料維護</a>
+    </div>
+    <div class="nav-spacer"></div>
+    <button id="logout" class="mini hide">登出</button>
+  </nav>
+</div>
+
+<div class="wrap">
+  <h1>補助資料維護</h1>
+  <p class="sub">改動會立即生效在農民端。存檔前會自動驗證，驗證不過就不寫入；舊檔一律備份到 <code>data/backups/</code>，每次異動記進稽核檔。</p>
+  <div id="msg"></div>
+
+  <!-- 登入 -->
+  <section id="login-box" class="hide">
+    <h2>登入</h2>
+    <div class="grid g2" style="max-width:420px">
+      <div><label for="pw">維護密碼</label><input id="pw" type="password" autocomplete="current-password"></div>
+    </div>
+    <p class="hint">密碼設在專案根目錄 <code>.env</code> 的 <code>ADMIN_PASSWORD</code>。沒設定時後台不會啟用。</p>
+    <div style="margin-top:12px"><button class="primary" id="do-login">登入</button></div>
+  </section>
+
+  <!-- 清單 -->
+  <section id="list-box" class="hide">
+    <div class="editor-head">
+      <h2>補助清單</h2>
+      <button class="primary" id="new-btn">＋ 新增補助</button>
+    </div>
+    <table id="list-table"></table>
+  </section>
+
+  <!-- 編輯器 -->
+  <section id="editor-box" class="hide">
+    <div class="editor-head">
+      <h2 id="editor-title">編輯補助</h2>
+      <button id="cancel-btn">取消</button>
+      <button class="primary" id="save-btn">存檔並生效</button>
+    </div>
+
+    <div class="grid g2">
+      <div><label for="f-id">補助代號（檔名，存檔後不可改）</label><input id="f-id" placeholder="moa-disaster-cash-2026"></div>
+      <div><label for="f-name">補助名稱</label><input id="f-name"></div>
+    </div>
+    <div class="grid g2" style="margin-top:12px">
+      <div><label for="f-category">類別</label><input id="f-category" list="cat-list"><datalist id="cat-list"></datalist></div>
+      <div><label for="f-level">主管層級</label><select id="f-level"><option value="中央">中央</option><option value="縣市">縣市</option></select></div>
+    </div>
+    <div class="grid g3" style="margin-top:12px">
+      <div><label for="f-agency">主管機關</label><input id="f-agency"></div>
+      <div><label for="f-office">受理單位</label><input id="f-office"></div>
+      <div><label for="f-tel">承辦電話</label><input id="f-tel"></div>
+    </div>
+
+    <h2 style="margin-top:24px">申請資格條件</h2>
+    <p class="hint" style="margin-bottom:10px">欄位只能從欄位字典（fields.json）選，選不到代表還沒註冊。「全部符合」＝條件都要成立，「任一符合」＝成立一個就算。</p>
+    <div id="cond-root"></div>
+
+    <h2 style="margin-top:24px">要準備的文件</h2>
+    <div id="docs"></div>
+    <button class="mini" id="add-doc">＋ 加一項文件</button>
+
+    <h2 style="margin-top:24px">申請期間</h2>
+    <div class="grid g3">
+      <div><label for="f-wtype">類型</label><select id="f-wtype">
+        <option value="公告型">公告型（有明確起訖日）</option>
+        <option value="常態型">常態型（隨時可辦）</option>
+      </select></div>
+      <div><label for="f-open">開始日</label><input id="f-open" type="date"></div>
+      <div><label for="f-close">截止日</label><input id="f-close" type="date"></div>
+    </div>
+    <div class="grid g2" style="margin-top:12px">
+      <div><label for="f-close-rule">截止規則原文</label><input id="f-close-rule" placeholder="公告翌日起10個工作日"></div>
+      <div><label for="f-wnote">備註</label><input id="f-wnote"></div>
+    </div>
+
+    <h2 style="margin-top:24px">給付金額</h2>
+    <div class="grid g2">
+      <div><label for="f-amount-unit">單位／級距</label><input id="f-amount-unit" placeholder="每公頃"></div>
+      <div><label for="f-amount-note">說明</label><input id="f-amount-note"></div>
+    </div>
+
+    <h2 style="margin-top:24px">資料來源與覆核</h2>
+    <div class="grid g2">
+      <div><label for="f-status">狀態</label><select id="f-status">
+        <option value="official">正式資料（已覆核）</option>
+        <option value="sample">示範資料（非現行公告）</option>
+      </select></div>
+      <div><label for="f-verified">最後覆核日</label><input id="f-verified" type="date"></div>
+    </div>
+    <div style="margin-top:12px"><label for="f-source-note">來源說明／法規依據</label><textarea id="f-source-note"></textarea></div>
+    <p class="hint">超過半年沒覆核的補助會在清單上標成橘色。資料過期沒人發現，是這套系統最大的風險。</p>
+  </section>
+
+  <!-- 稽核 -->
+  <section id="audit-box" class="hide">
+    <h2>異動紀錄</h2>
+    <table class="audit" id="audit-table"></table>
+  </section>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const ACTION = {create: '新增', update: '修改', delete: '刪除'};
+let SCHEMA = null;     // 欄位字典＋運算子
+let current = null;    // 目前編輯中的完整補助物件（保留表單沒涵蓋的欄位）
+let condTree = null;
+
+// ---- 共用 ----------------------------------------------------------------
+async function api(path, opts){
+  const r = await fetch(path, {credentials: 'same-origin', ...opts});
+  let body = null;
+  try { body = await r.json(); } catch (e) {}
+  if (!r.ok) throw {status: r.status, detail: body && body.detail};
+  return body;
+}
+function show(el, on){ el.classList.toggle('hide', !on); }
+function msg(html, kind){ $('msg').innerHTML = html ? `<div class="msg ${kind}">${html}</div>` : ''; }
+function esc(s){ return String(s ?? '').replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c])); }
+function showError(e){
+  const d = e && e.detail;
+  if (d && d.errors) msg(`<b>${esc(d.message)}</b><ul>${d.errors.map(x => `<li>${esc(x)}</li>`).join('')}</ul>`, 'err');
+  else msg(esc(typeof d === 'string' ? d : (d && d.message) || '操作失敗'), 'err');
+}
+
+// ---- 條件建構器 ----------------------------------------------------------
+function isGroup(n){ return n && ('all' in n || 'any' in n); }
+function groupKey(n){ return 'all' in n ? 'all' : 'any'; }
+
+function renderNode(node, parent, idx){
+  const el = document.createElement('div');
+  el.className = 'node' + (isGroup(node) ? ' group' : '');
+  if (isGroup(node)) {
+    const key = groupKey(node);
+    el.innerHTML = `<div class="node-head">
+        <select class="g-kind" style="width:auto">
+          <option value="all"${key === 'all' ? ' selected' : ''}>全部符合（且）</option>
+          <option value="any"${key === 'any' ? ' selected' : ''}>任一符合（或）</option>
+        </select>
+        <span class="grow"></span>
+        <button class="mini add-leaf" type="button">＋ 條件</button>
+        <button class="mini add-group" type="button">＋ 群組</button>
+        ${parent ? '<button class="mini danger del" type="button">刪除</button>' : ''}
+      </div><div class="children"></div>`;
+    const kids = el.querySelector('.children');
+    node[key].forEach((c, i) => kids.appendChild(renderNode(c, node, i)));
+    el.querySelector('.g-kind').onchange = e => {
+      const nk = e.target.value, items = node[groupKey(node)];
+      delete node[groupKey(node)]; node[nk] = items; rerender();
+    };
+    el.querySelector('.add-leaf').onclick = () => {
+      node[groupKey(node)].push({field: Object.keys(SCHEMA.fields)[0], op: '=', value: ''});
+      rerender();
+    };
+    el.querySelector('.add-group').onclick = () => {
+      node[groupKey(node)].push({all: [{field: Object.keys(SCHEMA.fields)[0], op: '=', value: ''}]});
+      rerender();
+    };
+  } else {
+    const spec = SCHEMA.fields[node.field] || {};
+    el.innerHTML = `<div class="leaf-grid">
+        <div><label>欄位</label><select class="l-field">${
+          Object.entries(SCHEMA.fields).map(([k, v]) =>
+            `<option value="${k}"${k === node.field ? ' selected' : ''}>${esc(v.label)}（${k}）</option>`).join('')
+        }</select></div>
+        <div><label>比對</label><select class="l-op">${
+          SCHEMA.operators.map(o => `<option${o === node.op ? ' selected' : ''}>${o}</option>`).join('')
+        }</select></div>
+        <div><label>值${spec.type ? '（' + spec.type + '）' : ''}</label><div class="l-value"></div></div>
+        <div><button class="mini danger del" type="button">刪除</button></div>
+      </div>
+      <div style="margin-top:8px"><label>法條依據</label><input class="l-ref" value="${esc(node.legal_ref || '')}"></div>`;
+    renderValue(el.querySelector('.l-value'), node, spec);
+    el.querySelector('.l-field').onchange = e => {
+      node.field = e.target.value; node.value = ''; rerender();
+    };
+    el.querySelector('.l-op').onchange = e => {
+      node.op = e.target.value;
+      const multi = node.op === 'in' || node.op === 'not_in';
+      if (multi && !Array.isArray(node.value)) node.value = node.value === '' ? [] : [node.value];
+      if (!multi && Array.isArray(node.value)) node.value = node.value[0] ?? '';
+      rerender();
+    };
+    el.querySelector('.l-ref').oninput = e => { node.legal_ref = e.target.value || undefined; };
+  }
+  const del = el.querySelector('.del');
+  if (del && parent) del.onclick = () => { parent[groupKey(parent)].splice(idx, 1); rerender(); };
+  return el;
+}
+
+function renderValue(box, node, spec){
+  const multi = node.op === 'in' || node.op === 'not_in';
+  if (spec.values && multi) {
+    const chosen = Array.isArray(node.value) ? node.value : [];
+    box.innerHTML = `<div class="chips">${spec.values.map(v =>
+      `<label><input type="checkbox" value="${esc(v)}"${chosen.includes(v) ? ' checked' : ''}>${esc(v)}</label>`).join('')}</div>`;
+    box.querySelectorAll('input').forEach(cb => cb.onchange = () => {
+      node.value = [...box.querySelectorAll('input:checked')].map(x => x.value);
+    });
+  } else if (spec.values) {
+    box.innerHTML = `<select>${spec.values.map(v =>
+      `<option${v === node.value ? ' selected' : ''}>${esc(v)}</option>`).join('')}</select>`;
+    box.querySelector('select').onchange = e => { node.value = e.target.value; };
+  } else if (spec.type === 'bool' && !multi) {
+    box.innerHTML = `<select><option value="true"${node.value === true ? ' selected' : ''}>是</option>
+      <option value="false"${node.value === false ? ' selected' : ''}>否</option></select>`;
+    box.querySelector('select').onchange = e => { node.value = e.target.value === 'true'; };
+  } else if (spec.type === 'number' && !multi) {
+    box.innerHTML = `<input type="number" step="any" value="${node.value ?? ''}">`;
+    box.querySelector('input').oninput = e => { node.value = e.target.value === '' ? '' : Number(e.target.value); };
+  } else if (multi) {
+    box.innerHTML = `<input value="${esc((node.value || []).join('、'))}" placeholder="多個值用、分隔">`;
+    box.querySelector('input').oninput = e => {
+      node.value = e.target.value.split(/[、,]/).map(s => s.trim()).filter(Boolean);
+    };
+  } else {
+    box.innerHTML = `<input value="${esc(node.value ?? '')}">`;
+    box.querySelector('input').oninput = e => { node.value = e.target.value; };
+  }
+}
+
+function rerender(){
+  const root = $('cond-root');
+  root.innerHTML = '';
+  root.appendChild(renderNode(condTree, null, 0));
+}
+
+// ---- 文件清單 ------------------------------------------------------------
+function renderDocs(docs){
+  $('docs').innerHTML = docs.map((d, i) => `
+    <div class="list-row" data-i="${i}">
+      <div><input class="d-name" placeholder="文件名稱" value="${esc(d.name || '')}"></div>
+      <div><input class="d-where" placeholder="去哪拿" value="${esc(d.where || '')}"></div>
+      <div><button class="mini danger d-del" type="button">刪除</button></div>
+    </div>`).join('') || '<p class="hint">還沒有文件項目。</p>';
+  $('docs').querySelectorAll('.list-row').forEach(row => {
+    const i = +row.dataset.i;
+    row.querySelector('.d-name').oninput = e => { docs[i].name = e.target.value; };
+    row.querySelector('.d-where').oninput = e => { docs[i].where = e.target.value; };
+    row.querySelector('.d-del').onclick = () => { docs.splice(i, 1); renderDocs(docs); };
+  });
+}
+
+// ---- 清單與編輯器 --------------------------------------------------------
+async function loadList(){
+  const rows = await api('/admin/programs');
+  $('list-table').innerHTML = `<tr><th>補助名稱</th><th>類別</th><th>狀態</th><th>最後覆核</th><th></th></tr>` +
+    (rows.length ? rows.map(r => `
+      <tr class="${r.stale ? 'stale' : ''}">
+        <td><b>${esc(r.name)}</b><br><span class="hint">${esc(r.id)}</span></td>
+        <td>${esc(r.category || '—')}</td>
+        <td>${r.status === 'sample' ? '<span class="tag warn">示範資料</span>' : '<span class="tag">正式</span>'}</td>
+        <td>${esc(r.last_verified || '未填')}${r.stale ? ' <span class="tag warn">待覆核</span>' : ''}</td>
+        <td><div class="row-actions">
+          <button class="mini edit" data-id="${esc(r.id)}">編輯</button>
+          <button class="mini danger del" data-id="${esc(r.id)}" data-name="${esc(r.name)}">刪除</button>
+        </div></td>
+      </tr>`).join('') : '<tr><td colspan="5" class="hint">還沒有任何補助資料。</td></tr>');
+  $('list-table').querySelectorAll('.edit').forEach(b => b.onclick = () => openEditor(b.dataset.id));
+  $('list-table').querySelectorAll('.del').forEach(b => b.onclick = async () => {
+    if (!confirm(`確定刪除「${b.dataset.name}」？\n舊檔會備份到 data/backups/，但農民端會立刻查不到這筆。`)) return;
+    try {
+      const r = await api('/admin/program/' + b.dataset.id, {method: 'DELETE'});
+      msg(`已刪除，備份為 <code>${esc(r.backup)}</code>，目前生效 ${r.programs_loaded} 筆。`, 'ok');
+      await loadList(); await loadAudit();
+    } catch (e) { showError(e); }
+  });
+}
+
+const BLANK = () => ({
+  id: '', name: '', category: '',
+  authority: {level: '中央', agency: '', office: '', tel: ''},
+  eligibility: {all: [{field: Object.keys(SCHEMA.fields)[0], op: '=', value: ''}]},
+  documents: [], window: {type: '公告型'}, amount: {},
+  source: {status: 'official', note: '', last_verified: new Date().toISOString().slice(0, 10)},
+});
+
+async function openEditor(id){
+  current = id ? await api('/admin/program/' + id) : BLANK();
+  const a = current.authority = current.authority || {};
+  const w = current.window = current.window || {};
+  const am = current.amount = current.amount || {};
+  const s = current.source = current.source || {};
+  current.documents = current.documents || [];
+  condTree = current.eligibility && (('all' in current.eligibility) || ('any' in current.eligibility))
+    ? current.eligibility : {all: current.eligibility ? [current.eligibility] : []};
+
+  $('editor-title').textContent = id ? `編輯：${current.name}` : '新增補助';
+  $('f-id').value = current.id || ''; $('f-id').disabled = !!id;
+  $('f-name').value = current.name || '';
+  $('f-category').value = current.category || '';
+  $('f-level').value = a.level || '中央';
+  $('f-agency').value = a.agency || ''; $('f-office').value = a.office || ''; $('f-tel').value = a.tel || '';
+  $('f-wtype').value = w.type || '公告型';
+  $('f-open').value = w.open || ''; $('f-close').value = w.close || '';
+  $('f-close-rule').value = w.close_rule || ''; $('f-wnote').value = w.note || '';
+  $('f-amount-unit').value = am.unit || ''; $('f-amount-note').value = am.note || '';
+  $('f-status').value = s.status === 'sample' ? 'sample' : 'official';
+  $('f-verified').value = s.last_verified || '';
+  $('f-source-note').value = s.note || '';
+  $('cat-list').innerHTML = SCHEMA.categories.map(c => `<option value="${esc(c)}">`).join('');
+
+  rerender(); renderDocs(current.documents);
+  show($('list-box'), false); show($('audit-box'), false); show($('editor-box'), true);
+  msg('', '');
+  window.scrollTo(0, 0);
+}
+
+function collect(){
+  // 在原物件上覆寫，表單沒涵蓋的欄位（例如 amount 的細項）原樣保留
+  const p = current;
+  p.id = $('f-id').value.trim();
+  p.name = $('f-name').value.trim();
+  p.category = $('f-category').value.trim() || undefined;
+  p.authority = {...p.authority, level: $('f-level').value, agency: $('f-agency').value.trim(),
+                 office: $('f-office').value.trim(), tel: $('f-tel').value.trim()};
+  p.eligibility = condTree;
+  p.documents = (p.documents || []).filter(d => (d.name || '').trim());
+  p.window = {...p.window, type: $('f-wtype').value,
+              open: $('f-open').value || undefined, close: $('f-close').value || undefined,
+              close_rule: $('f-close-rule').value.trim() || undefined,
+              note: $('f-wnote').value.trim() || undefined};
+  p.amount = {...p.amount, unit: $('f-amount-unit').value.trim() || undefined,
+              note: $('f-amount-note').value.trim() || undefined};
+  p.source = {...p.source, status: $('f-status').value,
+              note: $('f-source-note').value.trim(),
+              last_verified: $('f-verified').value || undefined};
+  return p;
+}
+
+async function save(){
+  const p = collect();
+  if (!p.id) { msg('請填補助代號。', 'err'); return; }
+  try {
+    const r = await api('/admin/program/' + p.id, {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({program: p}),
+    });
+    msg(`已存檔並生效（目前 ${r.programs_loaded} 筆）。${r.backup ? `舊檔備份為 <code>${esc(r.backup)}</code>。` : ''}`, 'ok');
+    await backToList();
+  } catch (e) { showError(e); window.scrollTo(0, 0); }
+}
+
+async function loadAudit(){
+  const rows = await api('/admin/audit?limit=30');
+  $('audit-table').innerHTML = `<tr><th>時間</th><th>動作</th><th>補助</th></tr>` +
+    (rows.length ? rows.map(r => `<tr><td>${esc((r.at || '').replace('T', ' '))}</td>
+      <td>${esc(ACTION[r.action] || r.action)}</td>
+      <td>${esc(r.name || r.program_id)}</td></tr>`).join('')
+     : '<tr><td colspan="3" class="hint">還沒有異動紀錄。</td></tr>');
+}
+
+async function backToList(){
+  show($('editor-box'), false); show($('list-box'), true); show($('audit-box'), true);
+  await loadList(); await loadAudit();
+}
+
+async function enterAdmin(){
+  SCHEMA = await api('/admin/schema');
+  show($('login-box'), false); show($('logout'), true);
+  await backToList();
+}
+
+// ---- 啟動 ---------------------------------------------------------------
+$('do-login').onclick = async () => {
+  try {
+    await api('/admin/login', {method: 'POST', headers: {'Content-Type': 'application/json'},
+                               body: JSON.stringify({password: $('pw').value})});
+    $('pw').value = '';
+    msg('', ''); await enterAdmin();
+  } catch (e) { showError(e); }
+};
+$('pw').addEventListener('keydown', e => { if (e.key === 'Enter') $('do-login').click(); });
+$('logout').onclick = async () => { await api('/admin/logout', {method: 'POST'}); location.reload(); };
+$('new-btn').onclick = () => openEditor(null);
+$('cancel-btn').onclick = () => backToList();
+$('save-btn').onclick = save;
+$('add-doc').onclick = () => { current.documents.push({name: '', where: ''}); renderDocs(current.documents); };
+
+(async () => {
+  const s = await api('/admin/session');
+  if (!s.enabled) {
+    msg('後台尚未啟用：請在專案根目錄的 <code>.env</code> 加上 <code>ADMIN_PASSWORD=你的密碼</code>，然後重新啟動伺服器。', 'err');
+    return;
+  }
+  if (s.logged_in) await enterAdmin();
+  else show($('login-box'), true);
+})();
+</script>
+</body>
+</html>

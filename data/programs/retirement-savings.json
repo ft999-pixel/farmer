@@ -1,0 +1,19 @@
+{
+  "id": "moa-retirement-savings",
+  "name": "農民退休儲金",
+  "category": "農民福利",
+  "authority": {"level": "中央", "agency": "農業部（勞保局核付）", "office": "基層農會受理", "tel": "02-0000000"},
+  "eligibility": {
+    "all": [
+      {"field": "insured_farmer", "op": "=", "value": true, "legal_ref": "農民退休儲金條例§4"},
+      {"field": "age", "op": "<", "value": 65, "legal_ref": "農民退休儲金條例§4"}
+    ]
+  },
+  "documents": [
+    {"name": "身分證件", "where": "自備"},
+    {"name": "農會帳戶存摺", "where": "基層農會"}
+  ],
+  "window": {"type": "常態", "note": "隨時可至農會辦理"},
+  "amount": {"unit": "政府相對提繳", "note": "依月提繳比率"},
+  "source": {"status": "sample", "note": "示範資料，細部條件以農會與勞保局公告為準。", "last_verified": "2026-08-10"}
+}
