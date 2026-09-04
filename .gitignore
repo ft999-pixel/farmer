@@ -8,8 +8,11 @@ __pycache__/
 venv/
 .venv/
 
-# 卡點統計（執行期資料，各環境自己累積；示範資料也不該進版本庫）
-data/blockers.jsonl
+# 卡點統計：執行期資料，正常情況不該進版本庫。
+# 目前刻意提交示範資料，讓部署後的儀表板有東西可看（scripts/seed_blockers.py 產生）。
+# ⚠️ 真的上線給農民用之前，把下面這行的註解取消，並刪掉 data/blockers.jsonl，
+#    否則真實統計會混進 138 筆假資料。
+# data/blockers.jsonl
 
 # 會員資料庫（裡面是真人資料，絕對不進版本庫）
 data/members.db
