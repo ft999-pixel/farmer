@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>補助申請表 - 預填服務</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+  <header class="app-header">
+    <h1>補助申請表預填服務</h1>
+    <nav class="app-nav">
+      <a href="/" class="active">申請表</a>
+      <a href="/profile">我的資料</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section id="template-select">
+      <h2>選擇申請表</h2>
+      <div id="template-list" class="card-grid"></div>
+    </section>
+
+    <section id="application-area" class="hidden">
+      <div class="toolbar">
+        <button id="btn-back" class="btn secondary">← 返回</button>
+        <div class="spacer"></div>
+        <button id="btn-save" class="btn primary">儲存草稿</button>
+        <button id="btn-preview" class="btn primary" disabled>預覽 PDF</button>
+        <button id="btn-download" class="btn success" disabled>下載 PDF</button>
+      </div>
+
+      <div class="app-layout">
+        <div id="form-panel" class="panel">
+          <h3 id="form-title">表單內容</h3>
+          <form id="prefill-form"></form>
+          <div id="validation-msg" class="validation-msg"></div>
+        </div>
+        <div id="pdf-panel" class="panel pdf-panel">
+          <h3>原始表單預覽</h3>
+          <iframe id="pdf-iframe" src="" title="PDF preview"></iframe>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="modal" class="modal hidden">
+    <div class="modal-content">
+      <h3 id="modal-title"></h3>
+      <div id="modal-body"></div>
+      <div class="modal-actions">
+        <button id="modal-close" class="btn secondary">關閉</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+  <script src="/static/js/idb.js"></script>
+  <script src="/static/js/app.js"></script>
+</body>
+</html>
