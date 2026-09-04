@@ -1,0 +1,6 @@
+data/form.db
+*.log
+__pycache__/
+.venv/
+.env
+node_modules/
