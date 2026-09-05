@@ -93,6 +93,11 @@ class MatchingProfile(_MatchingBase):
     crop_category: str | None = None
     insured_farmer: bool | None = None
     is_farming: bool | None = None
+    # 災害救助的法定判準。先前只存在於 fields.json，新引擎看不到，
+    # 導致「損失幾成」與豁免條款無法參與比對。
+    loss_rate: float | None = None            # 災損成數，0.2 ＝ 兩成（作業要點§6 門檻）
+    land_doc: str | None = None               # 土地文件種類：書面租約／使用同意書／從農工作證明／無
+    policy_enrolled_2y: bool | None = None    # 近兩年以同地參與政策並登錄 → 免附土地文件
 
 
 class MatchRequest(BaseModel):
@@ -216,6 +221,10 @@ MatchStatus = Literal["MATCH", "NEED_INFO", "NOT_RELEVANT", "REVIEW", "CLOSED"]
 class MissingInfo(BaseModel):
     key: str
     question: str
+    # 白話選項，讓長輩用按的不用打字（設計建議書 §4.1）。
+    # option_map 把選項轉回內部值（「超過一半」→ 0.6），來源是 data/fields.json。
+    options: list[str] | None = None
+    option_map: dict[str, Any] | None = None
 
 
 class MatchResult(BaseModel):

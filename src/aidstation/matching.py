@@ -76,6 +76,12 @@ _QUESTION_OVERRIDES = {
     "agriculture_training_hours": "你修過的農業訓練大約幾小時？",
     "agriculture_credits": "你修過的農業相關學分大約幾學分？",
     "technical_qualification": "你有農業相關學歷、訓練或其他技術資格嗎？",
+    # 災害救助判準。問法沿用 fields.json，維持長輩看得懂的白話，
+    # 不要讓農民看到「請提供你的 loss_rate 資訊」這種欄位代號。
+    "loss_rate": "大概損失幾成？",
+    "land_doc": "手邊有這些文件嗎？（租約、地主同意書、從農工作證明）",
+    "policy_enrolled_2y": "最近兩年，有沒有用這塊地去公所或農會申報過東西？"
+                          "（例如綠色環境給付、轉契作）",
 }
 
 _CERTIFICATION_TERMS = (
@@ -489,7 +495,7 @@ def _intent_match(intent: Any, candidate_terms: Sequence[Any]) -> bool:
 class PrefilterDecision:
     status: MatchStatus | None = None
     reason: list[str] | None = None
-    missing_info: list[dict[str, str]] | None = None
+    missing_info: list[dict[str, Any]] | None = None
 
     def __post_init__(self) -> None:
         if self.reason is None:
@@ -498,14 +504,22 @@ class PrefilterDecision:
             self.missing_info = []
 
 
-def _missing(key: str, *, question: str | None = None) -> dict[str, str]:
+def _missing(key: str, *, question: str | None = None) -> dict[str, Any]:
     canonical = _CANONICAL_MISSING_KEY.get(key, key)
-    return {
+    out: dict[str, Any] = {
         "key": canonical,
         "question": question or _QUESTION_OVERRIDES.get(
             canonical, f"請提供你的「{canonical}」資訊。"
         ),
     }
+    # 帶上欄位字典裡的白話選項，讓農民用按的而不是打字（設計建議書 §4.1）。
+    # option_map 一併回傳，答案才轉得回內部值（「超過一半」→ 0.6）。
+    spec = load_fields().get(canonical) or load_fields().get(key) or {}
+    if spec.get("options"):
+        out["options"] = list(spec["options"])
+        if spec.get("option_map"):
+            out["option_map"] = dict(spec["option_map"])
+    return out
 
 
 def metadata_prefilter(candidate: Candidate, profile: Mapping[str, Any], today: date) -> PrefilterDecision:
@@ -866,7 +880,7 @@ def _criterion_entries(candidate: Candidate) -> tuple[list[dict[str, Any]], dict
 class CriteriaDecision:
     status: MatchStatus
     reasons: list[str]
-    missing_info: list[dict[str, str]]
+    missing_info: list[dict[str, Any]]   # 可含 options／option_map
     evidence_ids: list[str]
 
 
@@ -1277,15 +1291,23 @@ def _form_template(candidate: Candidate) -> dict[str, Any] | None:
     return result
 
 
-def _dedupe_missing(items: Sequence[Mapping[str, Any]]) -> list[dict[str, str]]:
-    result: list[dict[str, str]] = []
+def _dedupe_missing(items: Sequence[Mapping[str, Any]]) -> list[dict[str, Any]]:
+    result: list[dict[str, Any]] = []
     seen: set[str] = set()
     for item in items:
         key = str(item.get("key") or "").strip()
         if not key or key in seen:
             continue
         seen.add(key)
-        result.append({"key": key, "question": str(item.get("question") or _missing(key)["question"])})
+        entry: dict[str, Any] = {
+            "key": key,
+            "question": str(item.get("question") or _missing(key)["question"]),
+        }
+        # 保留白話選項與轉換表，否則農民會看到空白輸入框而不是按鈕
+        for extra in ("options", "option_map"):
+            if item.get(extra):
+                entry[extra] = item[extra]
+        result.append(entry)
     return result
 
 

@@ -280,14 +280,18 @@ function canonicalMatchingProfile(input){
   return result;
 }
 
+// 只有舊名、沒有新名的相容別名。送出前一律拿掉，讓對外介面只有一套名字。
+// 後端 matching.py 內部仍用舊名比對條件樹，轉換在它的入口做一次。
+const LEGACY_ALIASES = ['crop', 'township', 'event', 'certification'];
+
 function backendMatchingProfile(includeTransient = true){
   // This is the single boundary object for /match and /members/me.  It is
   // derived from MatchingProfile and can never contain private form values.
   // Per-event facts are included only for /match, never for member persistence.
   const source = includeTransient ? {...matchingProfile, ...transient} : matchingProfile;
   const result = sanitizeMatchingProfile(canonicalMatchingProfile(source));
-  // Do not expose compatibility-only aliases when a canonical value exists;
-  // keeping scalar/list matching facts is harmless and supports old fixtures.
+  // 對外只送新名（crops／location／disaster_situation），不再同時送兩套。
+  LEGACY_ALIASES.forEach(k => delete result[k]);
   return result;
 }
 
