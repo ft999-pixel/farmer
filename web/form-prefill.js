@@ -579,6 +579,9 @@
   }
 
   function renderFieldGroup(container, title, description, fields, values, onChange) {
+    // 少一個容器不該讓整份表單消失：舊版 form.html 搭配新版本檔時，
+    // 這裡若直接 appendChild 就會丟例外並中斷 init()，連個人資料都不見。
+    if (!container) return;
     const group = doc.createElement('fieldset');
     group.className = 'field-group';
     const legend = doc.createElement('legend');
@@ -776,7 +779,17 @@
     const officialHelp = doc.getElementById('official-help');
     const overlayNote = doc.getElementById('official-overlay-note');
     const form = doc.getElementById('application-form');
-    const draftFields = doc.getElementById('draft-fields');
+    // 舊版 form.html 沒有這個容器就自己補一個，插在表單最前面（對應官方表單
+    // 第一列的災害名稱與申請日期），不必為了新欄位群強制同步改 HTML。
+    let draftFields = doc.getElementById('draft-fields');
+    if (!draftFields) {
+      const formNode = doc.getElementById('application-form');
+      if (formNode) {
+        draftFields = doc.createElement('div');
+        draftFields.id = 'draft-fields';
+        formNode.insertBefore(draftFields, formNode.firstChild);
+      }
+    }
     const privateFields = doc.getElementById('private-fields');
     const matchingFields = doc.getElementById('matching-fields');
     const helperFields = doc.getElementById('helper-fields');
