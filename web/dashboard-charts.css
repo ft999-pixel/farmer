@@ -1,0 +1,66 @@
+/* 卡點儀表板的圖表樣式：dashboard.html 與 index.html 共用。
+ *
+ * 全部收在 .dash-scope 底下，並在同一處定義深色主題變數，
+ * 這樣淺色的首頁也能直接套用同一組圖，不必維護第二份配色。
+ */
+.dash-scope{
+  --green-bright:#02DF82; --green-mid:#01B96B; --green-pale:#9FF5CF;
+  --surface:#0A3A29; --surface-2:#0E4732; --green-tint:#12523A;
+  --ink:#EAFBF3; --ink-soft:#9FD9C2; --orange:#FF8A5C; --line:#1C6144;
+  color:var(--ink);
+}
+/* 圖一：橫向長條 */
+.dash-scope .bar-row{display:grid;grid-template-columns:120px 1fr 52px;gap:10px;align-items:center;margin-bottom:9px;}
+.dash-scope .bar-row .name{font-size:14px;text-align:right;font-weight:500;}
+.dash-scope .bar-track{background:var(--green-tint);border-radius:8px;height:26px;overflow:hidden;display:flex;}
+.dash-scope .bar-track i{display:block;height:100%;transition:width .5s ease;}
+.dash-scope .bar-row .num{font-size:14px;font-weight:700;}
+.dash-scope .legend{display:flex;flex-wrap:wrap;gap:12px;margin-top:12px;font-size:13px;}
+.dash-scope .legend span{display:flex;align-items:center;gap:5px;}
+.dash-scope .legend .dot{border-radius:50%;}
+/* 圖二：甜甜圈＋明細表 */
+.dash-scope .donut-wrap{display:flex;align-items:center;gap:28px;flex-wrap:wrap;}
+.dash-scope .donut{width:220px;height:220px;flex:none;}
+.dash-scope .cat-table{border-collapse:collapse;font-size:14px;flex:1;min-width:280px;}
+.dash-scope .cat-table td{padding:9px 10px;border-bottom:1px solid var(--green-tint);white-space:nowrap;}
+.dash-scope .cat-table td:first-child{display:flex;align-items:center;gap:7px;font-weight:500;}
+.dash-scope .cat-table .dot{width:11px;height:11px;border-radius:50%;display:block;flex:none;}
+.dash-scope .cat-table .n{font-weight:700;text-align:right;}
+.dash-scope .cat-table .pct{color:var(--ink-soft);text-align:right;}
+.dash-scope .cat-table .note{font-size:12.5px;color:var(--ink-soft);width:100%;white-space:normal;}
+.dash-scope .cat-table .note b{color:var(--ink);}
+@media (max-width:560px){
+.dash-scope .donut-wrap{gap:16px;justify-content:center;}
+.dash-scope .cat-table{min-width:0;}
+.dash-scope .cat-table td{padding:7px 6px;}
+  .dash-scope section{padding:16px 14px;}
+}
+/* 熱力圖色階說明 */
+.dash-scope .heat-key{display:flex;align-items:center;gap:4px;margin-top:14px;font-size:12.5px;color:var(--ink-soft);}
+.dash-scope .heat-key i{width:26px;height:13px;border-radius:3px;display:block;}
+.dash-scope .legend i{width:12px;height:12px;border-radius:3px;display:block;}
+/* 圖三：熱力圖 */
+.dash-scope table.heat{border-collapse:separate;border-spacing:3px;font-size:13px;}
+.dash-scope table.heat th{font-weight:500;color:var(--ink-soft);padding:4px 6px;}
+.dash-scope table.heat th.col{font-size:12px;line-height:1.25;vertical-align:bottom;width:62px;}
+.dash-scope table.heat th.row{text-align:right;white-space:nowrap;}
+.dash-scope table.heat td{text-align:center;padding:10px 4px;border-radius:7px;font-weight:700;}
+.dash-scope .empty{color:var(--ink-soft);font-size:14px;padding:20px 0;text-align:center;}
+/* 區塊標題旁的資料來源標籤：官方統計與示範推估必須一眼分得出來 */
+.dash-scope .sec-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:2px;}
+.dash-scope .sec-head h2{margin:0;}
+.dash-scope .tag-src{font-size:11.5px;font-weight:700;border-radius:999px;padding:3px 10px;white-space:nowrap;}
+.dash-scope .tag-src.official{background:var(--green-bright);color:#06301F;}
+.dash-scope .tag-src.demo{background:#FFD24D;color:#3A2A00;}
+/* 折線圖的滑過提示 */
+.dash-scope .spark-dot{cursor:pointer;}
+/* 玫瑰圖 */
+.dash-scope .rose-wrap{display:flex;align-items:center;gap:30px;flex-wrap:wrap;}
+.dash-scope .rose{width:340px;height:340px;flex:none;}
+.dash-scope .rose path{cursor:pointer;transition:opacity .15s;}
+.dash-scope .rose:hover path{opacity:.55;}
+.dash-scope .rose path:hover{opacity:1;}
+@media (max-width:620px){ .rose{width:280px;height:280px;margin:0 auto;} }
+.dash-scope .chart-legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:10px;font-size:13px;align-items:center;}
+.dash-scope .chart-legend span{display:flex;align-items:center;gap:6px;}
+.dash-scope .chart-legend i{width:14px;height:14px;border-radius:4px;display:block;}

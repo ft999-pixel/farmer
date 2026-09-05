@@ -238,6 +238,50 @@ footer { background: var(--ink); color: var(--green-bg); padding: 40px 24px 32px
   .pennant, .marquee-track { animation: none; }
   .reveal { opacity: 1 !important; transform: none !important; transition: none !important; }
 }
+
+/* ---- 卡點儀表板輪播 ---------------------------------------------------
+   一次只給一張圖，因為六張圖擠在首頁誰都看不完。
+   用原生 scroll-snap，不裝套件：手機本來就能滑，鍵盤與按鈕再補上。 */
+.dash-block{background:#04241A;border-radius:22px;padding:26px 0 22px;margin-top:34px;color:#EAFBF3;}
+.dash-head{display:flex;align-items:flex-end;justify-content:space-between;
+  gap:14px;flex-wrap:wrap;padding:0 26px;margin-bottom:16px;}
+.dash-head h2{margin:0;color:#EAFBF3;}
+.dash-block .block-sub{margin:4px 0 0;color:#9FD9C2;}
+.dash-more{color:#02DF82;font-weight:700;text-decoration:none;white-space:nowrap;font-size:1rem;}
+.dash-more:hover{text-decoration:underline;}
+
+.dash-carousel{position:relative;}
+.dash-track{display:flex;gap:16px;overflow-x:auto;scroll-snap-type:x mandatory;
+  padding:2px 26px 12px;scroll-padding-left:26px;
+  scrollbar-width:none;-ms-overflow-style:none;}
+.dash-track::-webkit-scrollbar{display:none;}
+.dash-slide{flex:0 0 min(680px, calc(100% - 8px));scroll-snap-align:start;
+  background:#0A3A29;border:1px solid #1C6144;border-radius:18px;padding:20px 22px;}
+.dash-slide h3{margin:0 0 14px;font-size:1.0625rem;font-weight:700;
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+
+/* 箭頭疊在圖上；小螢幕直接收起來，用手指滑就好 */
+.dash-arrow{position:absolute;top:50%;transform:translateY(-50%);z-index:2;
+  width:44px;height:44px;border-radius:50%;border:1px solid #1C6144;
+  background:rgba(4,36,26,.92);color:#EAFBF3;font-size:26px;line-height:1;
+  cursor:pointer;display:grid;place-items:center;padding:0 0 3px;}
+.dash-arrow:hover:not(:disabled){background:#02DF82;color:#06301F;border-color:#02DF82;}
+.dash-arrow:disabled{opacity:.3;cursor:default;}
+.dash-arrow.prev{left:4px;} .dash-arrow.next{right:4px;}
+
+.dash-dots{display:flex;gap:8px;justify-content:center;margin-top:6px;}
+.dash-dots button{width:9px;height:9px;padding:0;border:0;border-radius:50%;
+  background:#1C6144;cursor:pointer;transition:width .2s,background .2s;}
+.dash-dots button[aria-selected="true"]{background:#02DF82;width:24px;border-radius:5px;}
+.dash-track:focus-visible{outline:2px solid #02DF82;outline-offset:-2px;border-radius:18px;}
+
+@media (max-width:760px){
+  .dash-arrow{display:none;}
+  .dash-slide{flex-basis:calc(100% - 24px);padding:16px 14px;}
+  .dash-head{padding:0 18px;}
+  .dash-track{padding-left:18px;padding-right:18px;scroll-padding-left:18px;}
+}
+@media (prefers-reduced-motion:reduce){ .dash-track{scroll-behavior:auto;} }
 </style>
 </head>
 <body>
@@ -292,13 +336,6 @@ footer { background: var(--ink); color: var(--green-bg); padding: 40px 24px 32px
     </div>
   </div>
 
-  <section id="guides" class="guides reveal">
-    <h2>白話指南</h2>
-    <p class="block-sub">用講的也通的白話文，慢慢讀</p>
-    <!-- 清單改由 /guides 帶出，內容在後台維護（web/admin.html） -->
-    <div class="guide-list" id="guide-list"></div>
-  </section>
-
   <section id="browse" class="browse-block reveal">
     <div class="browse-block-inner">
       <div class="slogan-corner">慢慢看，不急</div>
@@ -306,6 +343,60 @@ footer { background: var(--ink); color: var(--green-bg); padding: 40px 24px 32px
       <p class="block-sub">按一個最像你狀況的，慢慢看</p>
       <div class="tile-grid" id="tile-grid"></div>
     </div>
+  </section>
+
+  <section id="guides" class="guides reveal">
+    <h2>白話指南</h2>
+    <p class="block-sub">用講的也通的白話文，慢慢讀</p>
+    <!-- 清單改由 /guides 帶出，內容在後台維護（web/admin.html） -->
+    <div class="guide-list" id="guide-list"></div>
+  </section>
+
+  <!-- 卡點儀表板：圖表配色是為深底設計的，所以這一段自己帶深綠底 -->
+  <section id="dash" class="dash-block reveal" aria-labelledby="dash-title">
+    <div class="dash-head">
+      <div>
+        <h2 id="dash-title">卡點儀表板</h2>
+        <p class="block-sub">大家實際卡在哪裡，看得見才改得動</p>
+      </div>
+      <a class="dash-more" href="dashboard.html">看完整儀表板 →</a>
+    </div>
+
+    <div class="dash-carousel">
+      <button class="dash-arrow prev" type="button" aria-label="上一張圖表">‹</button>
+
+      <div class="dash-track" id="dash-track" tabindex="0"
+           role="group" aria-label="圖表輪播，可左右滑動">
+        <article class="dash-slide">
+          <h3>全國農業天然災害救助趨勢 <span class="tag-src official">官方統計</span></h3>
+          <div id="chart-yearly"></div>
+        </article>
+        <article class="dash-slide">
+          <h3>近五年各類災害救助戶數占比 <span class="tag-src demo">類型為推估</span></h3>
+          <div id="chart-disaster"></div>
+        </article>
+        <article class="dash-slide">
+          <h3>卡點原因排行</h3>
+          <div id="chart-bar"></div>
+        </article>
+        <article class="dash-slide">
+          <h3>哪一類補助最卡人</h3>
+          <div id="chart-cat"></div>
+        </article>
+        <article class="dash-slide">
+          <h3>中央 vs 縣市</h3>
+          <div id="chart-level"></div>
+        </article>
+        <article class="dash-slide">
+          <h3>補助類別 × 卡點原因</h3>
+          <div id="chart-heat"></div>
+        </article>
+      </div>
+
+      <button class="dash-arrow next" type="button" aria-label="下一張圖表">›</button>
+    </div>
+
+    <div class="dash-dots" id="dash-dots" role="tablist" aria-label="選擇圖表"></div>
   </section>
 
   <footer id="about">
@@ -462,6 +553,65 @@ AidChat.init(document.getElementById('talk'), {
     el.style.transition = 'opacity 0.7s ease, transform 0.7s ease';
     io.observe(el);
   });
+})();
+</script>
+
+<link rel="stylesheet" href="dashboard-charts.css">
+<script src="dashboard-charts.js"></script>
+<script>
+// 儀表板輪播：一次一張圖。捲動位置才是唯一事實來源，
+// 不另外記 index，這樣滑動、鍵盤、按鈕三種操作不會各記一份而對不上。
+(() => {
+  const track = document.getElementById('dash-track');
+  if (!track) return;
+  const slides = [...track.children];
+  const dots = document.getElementById('dash-dots');
+  const prev = document.querySelector('.dash-arrow.prev');
+  const next = document.querySelector('.dash-arrow.next');
+
+  slides.forEach((_, i) => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.role = 'tab';
+    b.setAttribute('aria-label', `第 ${i + 1} 張圖表`);
+    b.onclick = () => go(i);
+    dots.appendChild(b);
+  });
+
+  const current = () => {
+    // 找出離左緣最近的那一張，就是目前顯示的
+    let best = 0, min = Infinity;
+    slides.forEach((s, i) => {
+      const d = Math.abs(s.offsetLeft - track.scrollLeft - track.clientLeft);
+      if (d < min) { min = d; best = i; }
+    });
+    return best;
+  };
+  const go = i => {
+    const s = slides[Math.max(0, Math.min(slides.length - 1, i))];
+    track.scrollTo({left: s.offsetLeft - track.offsetLeft, behavior: 'smooth'});
+  };
+
+  function sync() {
+    const i = current();
+    [...dots.children].forEach((d, n) => d.setAttribute('aria-selected', n === i));
+    // 用捲動範圍判斷頭尾，避免最後一張沒對齊時按鈕還亮著
+    prev.disabled = track.scrollLeft < 4;
+    next.disabled = track.scrollLeft > track.scrollWidth - track.clientWidth - 4;
+  }
+  prev.onclick = () => go(current() - 1);
+  next.onclick = () => go(current() + 1);
+  track.onkeydown = e => {
+    if (e.key === 'ArrowRight') { e.preventDefault(); go(current() + 1); }
+    if (e.key === 'ArrowLeft')  { e.preventDefault(); go(current() - 1); }
+  };
+
+  let t; track.addEventListener('scroll', () => { clearTimeout(t); t = setTimeout(sync, 60); });
+  addEventListener('resize', sync);
+  sync();
+
+  // 圖表畫完後尺寸才確定，要重算一次頭尾狀態
+  DashboardCharts.loadAll();
+  setTimeout(sync, 1200);
 })();
 </script>
 </body>
