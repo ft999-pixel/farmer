@@ -94,6 +94,13 @@ table.heat td{text-align:center;padding:10px 4px;border-radius:7px;font-weight:7
 .tag-src.demo{background:#FFD24D;color:#3A2A00;}
 /* 折線圖的滑過提示 */
 .spark-dot{cursor:pointer;}
+/* 玫瑰圖 */
+.rose-wrap{display:flex;align-items:center;gap:30px;flex-wrap:wrap;}
+.rose{width:340px;height:340px;flex:none;}
+.rose path{cursor:pointer;transition:opacity .15s;}
+.rose:hover path{opacity:.55;}
+.rose path:hover{opacity:1;}
+@media (max-width:620px){ .rose{width:280px;height:280px;margin:0 auto;} }
 .chart-legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:10px;font-size:13px;align-items:center;}
 .chart-legend span{display:flex;align-items:center;gap:6px;}
 .chart-legend i{width:14px;height:14px;border-radius:4px;display:block;}
@@ -148,7 +155,7 @@ a.back{color:var(--ink-soft);font-size:14px;text-decoration:none;}
 
 <section>
   <div class="sec-head">
-    <h2>近五年各類災害救助戶數</h2>
+    <h2>近五年各類災害救助戶數占比</h2>
     <span class="tag-src demo">類型為推估</span>
   </div>
   <p class="hint" id="hint-disaster">每年總戶數為官方統計，各災害類型的分配為示範推估，不是官方數字。</p>
@@ -238,42 +245,73 @@ function renderYearly(rows){
     </div>`;
 }
 
-// ---- 近五年各類災害（堆疊長條，類型為推估）------------------------------
+// ---- 近五年各類災害（南丁格爾玫瑰圖，類型為推估）------------------------
+// 每一瓣角度相同，半徑用「數值開平方」，這樣**面積**才與數值成正比。
+// 若半徑直接等比於數值，面積會變成平方關係，視覺上會誇大差距。
 function renderDisaster(data){
   const box = $('chart-disaster');
   const rows = data.rows || [], types = data.types || [];
   if (!rows.length) { box.innerHTML = '<p class="empty">沒有資料。</p>'; return; }
-  const totals = rows.map(r => types.reduce((n, t) => n + (r[t] || 0), 0));
-  const max = Math.max(...totals);
-  const W = 900, H = 300, P = {t: 18, r: 16, b: 40, l: 62};
-  const bw = Math.min(72, (W - P.l - P.r) / rows.length * 0.55);
-  const x = i => P.l + (i + 0.5) * (W - P.l - P.r) / rows.length;
-  const y = v => P.t + (1 - v / max) * (H - P.t - P.b);
 
-  const grid = [0, .25, .5, .75, 1].map(f => {
-    const v = Math.round(max * f);
-    return `<line x1="${P.l}" y1="${y(v)}" x2="${W - P.r}" y2="${y(v)}" stroke="rgba(159,217,194,.16)"/>
-      <text x="${P.l - 10}" y="${y(v) + 4}" text-anchor="end" font-size="11" fill="#9FD9C2">${(v / 1000).toFixed(0)}k</text>`;
+  // 五年合計，每一類一瓣
+  const totals = types.map(t => ({t, v: rows.reduce((n, r) => n + (r[t] || 0), 0)}))
+                      .sort((a, b) => b.v - a.v);
+  const sum = totals.reduce((n, d) => n + d.v, 0);
+  const maxV = totals[0].v;
+
+  // R 留出邊界空間給短花瓣的外標，否則文字會被畫布裁掉
+  const S = 420, C = S / 2, R = 148, GAP = 0.022;   // GAP：花瓣之間留縫
+  const step = Math.PI * 2 / totals.length;
+  const pt = (r, a) => [C + r * Math.cos(a - Math.PI / 2), C + r * Math.sin(a - Math.PI / 2)];
+
+  const petals = totals.map((d, i) => {
+    const r = R * Math.sqrt(d.v / maxV);
+    const a0 = i * step + GAP, a1 = (i + 1) * step - GAP;
+    const [x0, y0] = pt(r, a0), [x1, y1] = pt(r, a1);
+    const big = (a1 - a0) > Math.PI ? 1 : 0;
+    const path = `M${C} ${C}L${x0} ${y0}A${r} ${r} 0 ${big} 1 ${x1} ${y1}Z`;
+    const pct = (d.v / sum * 100).toFixed(1);
+    const mid = (a0 + a1) / 2;
+    // 短花瓣放不下字，改標在瓣外並拉一條細線指過去，避免小瓣的數字互相重疊
+    const inside = r > 92;
+    const [lx, ly] = pt(inside ? r * 0.6 : r + 26, mid);
+    const leader = inside ? '' :
+      (() => { const [sx, sy] = pt(r + 4, mid), [ex, ey] = pt(r + 16, mid);
+        return `<line x1="${sx}" y1="${sy}" x2="${ex}" y2="${ey}" stroke="${colorOf(i)}" stroke-width="1.5"/>`; })();
+    return `<path d="${path}" fill="url(#pet${i})" stroke="var(--surface)" stroke-width="2">
+        <title>${esc(d.t)}：${d.v.toLocaleString()} 戶（${pct}%）</title>
+      </path>${leader}
+      <text x="${lx}" y="${ly}" text-anchor="middle" font-size="${inside ? 15 : 12.5}" font-weight="700"
+        fill="${inside ? '#06301F' : colorOf(i)}" pointer-events="none"
+        dominant-baseline="middle">${pct}%</text>`;
   }).join('');
 
-  const bars = rows.map((r, i) => {
-    let acc = 0;
-    const segs = types.map((t, ti) => {
-      const v = r[t] || 0;
-      if (!v) return '';
-      const yTop = y(acc + v), h = y(acc) - y(acc + v);
-      acc += v;
-      return `<rect x="${x(i) - bw / 2}" y="${yTop}" width="${bw}" height="${Math.max(h, 1)}"
-        fill="${colorOf(ti)}" rx="2"><title>${r.year} ${t}：${v.toLocaleString()} 戶</title></rect>`;
-    }).join('');
-    return segs + `<text x="${x(i)}" y="${y(totals[i]) - 8}" text-anchor="middle"
-        font-size="11.5" font-weight="700" fill="#EAFBF3">${(totals[i] / 1000).toFixed(0)}k</text>
-      <text x="${x(i)}" y="${H - 14}" text-anchor="middle" font-size="11" fill="#9FD9C2">${r.year}</text>`;
+  const defs = totals.map((d, i) => {
+    const c = colorOf(i);
+    return `<radialGradient id="pet${i}" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" stop-color="${c}" stop-opacity=".55"/>
+      <stop offset="100%" stop-color="${c}" stop-opacity="1"/>
+    </radialGradient>`;
   }).join('');
 
-  box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto">${grid}${bars}</svg>
-    <div class="chart-legend">${types.map((t, i) =>
-      `<span><i style="background:${colorOf(i)}"></i>${esc(t)}</span>`).join('')}</div>`;
+  // 圈出最大半徑當比例尺，讓人知道花瓣長度不是隨便畫的
+  const rings = [0.5, 1].map(f =>
+    `<circle cx="${C}" cy="${C}" r="${R * f}" fill="none" stroke="rgba(159,217,194,.14)"/>`).join('');
+
+  box.innerHTML = `<div class="rose-wrap">
+      <svg viewBox="0 0 ${S} ${S}" class="rose"><defs>${defs}</defs>${rings}${petals}</svg>
+      <table class="cat-table">${totals.map((d, i) => `
+        <tr>
+          <td><i class="dot" style="background:${colorOf(i)}"></i>${esc(d.t)}</td>
+          <td class="n">${d.v.toLocaleString()}</td>
+          <td class="pct">${(d.v / sum * 100).toFixed(1)}%</td>
+        </tr>`).join('')}
+        <tr><td><b>五年合計</b></td><td class="n"><b>${sum.toLocaleString()}</b></td><td class="pct">戶</td></tr>
+      </table>
+    </div>
+    <p class="hint" style="margin:14px 0 0">
+      每一瓣角度相同，長度依數值開平方縮放，因此<b>面積</b>與戶數成正比。
+    </p>`;
 }
 
 function renderKpi(s){

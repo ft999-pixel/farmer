@@ -99,6 +99,20 @@ def app_no_slash():
 
 from fastapi.staticfiles import StaticFiles  # noqa: E402
 from pathlib import Path as _WebPath  # noqa: E402
+
+
+@app.middleware("http")
+async def _no_cache_web_assets(request, call_next):
+    """網頁與前端資源不給瀏覽器快取。
+
+    開發時最常見的假象是「改了沒生效」——實際上是瀏覽器拿舊檔。
+    這些檔案很小，不快取的成本遠低於每次都要提醒使用者強制重新整理。
+    """
+    response = await call_next(request)
+    path = request.url.path
+    if path.startswith("/app/") and path.endswith((".html", ".js", ".css")):
+        response.headers["Cache-Control"] = "no-cache, must-revalidate"
+    return response
 app.mount("/app", StaticFiles(directory=_WebPath(__file__).resolve().parents[2] / "web",
                               html=True), name="web")
 
