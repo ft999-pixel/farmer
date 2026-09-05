@@ -1154,7 +1154,9 @@ class AnthropicEntryCriteriaMatcher:
                  model: str | None = None) -> None:
         self.timeout = timeout
         self.fallback = fallback or DeterministicMatcher()
-        self.model = model or os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-5")
+        # 原本預設 claude-sonnet-5，那個代號不存在，真的走到這裡會 404。
+        # 統一成跟 document.py／extract.py 相同的預設值。
+        self.model = model or os.environ.get("ANTHROPIC_MODEL", "claude-opus-4-8")
         import anthropic  # delayed import keeps offline startup dependency-free
         self.client = anthropic.Anthropic(timeout=timeout)
 

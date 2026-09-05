@@ -137,6 +137,29 @@ IMAGE_MEDIA_TYPES = ("image/jpeg", "image/png", "image/webp", "image/gif")
 MAX_IMAGE_BYTES = 5 * 1024 * 1024  # Claude vision 單張上限
 
 
+_PASTE_HINT = "請改用下面的「貼上文字」，把公文上的字打進來，一樣可以幫你看。"
+
+
+def _read_image_error(exc: Exception) -> str:
+    """把模型端的錯誤翻成農民看得懂、而且是真話的一句話。
+
+    重點在於「還能不能再試」：額度用完、金鑰失效都不是暫時性的，
+    叫人家「稍後再試」只會讓他一直重按然後放棄。
+    """
+    detail = f"{type(exc).__name__}: {exc}".lower()
+    if "usage limit" in detail or "credit balance" in detail or "quota" in detail:
+        return f"照片辨識的用量已經用完了，這個功能暫時不能用。\n{_PASTE_HINT}"
+    if "authentication" in detail or "invalid x-api-key" in detail or "401" in detail:
+        return f"系統的辨識金鑰有問題，需要管理者處理。\n{_PASTE_HINT}"
+    if "rate_limit" in detail or "429" in detail:
+        return "現在使用的人太多了，等一兩分鐘再拍一次試試看。"
+    if "not_found" in detail or "404" in detail:
+        return f"辨識服務設定有誤，需要管理者處理。\n{_PASTE_HINT}"
+    if "connection" in detail or "timeout" in detail:
+        return "網路不太穩，等一下再拍一次試試看。"
+    return f"照片辨識失敗了。\n{_PASTE_HINT}"
+
+
 def read_image(data: bytes, media_type: str = "image/jpeg",
                model: str | None = None) -> str:
     """公文照片 → 公文文字。認不出來就 raise，絕不回傳猜測內容。"""
@@ -163,8 +186,10 @@ def read_image(data: bytes, media_type: str = "image/jpeg",
                 {"type": "text", "text": "請把這張公文的文字逐字打出來。"},
             ]}],
         )
-    except Exception as exc:  # 網路／額度／模型故障
-        raise ImageReadError("辨識服務暫時不通，請稍後再試，或改用「貼上文字」。") from exc
+    except Exception as exc:
+        # 「稍後再試」對額度用完的情況是假話——再試一百次也一樣。
+        # 分開講，農民才知道該等一下還是該換方法。
+        raise ImageReadError(_read_image_error(exc)) from exc
 
     text = "".join(b.text for b in msg.content if b.type == "text").strip()
     if "NOT_A_DOCUMENT" in text:

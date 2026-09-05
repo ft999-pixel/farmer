@@ -147,8 +147,9 @@ def post_chat(req: ChatRequest) -> dict:
             data, media_type = decode_image(req.image or "")
             text = read_image(data, media_type)
         except ImageReadError as exc:
-            # 認不出來就直說，並給農民下一步；不回傳半猜的翻譯
-            return {"text": f"{exc}\n\n看不懂的地方也可以直接打電話問承辦，他們會幫你看。",
+            # 認不出來就直說，並給農民下一步；不回傳半猜的翻譯。
+            # 訊息本身已經帶了對應的下一步，這裡只補上「找人」這條後路。
+            return {"text": f"{exc}\n\n真的看不懂，也可以直接打電話問承辦，他們會幫你看。",
                     "options": ["我知道了", "我卡住了"], "payload": None}
         reply = _web_flow.handle_document_text(session, text)
     elif req.kind == "document":

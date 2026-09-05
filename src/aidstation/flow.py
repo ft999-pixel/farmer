@@ -200,13 +200,7 @@ class Flow:
         else:
             extracted = self.extractor.extract(text)
             session.facts.update(extracted)
-            # 抽取器的地點是縣市層級，認不出「玉井」這種鄉鎮名。
-            # 這裡補一層：直接在原句裡找公告涵蓋的鄉鎮，省下反問一題。
-            if "township" not in session.facts:
-                found = self._township_in_text(text)
-                if found:
-                    session.facts["township"] = found
-                    session.asked.add("township")
+            self._settle_township(session, text)
         reply = self._advance(session)
         if preface:
             reply.text = preface + "\n\n" + reply.text
@@ -379,6 +373,31 @@ class Flow:
         for program in self.legacy_programs:
             walk(program.get("eligibility") or {})
         return {v for v in found if isinstance(v, str)}
+
+    def _settle_township(self, session, text: str) -> None:
+        """把抽取出來的鄉鎮整理成公告用得上的形式。
+
+        抽取器（尤其是模型式的那個）會直接把「台南」這種縣市寫進 township，
+        而正規化原本只在回答問題時才跑，等於整條抽取路徑都繞過了檢查。
+        比對是字串完全相等，「台南」會被判成不符合，補助就此消失——
+        這正是農民回報的那個 bug，只是從另一條路進來。
+        """
+        raw = session.facts.get("township")
+        if isinstance(raw, str) and raw.strip():
+            matched, county_only = self._match_township(raw)
+            if matched:                       # 玉井 → 玉井區
+                session.facts["township"] = matched
+                session.asked.add("township")
+                return
+            if not county_only:               # 認得的鄉鎮，只是不在公告內：保留，讓比對去判
+                session.asked.add("township")
+                return
+            session.facts.pop("township")     # 只到縣市，不夠細，等一下要再問
+
+        found = self._township_in_text(text)  # 「台南玉井」這種句子還救得回來
+        if found:
+            session.facts["township"] = found
+            session.asked.add("township")
 
     def _township_in_text(self, text: str) -> str | None:
         """從一整句話裡找出公告涵蓋的鄉鎮。

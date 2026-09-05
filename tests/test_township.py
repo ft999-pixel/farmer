@@ -116,6 +116,71 @@ def test_講了鄉鎮就不該再問一次(flow):
     assert "哪個鄉鎮" not in reply.text
 
 
+# ---- 抽取器直接給出縣市的情況 --------------------------------------------
+#
+# 正式站有設 API 金鑰，用的是模型式抽取器，它會把「台南」直接寫進 township。
+# 正規化原本只在回答問題時才跑，這條路整個繞過檢查，補助一樣會消失。
+# 這裡用假抽取器重現，不需要網路，也不受本機有沒有 .env 影響。
+
+class _FakeExtractor:
+    """模擬模型式抽取器：把縣市層級的地名直接放進 township。"""
+
+    def __init__(self, result):
+        self._result = result
+
+    def extract(self, text):
+        return dict(self._result)
+
+
+def _flow_with(result):
+    f = Flow(today=TODAY)
+    f.extractor = _FakeExtractor(result)
+    return f
+
+
+def test_抽取器給縣市時要改成反問而不是排除():
+    f = _flow_with({"crop": "芒果", "event": "天然災害", "township": "台南"})
+    s = Session()
+    reply = f.handle_text(s, "我在台南種芒果 都被颱風吹壞了")
+    assert "township" not in s.facts, "縣市層級不該直接當成鄉鎮存進去"
+    assert "哪個鄉鎮" in reply.text
+
+
+def test_抽取器給縣市但句子裡有鄉鎮時要救回來():
+    f = _flow_with({"crop": "芒果", "event": "天然災害", "township": "台南"})
+    s = Session()
+    f.handle_text(s, "我在台南玉井的芒果都被颱風吹壞了")
+    assert s.facts.get("township") == "玉井區"
+
+
+def test_抽取器給少寫區的鄉鎮要補正():
+    f = _flow_with({"crop": "芒果", "event": "天然災害", "township": "玉井"})
+    s = Session()
+    f.handle_text(s, "我在玉井種芒果")
+    assert s.facts.get("township") == "玉井區"
+
+
+def test_抽取器給公告外的鄉鎮要保留():
+    """中埔鄉是合法鄉鎮，只是不在公告內——要留著讓比對判定不符合，不能丟掉。"""
+    f = _flow_with({"crop": "芒果", "event": "天然災害", "township": "中埔鄉"})
+    s = Session()
+    f.handle_text(s, "我在中埔種芒果")
+    assert s.facts.get("township") == "中埔鄉"
+
+
+def test_抽取器給縣市時災害救助不可消失():
+    f = _flow_with({"crop": "芒果", "event": "天然災害", "township": "台南"})
+    s = Session()
+    f.handle_text(s, "我在台南種芒果 都被颱風吹壞了")
+    for answer in ["玉井", "超過一半", "我的", "有", "有", "58"]:
+        reply = f.handle_text(s, answer)
+        tiers = (reply.payload or {}).get("tiers")
+        if tiers:
+            assert _tier_of(tiers, DISASTER) == "priority"
+            return
+    pytest.fail("沒有給出結果")
+
+
 def test_句子裡講了鄉鎮就能直接推薦(flow):
     s = Session()
     flow.handle_text(s, "我在台南玉井的芒果都被颱風吹壞了")
