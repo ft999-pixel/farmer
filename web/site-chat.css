@@ -50,6 +50,22 @@
   background: #02DF82; color: #06301F; border-radius: 10px; cursor: pointer;
 }
 .aidchat-send:hover { background: #01B96B; }
+/* 語音輸入鍵：手指按得到的大小，錄音中會脈動提示 */
+.aidchat-mic {
+  flex: none; width: 52px; min-height: 52px; border-radius: 10px; cursor: pointer;
+  border: 2px solid #D9FBEC; background: #FFFFFF; color: #0A4A32;
+  display: flex; align-items: center; justify-content: center;
+}
+.aidchat-mic:hover:not(:disabled) { border-color: #01B96B; color: #01B96B; }
+.aidchat-mic:focus-visible { outline: 3px solid #9FF5CF; }
+.aidchat-mic.on { background: #D85A30; border-color: #D85A30; color: #FFFFFF;
+  animation: aidchat-pulse 1.2s ease-in-out infinite; }
+.aidchat-mic.off { opacity: .38; cursor: not-allowed; }
+@keyframes aidchat-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(216,90,48,.55); }
+  50%      { box-shadow: 0 0 0 9px rgba(216,90,48,0); }
+}
+@media (prefers-reduced-motion: reduce) { .aidchat-mic.on { animation: none; } }
 
 /* ---- 結果三層 ---- */
 .aidchat-results { display: flex; flex-direction: column; gap: 12px; align-self: stretch; }

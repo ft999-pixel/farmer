@@ -116,7 +116,11 @@ h1 { font-weight: 900; font-size: clamp(2rem, 5vw, 3rem); margin: 0 0 8px; }
   padding: 22px 24px; display: flex; flex-direction: column; gap: 10px;
   box-shadow: 0 4px 16px rgba(6,48,31,0.06);
 }
-.aid-card:hover { border-color: var(--green-mid); }
+.aid-card { text-decoration: none; color: inherit; transition: border-color .15s, transform .15s; }
+.aid-card:hover { border-color: var(--green-mid); transform: translateY(-2px); }
+.aid-card:focus-visible { outline: 3px solid var(--green-mid); outline-offset: 2px; }
+.card-summary { font-size: 1.0625rem; line-height: 1.75; color: #46564E; margin: 0; }
+.card-go { color: var(--green-mid); font-weight: 700; float: right; }
 .card-top { display: flex; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
 .card-title { font-weight: 700; font-size: 1.375rem; line-height: 1.35; margin: 0; flex: 1; min-width: 200px; }
 .chip-urgent {
@@ -306,7 +310,7 @@ footer { background: var(--ink); color: var(--green-bg); padding: 40px 24px 32px
   function render() {
     const list = document.getElementById('card-list');
     const count = document.getElementById('result-count');
-    let items = AID.programs.map(p => ({ p, d: AID.deadlineInfo(p) }));
+    let items = PROGRAMS.map(p => ({ p, d: AID.deadlineInfo(p) }));
 
     items = items.filter(({ p }) =>
       (state.industry === '全部' || p.industry === state.industry) &&
@@ -338,23 +342,48 @@ footer { background: var(--ink); color: var(--green-bg); padding: 40px 24px 32px
     items.forEach(({ p, d }) => {
       const chipClass = d.kind === 'active' ? 'chip-urgent' : 'chip-normal';
       const chipText = d.kind === 'always' ? '常態受理' : d.label;
-      const card = document.createElement('article');
+      const card = document.createElement('a');
       card.className = 'aid-card';
+      card.href = 'program.html?id=' + encodeURIComponent(p.id);
       card.innerHTML =
         '<div class="card-cat">' + p.uiCategory + '</div>' +
         '<div class="card-top">' +
           '<h2 class="card-title">' + p.name + '</h2>' +
           '<span class="' + chipClass + '">' + chipText + '</span>' +
         '</div>' +
+        (p.summary ? '<p class="card-summary">' + p.summary.replace(/\*\*/g, '') + '</p>' : '') +
         '<div class="card-meta">' + p.amountText +
           '<span class="dot">・</span>' + p.office +
           '<span class="dot">・</span>' + p.region + '</div>' +
-        '<div class="card-fine">' + p.agency + '・最後查核 ' + p.lastVerified + '</div>';
+        '<div class="card-fine">' + p.agency + '・最後查核 ' + p.lastVerified +
+          '<span class="card-go">看詳情 →</span></div>';
       list.appendChild(card);
     });
   }
 
-  render();
+  // 資料改由後端 /programs 帶出，後台改完立刻反映；
+  // 欄位名稱沿用原本前端的寫法，render() 不用動。
+  let PROGRAMS = [];
+  (async () => {
+    try {
+      const raw = await (await fetch('/programs')).json();
+      PROGRAMS = raw.map(p => {
+        const d = p.display || {}, a = p.authority || {}, s = p.source || {};
+        return {
+          id: p.id, name: p.name, window: p.window, summary: p.summary,
+          uiCategory: d.ui_category || p.category || '其他',
+          industry: d.industry || '農',
+          region: d.region || '全國',
+          amountText: d.amount_text || '—',
+          office: a.office || '—', agency: a.agency || '—',
+          lastVerified: s.last_verified || '—',
+        };
+      });
+    } catch (e) {
+      PROGRAMS = [];
+    }
+    render();
+  })();
 })();
 </script>
 </body>

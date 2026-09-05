@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>補助詳情｜農民補給站</title>
+<style>
+:root{
+  --green-bright:#02DF82; --green-mid:#01B96B; --green-pale:#9FF5CF;
+  --green-bg:#F0FDF6; --green-tint:#D9FBEC; --ink:#06301F; --ink-soft:#0A4A32;
+  --orange:#D85A30; --warn-bg:#FEF3D8; --line:#CBEEDC;
+}
+@font-face{font-family:'GenSen';src:url('fonts/GenSenRounded2TW-R.woff2') format('woff2');font-weight:400;font-display:swap;}
+@font-face{font-family:'GenSen';src:url('fonts/GenSenRounded2TW-M.woff2') format('woff2');font-weight:500;font-display:swap;}
+@font-face{font-family:'GenSen';src:url('fonts/GenSenRounded2TW-H.woff2') format('woff2');font-weight:700;font-display:swap;}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--green-bg);color:var(--ink);
+  font-family:'GenSen','Yuanti TC','Microsoft JhengHei',sans-serif;}
+.nav-outer{max-width:860px;margin:0 auto;padding:14px 20px 0;}
+.nav-pill{display:flex;align-items:center;gap:18px;background:#fff;border:1px solid var(--line);
+  border-radius:999px;padding:10px 18px;flex-wrap:wrap;}
+.nav-logo{display:flex;align-items:center;gap:8px;text-decoration:none;color:var(--ink);font-weight:700;}
+.nav-links{display:flex;gap:18px;flex-wrap:wrap;font-size:1.0625rem;font-weight:500;}
+.nav-links a{text-decoration:none;color:var(--ink);white-space:nowrap;}
+.nav-links a:hover,.nav-links a.current{color:var(--green-mid);}
+.wrap{max-width:860px;margin:0 auto;padding:22px 20px 70px;}
+.back{display:inline-block;color:var(--ink-soft);text-decoration:none;font-size:1rem;margin-bottom:14px;}
+.back:hover{color:var(--green-mid);}
+h1{font-size:1.875rem;font-weight:700;line-height:1.4;margin:0 0 12px;}
+.tag{display:inline-block;font-size:.9375rem;background:var(--green-tint);border-radius:999px;
+  padding:4px 14px;margin:0 8px 8px 0;}
+.tag.warn{background:var(--warn-bg);color:#8A5A00;}
+.tag.urgent{background:#F8DCCF;color:var(--orange);font-weight:700;}
+.summary{font-size:1.1875rem;line-height:1.9;background:#fff;border:2px solid var(--green-bright);
+  border-radius:16px;padding:20px 24px;margin:16px 0 22px;}
+section{background:#fff;border:1px solid var(--line);border-radius:16px;padding:22px 26px;margin-bottom:16px;}
+h2{font-size:1.3125rem;font-weight:700;margin:0 0 14px;padding-left:13px;
+  border-left:5px solid var(--green-bright);}
+ul,ol{margin:0;padding-left:24px;font-size:1.0625rem;line-height:1.95;}
+li{margin-bottom:10px;}
+strong{background:linear-gradient(transparent 62%, var(--green-pale) 62%);}
+/* 文件清單 */
+.doc{display:flex;gap:12px;align-items:flex-start;padding:14px 0;border-bottom:1px solid var(--green-tint);}
+.doc:last-child{border-bottom:none;}
+.doc-check{width:24px;height:24px;border:2px solid var(--green-mid);border-radius:6px;flex:none;margin-top:2px;}
+.doc-name{font-size:1.0625rem;font-weight:700;}
+.doc-where{font-size:.9375rem;color:var(--ink-soft);margin-top:3px;line-height:1.7;}
+.doc.exempt .doc-name{text-decoration:line-through;opacity:.55;}
+.doc.exempt .doc-check{border-color:var(--green-bright);background:var(--green-bright);}
+/* 聯絡 */
+.contact{background:var(--ink);color:var(--green-bg);border-radius:16px;padding:24px 26px;margin-bottom:16px;}
+.contact h2{color:#fff;border-left-color:var(--green-bright);}
+.contact .row{font-size:1.0625rem;line-height:1.9;margin-bottom:6px;}
+.contact b{color:var(--green-bright);}
+.tel-btn{display:inline-block;background:var(--green-bright);color:var(--ink);font-weight:700;
+  font-size:1.1875rem;padding:14px 28px;border-radius:999px;text-decoration:none;margin-top:12px;}
+.script{background:rgba(255,255,255,.1);border-radius:12px;padding:14px 18px;margin-top:16px;
+  font-size:1rem;line-height:1.85;}
+.script .label{color:var(--green-pale);font-size:.9375rem;display:block;margin-bottom:6px;}
+.actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:20px;}
+.btn{font-family:inherit;font-size:1.0625rem;font-weight:700;padding:14px 26px;border-radius:999px;
+  text-decoration:none;display:inline-block;background:var(--green-bright);color:var(--ink);border:none;cursor:pointer;}
+.btn.outline{background:#fff;border:2px solid var(--line);color:var(--ink);font-weight:500;}
+.disclaim{font-size:.9375rem;color:var(--ink-soft);line-height:1.85;margin-top:20px;}
+.sample-warn{background:var(--warn-bg);border-radius:14px;padding:16px 20px;margin-bottom:18px;
+  font-size:1rem;line-height:1.8;color:#6B4A00;}
+.empty{text-align:center;color:var(--ink-soft);padding:50px 0;font-size:1.0625rem;}
+</style>
+</head>
+<body>
+<div class="nav-outer">
+  <nav class="nav-pill">
+    <a href="index.html" class="nav-logo" aria-label="農民補給站首頁">
+      <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><path d="M4 2 v18" stroke="#06301F" stroke-width="2.5" stroke-linecap="round"/><path d="M4 3 L18 7 L4 11 Z" fill="#02DF82"/></svg>
+      農民補給站
+    </a>
+    <div class="nav-links">
+      <a href="browse.html" class="current">找補助</a>
+      <a href="chat.html?tab=doc">看懂公文</a>
+      <a href="index.html#guides">白話指南</a>
+      <a href="profile.html">我的資料</a>
+    </div>
+  </nav>
+</div>
+
+<div class="wrap">
+  <a class="back" href="browse.html">← 回補助列表</a>
+  <div id="content"><p class="empty">載入中…</p></div>
+</div>
+
+<script>
+const esc = s => String(s ?? '').replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
+// 只支援 **粗體**，內容先跳脫，不可能夾帶標籤
+const md = s => esc(s).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+
+function windowText(w){
+  if (!w) return '未註明';
+  if (w.close) {
+    const left = Math.ceil((new Date(w.close) - new Date()) / 86400000);
+    const state = left < 0 ? '已截止' : `還剩 ${left} 天`;
+    return `${w.open ? w.open + ' 起 ' : ''}至 ${w.close}（${state}）`;
+  }
+  return w.note || w.close_rule || (w.type === '常態' ? '隨時可以辦' : '未註明');
+}
+
+(async () => {
+  const id = new URLSearchParams(location.search).get('id');
+  const box = document.getElementById('content');
+  if (!id) { box.innerHTML = '<p class="empty">沒有指定哪一筆補助。<a href="browse.html">回列表</a></p>'; return; }
+
+  let p;
+  try {
+    const r = await fetch('/programs/' + encodeURIComponent(id));
+    if (!r.ok) throw new Error();
+    p = await r.json();
+  } catch (e) {
+    box.innerHTML = '<p class="empty">找不到這筆補助。<br><a href="browse.html">回列表看看其他的</a></p>';
+    return;
+  }
+
+  document.title = p.name + '｜農民補給站';
+  const plain = p.plain || {}, a = p.authority || {}, src = p.source || {};
+  const w = p.window || {};
+  const left = w.close ? Math.ceil((new Date(w.close) - new Date()) / 86400000) : null;
+
+  const list = (arr, tag = 'ul') => arr && arr.length
+    ? `<${tag}>${arr.map(x => `<li>${md(x)}</li>`).join('')}</${tag}>` : '';
+
+  box.innerHTML = `
+    ${src.status === 'sample' ? `<div class="sample-warn">
+      ⚠️ <b>這是示範資料，不是現行公告。</b>實際的救助品項、地區、金額與期限每次都不一樣，
+      請務必打電話向下面的承辦單位確認。</div>` : ''}
+
+    <h1>${esc(p.name)}</h1>
+    <div>
+      ${p.category ? `<span class="tag">${esc(p.category)}</span>` : ''}
+      ${(p.display || {}).amount_text ? `<span class="tag">${esc(p.display.amount_text)}</span>` : ''}
+      ${left !== null && left >= 0 && left <= 14 ? `<span class="tag urgent">⏰ 只剩 ${left} 天</span>` : ''}
+      ${src.last_verified ? `<span class="tag warn">最後查核 ${esc(src.last_verified)}</span>` : ''}
+    </div>
+
+    ${plain.summary ? `<div class="summary">${md(plain.summary)}</div>` : ''}
+
+    <section>
+      <h2>⏰ 什麼時候要辦</h2>
+      <p style="font-size:1.125rem;line-height:1.9;margin:0">${esc(windowText(w))}</p>
+      ${w.close_rule ? `<p class="disclaim" style="margin-top:8px">規則原文：${esc(w.close_rule)}</p>` : ''}
+    </section>
+
+    ${plain.who ? `<section><h2>👤 誰可以申請</h2>${list(plain.who)}</section>` : ''}
+
+    <section>
+      <h2>📄 要準備哪些文件</h2>
+      <div id="docs">${(p.documents || []).map(d => `
+        <div class="doc">
+          <div class="doc-check"></div>
+          <div>
+            <div class="doc-name">${esc(d.name)}</div>
+            <div class="doc-where">去哪拿：${esc(d.where || '—')}${d.note ? `<br>${esc(d.note)}` : ''}${
+              d.exempt_if ? '<br>※ 某些情況可以免附，見下方提醒' : ''}</div>
+          </div>
+        </div>`).join('') || '<p class="disclaim">承辦單位會告訴你要帶什麼，建議先打電話問。</p>'}</div>
+    </section>
+
+    ${plain.steps ? `<section><h2>📝 怎麼辦理</h2>${list(plain.steps, 'ol')}</section>` : ''}
+
+    ${plain.notes ? `<section><h2>💡 一定要知道的事</h2>${list(plain.notes)}</section>` : ''}
+
+    <div class="contact">
+      <h2>📞 找誰辦</h2>
+      <div class="row">受理單位：<b>${esc(a.office || '—')}</b></div>
+      <div class="row">主管機關：${esc(a.agency || '—')}</div>
+      ${a.tel ? `<a class="tel-btn" href="tel:${esc(a.tel)}">打電話：${esc(a.tel)}</a>` : ''}
+      ${a.ask_script ? `<div class="script"><span class="label">不知道怎麼開口？照著念就好：</span>「${esc(a.ask_script)}」</div>` : ''}
+    </div>
+
+    <div class="actions">
+      <a class="btn" href="chat.html">問問我適不適合申請</a>
+      <a class="btn outline" href="profile.html">填我的資料，幫我預填申請表</a>
+    </div>
+
+    <p class="disclaim">
+      本頁為白話說明，<b>不具行政效力</b>。實際資格、金額與期限由承辦單位認定，
+      有疑問請直接電洽上面的受理單位。${src.note ? `<br>資料來源說明：${esc(src.note)}` : ''}
+    </p>`;
+})();
+</script>
+</body>
+</html>

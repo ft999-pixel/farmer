@@ -163,6 +163,7 @@ def get_fields() -> dict:
 
 @app.get("/programs")
 def get_programs() -> list[dict]:
+    """清單：window 相容新舊兩種資料結構，並附上「找補助」頁要顯示與篩選的欄位。"""
     rows = []
     for p in PROGRAMS:
         window = p.get("window")
@@ -177,9 +178,25 @@ def get_programs() -> list[dict]:
                     break
         if hasattr(window, "model_dump"):
             window = window.model_dump(mode="json", exclude_none=True)
-        rows.append({"id": p["id"], "name": p["name"], "category": p.get("category"),
-                     "window": window, "source": p.get("source")})
+        rows.append({
+            "id": p["id"], "name": p["name"], "category": p.get("category"),
+            "window": window, "source": p.get("source"),
+            # 以下供 browse.html 顯示與篩選，取代前端寫死的 site-data.js 副本
+            "display": p.get("display") or {},
+            "authority": {k: (p.get("authority") or {}).get(k)
+                          for k in ("agency", "office", "tel")},
+            "summary": (p.get("plain") or {}).get("summary"),
+        })
     return rows
+
+
+@app.get("/programs/{program_id}")
+def get_program(program_id: str) -> dict:
+    """單筆補助的完整內容，補助詳情頁（program.html）用。"""
+    program = next((p for p in PROGRAMS if p["id"] == program_id), None)
+    if program is None:
+        raise HTTPException(404, "找不到這筆補助")
+    return program
 
 
 @app.post("/match")

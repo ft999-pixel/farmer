@@ -2,6 +2,36 @@
 __pycache__/
 *.pyc
 .venv/
+
+# 金鑰與環境設定——絕對不進版本庫
 .env
+
+# 作業系統與執行紀錄
 *.log
 .DS_Store
+
+# 卡點統計：執行期資料，正常情況不該進版本庫。
+# 目前刻意提交示範資料，讓部署後的儀表板有東西可看（scripts/seed_blockers.py 產生）。
+# ⚠️ 真的上線給農民用之前，把下面這行的註解取消，並刪掉 data/blockers.jsonl，
+#    否則真實統計會混進 138 筆假資料。
+# data/blockers.jsonl
+
+# 會員資料庫（裡面是真人資料，絕對不進版本庫）
+data/members.db
+
+# 後台執行期產物：舊檔備份與稽核紀錄（各環境自己的，不進版本庫）
+data/backups/
+data/admin_audit.jsonl
+
+# 設計稿與素材壓縮檔（幾十 MB，部署用不到，別讓它拖慢每次上傳）
+*.zip
+
+# 編輯器的技能設定，不是專案程式碼
+.claude/skills/
+
+# 公文影像（影像不落地原則：本來就不該存在，但保險起見擋掉）
+*.jpg
+*.jpeg
+*.png
+!提案圖表/*.png
+

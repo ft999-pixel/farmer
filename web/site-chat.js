@@ -24,6 +24,13 @@ window.AidChat = (function () {
     container.innerHTML =
       '<div class="aidchat-log" aria-live="polite"></div>' +
       '<div class="aidchat-inputbar">' +
+        '<button class="aidchat-mic" type="button" aria-label="用說的" title="用說的">' +
+          '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">' +
+            '<path d="M12 3a3 3 0 0 1 3 3v6a3 3 0 0 1-6 0V6a3 3 0 0 1 3-3z" fill="currentColor"/>' +
+            '<path d="M5 11a7 7 0 0 0 14 0M12 18v3" stroke="currentColor" stroke-width="2" ' +
+              'fill="none" stroke-linecap="round"/>' +
+          '</svg>' +
+        '</button>' +
         '<input class="aidchat-inp" placeholder="例：我的檨仔攏落了了" autocomplete="off" aria-label="輸入你的狀況">' +
         '<button class="aidchat-send">送出</button>' +
       '</div>';
@@ -31,6 +38,7 @@ window.AidChat = (function () {
     const log = container.querySelector('.aidchat-log');
     const inp = container.querySelector('.aidchat-inp');
     const sendBtn = container.querySelector('.aidchat-send');
+    const micBtn = container.querySelector('.aidchat-mic');
     const demoToday = new URLSearchParams(window.location.search).get('demo')
       ? '2026-08-20' : null;
 
@@ -267,6 +275,66 @@ window.AidChat = (function () {
     inp.addEventListener('keydown', e => {
       if (e.key === 'Enter') { const t = inp.value; inp.value = ''; send(t); }
     });
+
+    /* ---- 語音輸入（華語）----------------------------------------------
+       依《系統設計建議書》§3.3：
+       - 語音是輔助，不是唯一路徑：打字與按鈕永遠都在
+       - 辨識結果先放進輸入框讓使用者確認，不自動送出（先覆誦再送）
+       - 辨識失敗不卡死流程，只提示改用打字
+       瀏覽器內建的辨識只支援華語；台語要另外接 ASR 服務（見 README）。 */
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    let recog = null, listening = false;
+
+    function micUnavailable(reason) {
+      micBtn.disabled = true;
+      micBtn.classList.add('off');
+      micBtn.title = reason;
+      micBtn.setAttribute('aria-label', reason);
+    }
+
+    if (!SR) {
+      micUnavailable('這個瀏覽器不支援語音輸入，請用打字的');
+    } else if (!window.isSecureContext) {
+      // http 的區域網路位址不算安全來源，瀏覽器不給用麥克風
+      micUnavailable('語音輸入需要 https 才能用，請用打字的');
+    } else {
+      micBtn.onclick = () => {
+        if (listening) { recog && recog.stop(); return; }
+        recog = new SR();
+        recog.lang = 'zh-TW';
+        recog.interimResults = true;
+        recog.continuous = false;
+
+        recog.onstart = () => {
+          listening = true;
+          micBtn.classList.add('on');
+          inp.placeholder = '請說話…說完會停下來讓你確認';
+        };
+        recog.onresult = e => {
+          let text = '';
+          for (let i = 0; i < e.results.length; i++) text += e.results[i][0].transcript;
+          inp.value = text;                 // 只填進去，不自動送出
+        };
+        recog.onerror = e => {
+          const why = e.error === 'not-allowed'
+            ? '沒有麥克風權限，請在網址列左邊允許麥克風，或直接用打字的'
+            : e.error === 'no-speech'
+              ? '沒有聽到聲音，再試一次或用打字的'
+              : '語音辨識沒有成功，用打字的也可以';
+          addMsg(why, 'bot');
+        };
+        recog.onend = () => {
+          listening = false;
+          micBtn.classList.remove('on');
+          inp.placeholder = '例：我的檨仔攏落了了';
+          if (inp.value.trim()) {
+            addMsg('我聽到的是：「' + inp.value.trim() + '」\n對的話按送出，不對可以直接改。', 'bot');
+            inp.focus();
+          }
+        };
+        try { recog.start(); } catch (e) { /* 連按兩下會丟錯，忽略 */ }
+      };
+    }
 
     // 開場
     addMsg(opts.greeting ||
