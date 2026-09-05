@@ -169,3 +169,17 @@ def next_question(results: list[dict], fields: dict[str, dict],
         "options": spec.get("options") or spec.get("values"),
         "type": spec.get("type"),
     }
+
+
+def match_profile(programs: list, profile, *, asked=None, today=None, matcher=None):
+    """Canonical MatchingProfile pipeline, kept importable from the engine.
+
+    The original engine API above remains the compatibility path used by the
+    LINE/web Flow. Importing lazily avoids a cycle because the new matcher uses
+    ``eval_node`` for legacy eligibility trees.
+    """
+    from .matching import match_profile as _match_profile
+    return _match_profile(programs, profile, asked=asked, today=today, matcher=matcher)
+
+
+match_matching_profile = match_profile

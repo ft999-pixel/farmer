@@ -1,0 +1,150 @@
+{
+  "id": "young-farmer-reserve-115",
+  "name": "115年青年農民農業經營準備金",
+  "summary": "青年農民第一年經營準備金申請入口示範資料；本計畫採線上申辦。",
+  "category": "青年農民",
+  "demo_simplified": true,
+  "source_key": "young_farmer_reserve_115",
+  "authority": {
+    "level": "中央",
+    "agency": "農業部",
+    "office": "青年農民農業經營準備金申辦系統"
+  },
+  "source": {
+    "source_key": "young_farmer_reserve_115",
+    "title": "青年農民農業經營準備金",
+    "authority": "農業部",
+    "url": "https://m.moa.gov.tw/Subsidy/Detail/5",
+    "online_application_url": "https://yfreserves.moa.gov.tw/yf/project115u.php",
+    "status": "official_demo_fixture",
+    "demo_simplified": true,
+    "last_verified": "2026-09-05",
+    "note": "示範資料；本計畫採官方線上申辦，不建立紙本表單。"
+  },
+  "official_form_reference": {
+    "status": "online_only",
+    "application_channel": "官方線上申辦",
+    "url": "https://yfreserves.moa.gov.tw/yf/project115u.php",
+    "note": "尚未匯入紙本表單；不要顯示預填官方紙本表單。"
+  },
+  "variants": [
+    {
+      "id": "plan-a-single-crop",
+      "name": "A方案：單一作物或養蜂經營規模",
+      "summary": "18至45歲、實際自營、從農未滿2年且符合單一作物面積或養蜂規模。",
+      "category": "青年農民",
+      "metadata": {
+        "applicant_types": ["individual_farmer"],
+        "intent_keywords": ["青年農民", "準備金", "從農", "經營準備"],
+        "age_range": {"min": 18, "max": 45},
+        "farming_years_max_exclusive": 2,
+        "requires_self_operated": true,
+        "requires_operating_site": true,
+        "crop_area_thresholds_ha": {"水稻": 5.0, "雜糧": 2.0, "製糖甘蔗": 2.0, "芻料作物": 2.0, "果樹": 0.7, "茶": 0.7, "蔬菜": 0.6, "香草": 0.4, "其他農糧作物": 0.4, "花卉": 0.3, "種苗": 0.2, "設施型農業": 0.2},
+        "beekeeping_boxes_min": 50,
+        "technical_qualification_any": ["農業公費專班畢業", "高中職以上農業相關科系畢業", "非農業相關科系且農業訓練150小時以上", "非農業相關科系且農業學分9學分以上"],
+        "form_template_status": "online_only",
+        "application_channel": "官方線上申辦"
+      },
+      "entry_criteria": [
+        {"id": "young-a-base", "text": "申請人須年滿18歲至45歲、實際自營、從農未滿2年、已有經營場域，並符合經營規模。", "source": {"source_key": "young_farmer_reserve_115", "section": "第一年基本資格"}},
+        {"id": "young-a-technical", "text": "農業技術資格任一即可：農業公費專班畢業、高中職以上農業相關科系畢業、非農業相關科系加農業訓練150小時以上，或農業學分9學分以上。", "source": {"source_key": "young_farmer_reserve_115", "section": "農業技術資格"}},
+        {"id": "young-a-scale", "text": "A方案單一作物面積依作物門檻；果樹為0.7公頃，香蕉可依果樹類檢視。蜂箱須達50箱。", "source": {"source_key": "young_farmer_reserve_115", "section": "A方案經營規模"}}
+      ],
+      "rounds": [
+        {
+          "id": "young-farmer-reserve-115-a-2026",
+          "name": "115年度第一年申請期",
+          "window": {"type": "公告型", "start": "2026-08-17", "end": "2026-09-01", "open": "2026-08-17", "close": "2026-09-01", "note": "官方線上申辦期間。"},
+          "metadata": {"online_application_url": "https://yfreserves.moa.gov.tw/yf/project115u.php", "form_template_status": "online_only", "application_channel": "官方線上申辦"},
+          "entry_criteria": [
+            {"id": "young-a-round-base", "text": "18至45歲、實際自營、從農未滿2年且已有經營場域。", "source": {"source_key": "young_farmer_reserve_115", "section": "第一年基本資格"}},
+            {"id": "young-a-round-training", "text": "農業技術資格須符合任一官方列舉途徑；單以80小時訓練且無其他資格不作為入口資格。", "source": {"source_key": "young_farmer_reserve_115", "section": "農業技術資格"}},
+            {"id": "young-a-round-scale", "text": "香蕉以果樹類檢視，單一作物面積須達0.7公頃；蜂箱須達50箱。", "source": {"source_key": "young_farmer_reserve_115", "section": "A方案經營規模"}}
+          ],
+          "tasks": [
+            {"id": "young-online-application", "title": "於青年農民申辦系統完成線上申請", "deadline": "2026-09-01", "depends_on": []},
+            {"id": "young-prepare-proof", "title": "依線上系統提示準備經營場域、規模及技術資格證明", "depends_on": ["young-online-application"]}
+          ],
+          "authority": {"level": "中央", "agency": "農業部", "office": "青年農民農業經營準備金申辦系統"},
+          "source": {"source_key": "young_farmer_reserve_115", "url": "https://yfreserves.moa.gov.tw/yf/project115u.php", "application_channel": "官方線上申辦"}
+        }
+      ],
+      "authority": {"level": "中央", "agency": "農業部"},
+      "source": {"source_key": "young_farmer_reserve_115", "application_channel": "官方線上申辦"}
+    },
+    {
+      "id": "plan-b-two-crops",
+      "name": "B方案：二種作物經營規模",
+      "summary": "二種作物依主次作物比例換算達100%，主要作物至少50%，次要作物至少0.2公頃。",
+      "category": "青年農民",
+      "metadata": {
+        "applicant_types": ["individual_farmer"],
+        "intent_keywords": ["青年農民", "準備金", "從農"],
+        "age_range": {"min": 18, "max": 45},
+        "farming_years_max_exclusive": 2,
+        "requires_self_operated": true,
+        "two_crop_mix": {"allowed_categories": ["水稻", "雜糧", "果樹", "蔬菜"], "primary_share_min": 0.5, "secondary_area_min_ha": 0.2, "combined_ratio": 1.0},
+        "form_template_status": "online_only",
+        "application_channel": "官方線上申辦"
+      },
+      "entry_criteria": [
+        {"id": "young-b-base", "text": "申請人須年滿18歲至45歲、實際自營、從農未滿2年且已有經營場域。", "source": {"source_key": "young_farmer_reserve_115", "section": "第一年基本資格"}},
+        {"id": "young-b-mix", "text": "B方案限二種作物，主作物比例至少50%、次作物至少0.2公頃，比例換算合計達100%。", "source": {"source_key": "young_farmer_reserve_115", "section": "B方案經營規模"}}
+      ],
+      "rounds": [
+        {
+          "id": "young-farmer-reserve-115-b-2026",
+          "name": "115年度第一年申請期",
+          "window": {"type": "公告型", "start": "2026-08-17", "end": "2026-09-01", "open": "2026-08-17", "close": "2026-09-01", "note": "官方線上申辦期間。"},
+          "metadata": {"form_template_status": "online_only", "application_channel": "官方線上申辦", "online_application_url": "https://yfreserves.moa.gov.tw/yf/project115u.php"},
+          "entry_criteria": [{"id": "young-b-round-mix", "text": "二種作物主次比例與面積須依B方案規定由申辦系統檢核。", "source": {"source_key": "young_farmer_reserve_115", "section": "B方案經營規模"}}],
+          "tasks": [{"id": "young-b-online-application", "title": "於青年農民申辦系統完成線上申請", "deadline": "2026-09-01", "depends_on": []}],
+          "authority": {"level": "中央", "agency": "農業部", "office": "青年農民農業經營準備金申辦系統"},
+          "source": {"source_key": "young_farmer_reserve_115", "application_channel": "官方線上申辦"}
+        }
+      ],
+      "authority": {"level": "中央", "agency": "農業部"},
+      "source": {"source_key": "young_farmer_reserve_115", "application_channel": "官方線上申辦"}
+    },
+    {
+      "id": "plan-c-organic-transition",
+      "name": "C方案：有機或轉型驗證經營規模",
+      "summary": "至少70%面積具有有機或轉型驗證。",
+      "category": "青年農民",
+      "metadata": {
+        "applicant_types": ["individual_farmer"],
+        "intent_keywords": ["青年農民", "準備金", "有機", "轉型"],
+        "age_range": {"min": 18, "max": 45},
+        "farming_years_max_exclusive": 2,
+        "requires_self_operated": true,
+        "organic_area_ratio_min": 0.7,
+        "form_template_status": "online_only",
+        "application_channel": "官方線上申辦"
+      },
+      "entry_criteria": [
+        {"id": "young-c-base", "text": "申請人須年滿18歲至45歲、實際自營、從農未滿2年且已有經營場域。", "source": {"source_key": "young_farmer_reserve_115", "section": "第一年基本資格"}},
+        {"id": "young-c-organic", "text": "C方案至少70%經營面積須有有機或轉型驗證。", "source": {"source_key": "young_farmer_reserve_115", "section": "C方案經營規模"}}
+      ],
+      "rounds": [
+        {
+          "id": "young-farmer-reserve-115-c-2026",
+          "name": "115年度第一年申請期",
+          "window": {"type": "公告型", "start": "2026-08-17", "end": "2026-09-01", "open": "2026-08-17", "close": "2026-09-01", "note": "官方線上申辦期間。"},
+          "metadata": {"form_template_status": "online_only", "application_channel": "官方線上申辦", "online_application_url": "https://yfreserves.moa.gov.tw/yf/project115u.php"},
+          "entry_criteria": [{"id": "young-c-round-organic", "text": "有機或轉型驗證面積比例須達70%，由申辦系統及承辦單位核對。", "source": {"source_key": "young_farmer_reserve_115", "section": "C方案經營規模"}}],
+          "tasks": [{"id": "young-c-online-application", "title": "於青年農民申辦系統完成線上申請", "deadline": "2026-09-01", "depends_on": []}],
+          "authority": {"level": "中央", "agency": "農業部", "office": "青年農民農業經營準備金申辦系統"},
+          "source": {"source_key": "young_farmer_reserve_115", "application_channel": "官方線上申辦"}
+        }
+      ],
+      "authority": {"level": "中央", "agency": "農業部"},
+      "source": {"source_key": "young_farmer_reserve_115", "application_channel": "官方線上申辦"}
+    }
+  ],
+  "eligibility": {
+    "all": [
+      {"field": "event", "op": "=", "value": "__new_demo_variant_only__", "legal_ref": "compatibility marker for the legacy loader; use variants/rounds for matching"}
+    ]
+  }
+}

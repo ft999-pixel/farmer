@@ -1,0 +1,105 @@
+{
+  "demo_simplified": true,
+  "demo_date": "2026-08-20",
+  "source": "luna_max_handoff/05_DEMO_DATA_PACK.md",
+  "personas": [
+    {
+      "id": "pingtung-banana-machinery",
+      "label": "屏東香蕉農",
+      "utterance": "我去年才回來屏東種香蕉，大概八分地，有 QR Code，最近想買電動割草機。",
+      "matching_profile": {
+        "applicant_type": "individual_farmer",
+        "location": "屏東縣內埔鄉",
+        "crops": ["香蕉"],
+        "land_area_ha": 0.8,
+        "farming_years": 1,
+        "certifications": ["溯源農糧產品追溯條碼（QR Code）"],
+        "intent": "想買電動割草機",
+        "equipment_intent": "電動割草機"
+      },
+      "expected_flow": {
+        "first_status": "NEED_INFO",
+        "missing_key": "machine_model_status",
+        "answer": "listed_subsidized_model",
+        "final_status": "MATCH",
+        "official_form_template_id": "farm_machine_115.labor_saving"
+      }
+    },
+    {
+      "id": "tainan-mango-farmer",
+      "label": "臺南芒果農",
+      "matching_profile": {
+        "applicant_type": "individual_farmer",
+        "location": "臺南市",
+        "crops": ["芒果"],
+        "land_area_ha": 1.2,
+        "land_use": "合法農業使用",
+        "land_tenure": "租用",
+        "has_land_use_proof": true,
+        "certifications": [],
+        "intent": "果樹生產設施"
+      },
+      "expected_flow": {
+        "status": "MATCH",
+        "later_requirement": "驗證或追溯文件依規定後續取得",
+        "form_template_status": "尚未匯入官方原始 PDF"
+      }
+    },
+    {
+      "id": "young-banana-farmer",
+      "label": "青年農民",
+      "matching_profile": {
+        "applicant_type": "individual_farmer",
+        "age": 29,
+        "self_operated": true,
+        "farming_years": 1,
+        "location": "屏東縣",
+        "crop_category": "果樹",
+        "crops": ["香蕉"],
+        "land_area_ha": 0.8,
+        "agriculture_training_hours": 160,
+        "has_operating_site": true,
+        "operating_scale_ok": true,
+        "intent": "青年農民農業經營準備金"
+      },
+      "expected_flow": {"status": "MATCH", "application_channel": "官方線上申辦"}
+    },
+    {
+      "id": "butterfly-orchid-farmer",
+      "label": "蝴蝶蘭農民",
+      "matching_profile": {
+        "applicant_type": "individual_farmer",
+        "location": "臺南市",
+        "crops": ["蝴蝶蘭"],
+        "requested_facility_area_ha": 0.2,
+        "land_use": "合法農業使用",
+        "has_land_use_proof": true,
+        "intent": "智能防災設施"
+      },
+      "expected_flow": {
+        "status": "MATCH",
+        "area_note": "0.2公頃不可因面積排除",
+        "form_template_status": "尚未匯入官方原始 PDF"
+      }
+    },
+    {
+      "id": "organic-farmer",
+      "label": "有機農民",
+      "matching_profile": {
+        "applicant_type": "individual_farmer",
+        "location": "花蓮縣",
+        "crops": ["蔬菜"],
+        "land_area_ha": 1.2,
+        "certifications": ["有機驗證"],
+        "intent": "有機堆肥設施"
+      },
+      "expected_flow": {
+        "small_area_status": "NOT_RELEVANT",
+        "small_area_ha": 0.8,
+        "large_area_status": "MATCH",
+        "large_area_ha": 1.2,
+        "form_template_status": "尚未取得官方申請表"
+      }
+    }
+  ]
+}

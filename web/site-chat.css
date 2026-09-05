@@ -94,6 +94,13 @@
   background: #F0FDF6; border-radius: 10px; padding: 12px 14px;
   font-size: 1.0625rem; color: #0A4A32; line-height: 1.6;
 }
+.rc-why { color: #0A4A32; line-height: 1.55; }
+.rc-tasks {
+  background: #F8FFFB; border: 1px solid #D9FBEC; border-radius: 10px;
+  padding: 12px 14px;
+}
+.rc-tasks ul { margin: 0; padding-left: 1.35rem; }
+.rc-tasks li { padding: 3px 0; font-size: 1rem; line-height: 1.5; }
 .rc-office { font-size: 1rem; color: #46564E; }
 .rc-tel {
   display: inline-flex; align-items: center; justify-content: center;

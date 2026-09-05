@@ -1,0 +1,175 @@
+{
+  "id": "smart-disaster-facility-115",
+  "name": "115年智能防災設施型農業",
+  "summary": "智能防災設施型農業申請入口示範資料，保留作物、面積與汰舊換新等判斷提示。",
+  "category": "智能防災",
+  "demo_simplified": true,
+  "source_key": "smart_disaster_facility_115",
+  "authority": {
+    "level": "中央",
+    "agency": "農業部農糧署",
+    "office": "地方受理單位"
+  },
+  "source": {
+    "source_key": "smart_disaster_facility_115",
+    "title": "推動智能防災設施型農業計畫",
+    "authority": "農業部農糧署",
+    "url": "https://www.afa.gov.tw/cht/index.php?article_id=30947&code=list&flag=detail&ids=3501",
+    "status": "official_demo_fixture",
+    "version": "115年3月3日修正",
+    "demo_simplified": true,
+    "last_verified": "2026-09-05",
+    "note": "官方附件申請表尚未匯入原始 PDF；本 fixture 僅作 matching 與申辦提示。"
+  },
+  "official_form_reference": {
+    "status": "not_imported",
+    "note": "官方有附件申請表，但本 pack 未匯入原始 PDF；不得自行重建或重畫。",
+    "source_url": "https://www.afa.gov.tw/cht/index.php?article_id=30947&code=list&flag=detail&ids=3501",
+    "application_channel": "依官方公告向地方受理單位申請"
+  },
+  "variants": [
+    {
+      "id": "butterfly-orchid",
+      "name": "蝴蝶蘭智能防災設施",
+      "summary": "蝴蝶蘭設施面積不超過0.3公頃可進入評估；0.4公頃不適用。",
+      "category": "智能防災",
+      "metadata": {
+        "applicant_types": ["individual_farmer", "farmer_group"],
+        "crop_scope": ["蝴蝶蘭"],
+        "intent_keywords": ["智能防災", "設施", "蝴蝶蘭"],
+        "requested_facility_area_max_ha": 0.3,
+        "area_rule": "requested_facility_area_ha <= 0.3",
+        "land_use_required": true,
+        "non_owned_land_requires": "使用權證明",
+        "form_template_status": "尚未匯入官方原始 PDF；不得自行重建",
+        "application_channel": "依官方公告向地方受理單位申請"
+      },
+      "entry_criteria": [
+        {"id": "butterfly-orchid-crop", "text": "申請作物為蝴蝶蘭，且設施所在土地須為合法農地；非自有土地須有使用權證明。", "source": {"source_key": "smart_disaster_facility_115", "section": "蝴蝶蘭"}},
+        {"id": "butterfly-orchid-area", "text": "蝴蝶蘭申請設施面積以不超過0.3公頃為入口條件；0.2公頃不可因面積排除，0.4公頃屬本變項不適用。", "source": {"source_key": "smart_disaster_facility_115", "section": "蝴蝶蘭面積"}}
+      ],
+      "rounds": [
+        {
+          "id": "smart-disaster-facility-115-butterfly-orchid-2026",
+          "name": "115年度申請期",
+          "window": {"type": "公告型", "start": null, "end": "2026-05-30", "open": null, "close": "2026-05-30", "note": "申請截止日；實際受理依地方公告。"},
+          "metadata": {"crop_scope": ["蝴蝶蘭"], "requested_facility_area_max_ha": 0.3, "form_template_status": "尚未匯入官方原始 PDF；僅保留 matching", "application_channel": "依官方公告向地方受理單位申請"},
+          "entry_criteria": [{"id": "butterfly-orchid-round", "text": "蝴蝶蘭設施面積不超過0.3公頃；合法農地及使用權文件依規定檢附。", "source": {"source_key": "smart_disaster_facility_115", "section": "蝴蝶蘭"}}],
+          "tasks": [
+            {"id": "smart-butterfly-submit", "title": "向地方受理單位提出智能防災設施申請", "deadline": "2026-05-30", "depends_on": []},
+            {"id": "smart-butterfly-land-proof", "title": "準備合法農地及非自有土地使用權證明", "depends_on": ["smart-butterfly-submit"]}
+          ],
+          "authority": {"level": "中央", "agency": "農業部農糧署", "office": "地方受理單位"},
+          "source": {"source_key": "smart_disaster_facility_115", "note": "官方附件申請表尚未匯入，不提供自創表單。"}
+        }
+      ],
+      "authority": {"level": "中央", "agency": "農業部農糧署"},
+      "source": {"source_key": "smart_disaster_facility_115", "section": "蝴蝶蘭"}
+    },
+    {
+      "id": "oncidium",
+      "name": "文心蘭智能防災設施",
+      "summary": "文心蘭原則上以汰舊換新為限，符合特定產期調節／外銷例外者另依規定。",
+      "category": "智能防災",
+      "metadata": {
+        "applicant_types": ["individual_farmer", "farmer_group"],
+        "crop_scope": ["文心蘭"],
+        "intent_keywords": ["智能防災", "文心蘭", "汰舊換新", "設施"],
+        "replacement_required_by_default": true,
+        "exception_requires": ["前2年產期調節及分散產期供貨證明與持續成長外銷實績", "日本以外市場3年以上銷售契約"],
+        "form_template_status": "尚未匯入官方原始 PDF；不得自行重建",
+        "application_channel": "依官方公告向地方受理單位申請"
+      },
+      "entry_criteria": [
+        {"id": "oncidium-replacement", "text": "文心蘭設施原則上以汰舊換新為限。", "source": {"source_key": "smart_disaster_facility_115", "section": "文心蘭"}},
+        {"id": "oncidium-exceptions", "text": "例外為前2年實施產期調節且有分散產期供貨證明、前2年外銷實績持續成長，或與出口業者簽訂日本以外市場3年以上銷售契約。", "source": {"source_key": "smart_disaster_facility_115", "section": "文心蘭"}}
+      ],
+      "rounds": [
+        {
+          "id": "smart-disaster-facility-115-oncidium-2026",
+          "name": "115年度申請期",
+          "window": {"type": "公告型", "start": null, "end": "2026-05-30", "open": null, "close": "2026-05-30", "note": "申請截止日；實際受理依地方公告。"},
+          "metadata": {"replacement_required_by_default": true, "form_template_status": "尚未匯入官方原始 PDF；僅保留 matching", "application_channel": "依官方公告向地方受理單位申請"},
+          "entry_criteria": [{"id": "oncidium-round", "text": "文心蘭原則上汰舊換新；例外條件須由承辦單位核對證明。", "source": {"source_key": "smart_disaster_facility_115", "section": "文心蘭"}}],
+          "tasks": [
+            {"id": "smart-oncidium-submit", "title": "向地方受理單位提出文心蘭設施申請", "deadline": "2026-05-30", "depends_on": []},
+            {"id": "smart-oncidium-proof", "title": "準備汰舊換新或例外外銷證明供承辦核對", "depends_on": ["smart-oncidium-submit"]}
+          ],
+          "authority": {"level": "中央", "agency": "農業部農糧署", "office": "地方受理單位"},
+          "source": {"source_key": "smart_disaster_facility_115", "note": "官方附件申請表尚未匯入，不提供自創表單。"}
+        }
+      ],
+      "authority": {"level": "中央", "agency": "農業部農糧署"},
+      "source": {"source_key": "smart_disaster_facility_115", "section": "文心蘭"}
+    },
+    {
+      "id": "mushroom",
+      "name": "菇類智能防災設施",
+      "summary": "香菇、木耳、草菇及洋菇等指定菇類，限汰舊換新並接受專案輔導。",
+      "category": "智能防災",
+      "metadata": {
+        "applicant_types": ["individual_farmer", "farmer_group"],
+        "crop_scope": ["香菇", "木耳", "草菇", "洋菇"],
+        "intent_keywords": ["智能防災", "菇類", "菇寮", "汰舊換新"],
+        "replacement_required": true,
+        "project_guidance_required": true,
+        "form_template_status": "尚未匯入官方原始 PDF；不得自行重建",
+        "application_channel": "依官方公告向地方受理單位申請"
+      },
+      "entry_criteria": [
+        {"id": "mushroom-scope", "text": "菇類僅限香菇、木耳、草菇及洋菇。", "source": {"source_key": "smart_disaster_facility_115", "section": "菇類"}},
+        {"id": "mushroom-requirements", "text": "菇類設施須汰舊換新，並經農業試驗所或農糧署專案輔導。", "source": {"source_key": "smart_disaster_facility_115", "section": "菇類"}}
+      ],
+      "rounds": [
+        {
+          "id": "smart-disaster-facility-115-mushroom-2026",
+          "name": "115年度申請期",
+          "window": {"type": "公告型", "start": null, "end": "2026-05-30", "open": null, "close": "2026-05-30", "note": "申請截止日；實際受理依地方公告。"},
+          "metadata": {"crop_scope": ["香菇", "木耳", "草菇", "洋菇"], "replacement_required": true, "project_guidance_required": true, "form_template_status": "尚未匯入官方原始 PDF；僅保留 matching", "application_channel": "依官方公告向地方受理單位申請"},
+          "entry_criteria": [{"id": "mushroom-round", "text": "指定菇類、舊設施汰舊換新及專案輔導條件需一併確認。", "source": {"source_key": "smart_disaster_facility_115", "section": "菇類"}}],
+          "tasks": [{"id": "smart-mushroom-consult", "title": "向農業試驗所或農糧署確認專案輔導與汰舊換新", "deadline": "2026-05-30", "depends_on": []}],
+          "authority": {"level": "中央", "agency": "農業部農糧署", "office": "地方受理單位"},
+          "source": {"source_key": "smart_disaster_facility_115", "note": "官方附件申請表尚未匯入，不提供自創表單。"}
+        }
+      ],
+      "authority": {"level": "中央", "agency": "農業部農糧署"},
+      "source": {"source_key": "smart_disaster_facility_115", "section": "菇類"}
+    },
+    {
+      "id": "vanilla",
+      "name": "香莢蘭智能防災設施",
+      "summary": "香莢蘭設施以汰舊換新為限。",
+      "category": "智能防災",
+      "metadata": {
+        "applicant_types": ["individual_farmer", "farmer_group"],
+        "crop_scope": ["香莢蘭"],
+        "intent_keywords": ["智能防災", "香莢蘭", "汰舊換新"],
+        "replacement_required": true,
+        "form_template_status": "尚未匯入官方原始 PDF；不得自行重建",
+        "application_channel": "依官方公告向地方受理單位申請"
+      },
+      "entry_criteria": [
+        {"id": "vanilla-replacement", "text": "香莢蘭設施以汰舊換新為限。", "source": {"source_key": "smart_disaster_facility_115", "section": "香莢蘭"}}
+      ],
+      "rounds": [
+        {
+          "id": "smart-disaster-facility-115-vanilla-2026",
+          "name": "115年度申請期",
+          "window": {"type": "公告型", "start": null, "end": "2026-05-30", "open": null, "close": "2026-05-30", "note": "申請截止日；實際受理依地方公告。"},
+          "metadata": {"replacement_required": true, "form_template_status": "尚未匯入官方原始 PDF；僅保留 matching", "application_channel": "依官方公告向地方受理單位申請"},
+          "entry_criteria": [{"id": "vanilla-round", "text": "香莢蘭設施須確認為汰舊換新。", "source": {"source_key": "smart_disaster_facility_115", "section": "香莢蘭"}}],
+          "tasks": [{"id": "smart-vanilla-submit", "title": "向地方受理單位提出香莢蘭設施申請", "deadline": "2026-05-30", "depends_on": []}],
+          "authority": {"level": "中央", "agency": "農業部農糧署", "office": "地方受理單位"},
+          "source": {"source_key": "smart_disaster_facility_115", "note": "官方附件申請表尚未匯入，不提供自創表單。"}
+        }
+      ],
+      "authority": {"level": "中央", "agency": "農業部農糧署"},
+      "source": {"source_key": "smart_disaster_facility_115", "section": "香莢蘭"}
+    }
+  ],
+  "eligibility": {
+    "all": [
+      {"field": "event", "op": "=", "value": "__new_demo_variant_only__", "legal_ref": "compatibility marker for the legacy loader; use variants/rounds for matching"}
+    ]
+  }
+}

@@ -1,0 +1,195 @@
+{
+  "id": "organic-support-115",
+  "name": "115年有機農業生產輔導",
+  "summary": "有機驗證、轉型及友善環境耕作相關生產輔導入口示範資料。",
+  "category": "有機農業",
+  "demo_simplified": true,
+  "source_key": "organic_support_115",
+  "authority": {
+    "level": "中央",
+    "agency": "農業部農糧署",
+    "office": "地方受理單位及相關農業團體"
+  },
+  "source": {
+    "source_key": "organic_support_115",
+    "title": "有機農業生產輔導",
+    "authority": "農業部農糧署",
+    "url": "https://www.afa.gov.tw/cht/index.php/index.php?article_id=17312&code=list&flag=detail&ids=558",
+    "status": "official_demo_fixture",
+    "version": "115年4月",
+    "demo_simplified": true,
+    "last_verified": "2026-09-05",
+    "note": "中央補助原則沒有單一全國統一截止日；本 fixture 不捏造截止日。"
+  },
+  "official_form_reference": {
+    "status": "not_imported",
+    "note": "尚未取得對應官方申請表；僅保留 matching 與承辦單位／線上申辦提示。",
+    "application_channel": "依官方公告向地方受理單位或相關農業團體洽辦"
+  },
+  "variants": [
+    {
+      "id": "organic-fertilizer",
+      "name": "有機農業適用肥料",
+      "summary": "有機驗證、轉型期驗證或友善環境耕作登錄者可先檢視適用肥料輔導。",
+      "category": "有機農業",
+      "metadata": {
+        "applicant_types": ["individual_farmer", "farmer_group", "producer_group", "farmers_association", "agricultural_cooperative", "agricultural_organization"],
+        "required_certification_any": ["有機驗證", "有機轉型期驗證", "友善環境耕作推廣團體登錄"],
+        "intent_keywords": ["有機", "肥料", "資材"],
+        "form_template_status": "尚未匯入官方申請表",
+        "application_channel": "依官方公告向地方受理單位或相關農業團體洽辦"
+      },
+      "entry_criteria": [
+        {"id": "organic-fertilizer-certification", "text": "申請人為有機驗證、有機轉型期驗證或友善環境耕作推廣團體登錄對象。", "source": {"source_key": "organic_support_115", "section": "適用對象"}}
+      ],
+      "rounds": [
+        {
+          "id": "organic-support-115-fertilizer",
+          "name": "常態輔導",
+          "window": {"type": "常態", "start": null, "end": null, "open": null, "close": null, "note": "中央原則沒有單一全國統一截止日，請向受理單位確認。"},
+          "metadata": {"form_template_status": "尚未匯入官方申請表", "application_channel": "依官方公告向地方受理單位或相關農業團體洽辦"},
+          "entry_criteria": [{"id": "organic-fertilizer-round", "text": "具備有機、轉型或友善環境耕作登錄身分即可先行洽詢適用肥料。", "source": {"source_key": "organic_support_115", "section": "有機農業適用肥料"}}],
+          "tasks": [{"id": "organic-fertilizer-consult", "title": "向受理單位確認適用肥料與申請文件", "depends_on": []}],
+          "authority": {"level": "中央", "agency": "農業部農糧署", "office": "地方受理單位或相關農業團體"},
+          "source": {"source_key": "organic_support_115", "note": "無單一全國截止日；官方申請表尚未匯入。"}
+        }
+      ],
+      "authority": {"level": "中央", "agency": "農業部農糧署"},
+      "source": {"source_key": "organic_support_115", "section": "有機農業適用肥料"}
+    },
+    {
+      "id": "organic-facility",
+      "name": "有機溫網室設施",
+      "summary": "有機或轉型生產所需溫網室設施輔導入口。",
+      "category": "有機農業",
+      "metadata": {
+        "applicant_types": ["individual_farmer", "farmer_group", "producer_group", "farmers_association", "agricultural_cooperative", "agricultural_organization"],
+        "required_certification_any": ["有機驗證", "有機轉型期驗證", "友善環境耕作推廣團體登錄"],
+        "intent_keywords": ["有機", "溫網室", "設施"],
+        "form_template_status": "尚未匯入官方申請表",
+        "application_channel": "依官方公告向地方受理單位或相關農業團體洽辦"
+      },
+      "entry_criteria": [
+        {"id": "organic-facility-certification", "text": "申請人須具備有機驗證、有機轉型期驗證或友善環境耕作推廣團體登錄。自有農地是優先考量，不是入口 hard blocker。", "source": {"source_key": "organic_support_115", "section": "溫網室設施"}}
+      ],
+      "rounds": [
+        {
+          "id": "organic-support-115-facility",
+          "name": "常態輔導",
+          "window": {"type": "常態", "start": null, "end": null, "open": null, "close": null, "note": "中央原則沒有單一全國統一截止日，請向受理單位確認。"},
+          "metadata": {"form_template_status": "尚未匯入官方申請表", "application_channel": "依官方公告向地方受理單位或相關農業團體洽辦"},
+          "entry_criteria": [{"id": "organic-facility-round", "text": "有機或轉型生產設施需求可先洽詢，農地所有權屬於優先考量，不直接排除。", "source": {"source_key": "organic_support_115", "section": "溫網室設施"}}],
+          "tasks": [{"id": "organic-facility-consult", "title": "向受理單位確認設施補助與後續驗證要求", "depends_on": []}],
+          "authority": {"level": "中央", "agency": "農業部農糧署", "office": "地方受理單位或相關農業團體"},
+          "source": {"source_key": "organic_support_115", "note": "官方申請表尚未匯入。"}
+        }
+      ],
+      "authority": {"level": "中央", "agency": "農業部農糧署"},
+      "source": {"source_key": "organic_support_115", "section": "溫網室設施"}
+    },
+    {
+      "id": "organic-compost",
+      "name": "有機堆肥設施",
+      "summary": "自製自用堆肥設施；個別農民面積至少1.0公頃，團體共同使用合計至少5.0公頃。",
+      "category": "有機農業",
+      "metadata": {
+        "applicant_types": ["individual_farmer", "farmer_group", "producer_group", "farmers_association", "agricultural_cooperative", "agricultural_organization"],
+        "required_certification_any": ["有機驗證", "有機轉型期驗證", "友善環境耕作推廣團體登錄"],
+        "intent_keywords": ["有機", "堆肥", "肥料設施"],
+        "self_use_required": true,
+        "individual_min_area_ha": 1.0,
+        "group_combined_min_area_ha": 5.0,
+        "ownership_priority_only": true,
+        "form_template_status": "尚未匯入官方申請表",
+        "application_channel": "依官方公告向地方受理單位或相關農業團體洽辦"
+      },
+      "entry_criteria": [
+        {"id": "organic-compost-certification", "text": "申請人須具備有機驗證、有機轉型期驗證或友善環境耕作推廣團體登錄。", "source": {"source_key": "organic_support_115", "section": "堆肥設施"}},
+        {"id": "organic-compost-scale", "text": "堆肥設施限自製自用；個別農民經營面積至少1.0公頃，農民團體共同使用合計至少5.0公頃。自有農地是優先考量，不是硬性入口 blocker。", "source": {"source_key": "organic_support_115", "section": "堆肥設施"}}
+      ],
+      "rounds": [
+        {
+          "id": "organic-support-115-compost",
+          "name": "常態輔導",
+          "window": {"type": "常態", "start": null, "end": null, "open": null, "close": null, "note": "中央原則沒有單一全國統一截止日，請向受理單位確認。"},
+          "metadata": {"individual_min_area_ha": 1.0, "group_combined_min_area_ha": 5.0, "self_use_required": true, "form_template_status": "尚未匯入官方申請表", "application_channel": "依官方公告向地方受理單位或相關農業團體洽辦"},
+          "entry_criteria": [
+            {"id": "organic-compost-round-certification", "text": "具備有機、轉型或友善環境耕作登錄身分。", "source": {"source_key": "organic_support_115", "section": "堆肥設施"}},
+            {"id": "organic-compost-round-scale", "text": "個別農民面積至少1.0公頃；團體共同使用合計至少5.0公頃；需自製自用。", "source": {"source_key": "organic_support_115", "section": "堆肥設施"}}
+          ],
+          "tasks": [{"id": "organic-compost-consult", "title": "向受理單位確認自製自用堆肥設施申請文件", "depends_on": []}],
+          "authority": {"level": "中央", "agency": "農業部農糧署", "office": "地方受理單位或相關農業團體"},
+          "source": {"source_key": "organic_support_115", "note": "官方申請表尚未匯入。"}
+        }
+      ],
+      "authority": {"level": "中央", "agency": "農業部農糧署"},
+      "source": {"source_key": "organic_support_115", "section": "堆肥設施"}
+    },
+    {
+      "id": "organic-production-equipment",
+      "name": "有機生產設備",
+      "summary": "有機及轉型生產設備輔導入口。",
+      "category": "有機農業",
+      "metadata": {
+        "applicant_types": ["individual_farmer", "farmer_group", "producer_group", "farmers_association", "agricultural_cooperative", "agricultural_organization"],
+        "required_certification_any": ["有機驗證", "有機轉型期驗證", "友善環境耕作推廣團體登錄"],
+        "intent_keywords": ["有機", "生產設備", "設備"],
+        "form_template_status": "尚未匯入官方申請表",
+        "application_channel": "依官方公告向地方受理單位或相關農業團體洽辦"
+      },
+      "entry_criteria": [
+        {"id": "organic-production-certification", "text": "申請人須具備有機驗證、有機轉型期驗證或友善環境耕作推廣團體登錄。", "source": {"source_key": "organic_support_115", "section": "生產設備"}}
+      ],
+      "rounds": [
+        {
+          "id": "organic-support-115-production-equipment",
+          "name": "常態輔導",
+          "window": {"type": "常態", "start": null, "end": null, "open": null, "close": null, "note": "中央原則沒有單一全國統一截止日，請向受理單位確認。"},
+          "metadata": {"form_template_status": "尚未匯入官方申請表", "application_channel": "依官方公告向地方受理單位或相關農業團體洽辦"},
+          "entry_criteria": [{"id": "organic-production-round", "text": "有機或轉型生產設備需求可先洽詢受理單位。", "source": {"source_key": "organic_support_115", "section": "生產設備"}}],
+          "tasks": [{"id": "organic-production-consult", "title": "向受理單位確認有機生產設備補助", "depends_on": []}],
+          "authority": {"level": "中央", "agency": "農業部農糧署", "office": "地方受理單位或相關農業團體"},
+          "source": {"source_key": "organic_support_115", "note": "官方申請表尚未匯入。"}
+        }
+      ],
+      "authority": {"level": "中央", "agency": "農業部農糧署"},
+      "source": {"source_key": "organic_support_115", "section": "生產設備"}
+    },
+    {
+      "id": "organic-processing-equipment",
+      "name": "有機加工設備",
+      "summary": "農企業限加工設備；相關農業團體及其他適用對象依公告洽辦。",
+      "category": "有機農業",
+      "metadata": {
+        "applicant_types": ["individual_farmer", "farmer_group", "producer_group", "farmers_association", "agricultural_cooperative", "agricultural_organization", "agri_business"],
+        "required_certification_any": ["有機驗證", "有機轉型期驗證", "友善環境耕作推廣團體登錄"],
+        "intent_keywords": ["有機", "加工設備", "加工"],
+        "agri_business_scope": "加工設備 only",
+        "form_template_status": "尚未匯入官方申請表",
+        "application_channel": "依官方公告向地方受理單位或相關農業團體洽辦"
+      },
+      "entry_criteria": [
+        {"id": "organic-processing-certification", "text": "申請人須具備有機驗證、有機轉型期驗證或友善環境耕作推廣團體登錄；農企業申請範圍限加工設備。", "source": {"source_key": "organic_support_115", "section": "加工設備"}}
+      ],
+      "rounds": [
+        {
+          "id": "organic-support-115-processing-equipment",
+          "name": "常態輔導",
+          "window": {"type": "常態", "start": null, "end": null, "open": null, "close": null, "note": "中央原則沒有單一全國統一截止日，請向受理單位確認。"},
+          "metadata": {"form_template_status": "尚未匯入官方申請表", "application_channel": "依官方公告向地方受理單位或相關農業團體洽辦"},
+          "entry_criteria": [{"id": "organic-processing-round", "text": "有機加工設備需求可先洽詢；農企業限加工設備。", "source": {"source_key": "organic_support_115", "section": "加工設備"}}],
+          "tasks": [{"id": "organic-processing-consult", "title": "向受理單位確認有機加工設備申請文件", "depends_on": []}],
+          "authority": {"level": "中央", "agency": "農業部農糧署", "office": "地方受理單位或相關農業團體"},
+          "source": {"source_key": "organic_support_115", "note": "官方申請表尚未匯入。"}
+        }
+      ],
+      "authority": {"level": "中央", "agency": "農業部農糧署"},
+      "source": {"source_key": "organic_support_115", "section": "加工設備"}
+    }
+  ],
+  "eligibility": {
+    "all": [
+      {"field": "event", "op": "=", "value": "__new_demo_variant_only__", "legal_ref": "compatibility marker for the legacy loader; use variants/rounds for matching"}
+    ]
+  }
+}

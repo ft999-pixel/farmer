@@ -1,0 +1,360 @@
+{
+  "id": "farm-machine-115",
+  "name": "115年省工高效及碳匯農機補助",
+  "summary": "115年度省工、農事服務、無人機、引進、碳匯及電動農機補助示範資料。",
+  "category": "農機補助",
+  "demo_simplified": true,
+  "source_key": "farm_machine_115",
+  "authority": {
+    "level": "中央",
+    "agency": "農業部農糧署",
+    "office": "農業部農糧署及受理單位"
+  },
+  "source": {
+    "source_key": "farm_machine_115",
+    "title": "115年省工高效及碳匯農機補助實施計畫",
+    "authority": "農業部農糧署",
+    "url": "https://www.afa.gov.tw/cht/index.php?code=list&ids=3616",
+    "status": "official_demo_fixture",
+    "demo_simplified": true,
+    "last_verified": "2026-09-05",
+    "note": "示範資料；日期、細部條件及補助牌型以官方公告與受理單位為準。"
+  },
+  "variants": [
+    {
+      "id": "farm-service",
+      "name": "農事服務機械",
+      "summary": "農事服務機械補助。",
+      "category": "農機補助",
+      "metadata": {
+        "applicant_types": ["individual_farmer", "farmer_group"],
+        "intent_keywords": ["農事服務", "農機", "農業機械"],
+        "official_form": {
+          "template_id": "farm_machine_115.farm_service",
+          "attachment": "附表6",
+          "official_source_page": 33,
+          "pack_path": "futuremode_official_forms_v2/templates.json",
+          "pdf": "futuremode_official_forms_v2/pdfs/farm_service.pdf",
+          "official_layout": true
+        }
+      },
+      "entry_criteria": [
+        {
+          "id": "farm-service-eligibility",
+          "text": "申請人須為農民或農業服務相關申請人，且欲購農機須屬本年度公告補助範圍。",
+          "source": {"source_key": "farm_machine_115", "section": "農事服務機械"}
+        }
+      ],
+      "rounds": [
+        {
+          "id": "farm-machine-115-farm-service-2026",
+          "name": "115年度受理期間",
+          "window": {
+            "type": "公告型",
+            "start": "2026-05-25",
+            "end": "2026-08-31",
+            "open": "2026-05-25",
+            "close": "2026-08-31",
+            "note": "示範受理期間，以官方公告為準。"
+          },
+          "metadata": {"official_form_template_id": "farm_machine_115.farm_service"},
+          "entry_criteria": [
+            {
+              "id": "farm-service-round-eligibility",
+              "text": "申請人須符合本年度農事服務機械計畫所列申請身分與機械品項條件。",
+              "source": {"source_key": "farm_machine_115", "section": "附表6"}
+            }
+          ],
+          "tasks": [
+            {"id": "submit-application", "title": "提出農機補助申請", "deadline": "2026-08-31", "depends_on": []},
+            {"id": "wait-review", "title": "等待受理單位審查與購機通知", "depends_on": ["submit-application"]},
+            {"id": "purchase-machine", "title": "收到通知後購置核定農機", "depends_on": ["wait-review"]},
+            {"id": "reimburse", "title": "完成購機與補助款申領", "deadline": "2026-11-30", "depends_on": ["purchase-machine"]}
+          ],
+          "form_template_id": "farm_machine_115.farm_service",
+          "authority": {"level": "中央", "agency": "農業部農糧署", "office": "受理單位"},
+          "source": {"source_key": "farm_machine_115", "attachment": "附表6", "official_source_page": 33}
+        }
+      ],
+      "authority": {"level": "中央", "agency": "農業部農糧署"},
+      "source": {"source_key": "farm_machine_115", "attachment": "附表6", "official_source_page": 33}
+    },
+    {
+      "id": "labor-saving",
+      "name": "省工農業機械／新研發農機",
+      "summary": "省工農業機械及新研發農機補助；電動割草機先確認是否為公告補助牌型。",
+      "category": "農機補助",
+      "metadata": {
+        "applicant_types": ["individual_farmer", "farmer_group"],
+        "intent_keywords": ["省工", "農業機械", "割草機", "電動割草機", "新研發農機"],
+        "required_matching_facts": ["machine_model_status"],
+        "question_options": {
+          "machine_model_status": ["有，在公告補助牌型內", "還沒有品牌或型號", "不確定"]
+        },
+        "official_form": {
+          "template_id": "farm_machine_115.labor_saving",
+          "attachment": "附表9",
+          "official_source_page": 36,
+          "pack_path": "futuremode_official_forms_v2/templates.json",
+          "pdf": "futuremode_official_forms_v2/pdfs/labor_saving.pdf",
+          "official_layout": true
+        }
+      },
+      "entry_criteria": [
+        {
+          "id": "labor-saving-eligibility",
+          "text": "申請人須符合有機驗證、產銷履歷驗證、台灣優良農產品驗證（CAS）、溯源農糧產品追溯條碼（QR Code）、友善環境耕作登錄、農業部登錄青年農民、花卉產銷班班員或農糧產業調整與轉型計畫等任一身分。",
+          "source": {"source_key": "farm_machine_115", "section": "省工農業機械"}
+        },
+        {
+          "id": "labor-saving-model-eligibility",
+          "text": "欲購農機須為該年度公告補助牌型；尚未確認品牌或型號時，先確認是否在公告補助牌型內。",
+          "question": "你想買的割草機已經有確定品牌或型號了嗎？",
+          "source": {"source_key": "farm_machine_115", "section": "省工農業機械"}
+        }
+      ],
+      "rounds": [
+        {
+          "id": "farm-machine-115-labor-saving-2026",
+          "name": "115年度受理期間",
+          "window": {
+            "type": "公告型",
+            "start": "2026-05-25",
+            "end": "2026-08-31",
+            "open": "2026-05-25",
+            "close": "2026-08-31",
+            "note": "示範受理期間，以官方公告為準。"
+          },
+          "metadata": {
+            "required_matching_facts": ["machine_model_status"],
+            "missing_questions": {
+              "machine_model_status": "你想買的割草機已經有確定品牌或型號了嗎？"
+            },
+            "question_options": {
+              "machine_model_status": ["有，在公告補助牌型內", "還沒有品牌或型號", "不確定"]
+            },
+            "official_form_template_id": "farm_machine_115.labor_saving"
+          },
+          "entry_criteria": [
+            {
+              "id": "labor-saving-round-certification",
+              "text": "申請人符合有機、產銷履歷、CAS、追溯條碼（QR Code）、友善耕作、登錄青年農民、花卉產銷班或產業調整轉型計畫其中一項即可作為示範入口。",
+              "source": {"source_key": "farm_machine_115", "section": "省工農業機械"}
+            },
+            {
+              "id": "labor-saving-round-model",
+              "text": "欲購農機須為該年度公告補助牌型。",
+              "question": "你想買的割草機已經有確定品牌或型號了嗎？",
+              "source": {"source_key": "farm_machine_115", "section": "省工農業機械"}
+            }
+          ],
+          "tasks": [
+            {"id": "submit-application", "title": "提出農機補助申請", "deadline": "2026-08-31", "depends_on": []},
+            {"id": "wait-review", "title": "等待受理單位審查與購機通知", "depends_on": ["submit-application"]},
+            {"id": "purchase-machine", "title": "收到通知後購置核定農機", "depends_on": ["wait-review"]},
+            {"id": "reimburse", "title": "完成購機與補助款申領", "deadline": "2026-11-30", "depends_on": ["purchase-machine"]}
+          ],
+          "form_template_id": "farm_machine_115.labor_saving",
+          "authority": {"level": "中央", "agency": "農業部農糧署", "office": "受理單位"},
+          "source": {
+            "source_key": "farm_machine_115",
+            "attachment": "附表9",
+            "official_source_page": 36,
+            "pack_path": "futuremode_official_forms_v2/templates.json"
+          }
+        }
+      ],
+      "authority": {"level": "中央", "agency": "農業部農糧署"},
+      "source": {"source_key": "farm_machine_115", "attachment": "附表9", "official_source_page": 36}
+    },
+    {
+      "id": "drone",
+      "name": "農用無人飛行載具噴藥機",
+      "summary": "農用無人飛行載具噴藥機補助。",
+      "category": "農機補助",
+      "metadata": {
+        "applicant_types": ["individual_farmer", "farmer_group"],
+        "intent_keywords": ["農噴無人機", "無人機", "噴藥機"],
+        "official_form": {
+          "template_id": "farm_machine_115.drone",
+          "attachment": "附表11",
+          "official_source_page": 38,
+          "pack_path": "futuremode_official_forms_v2/templates.json",
+          "pdf": "futuremode_official_forms_v2/pdfs/drone.pdf",
+          "official_layout": true
+        }
+      },
+      "entry_criteria": [
+        {"id": "drone-eligibility", "text": "申請人及農用無人飛行載具噴藥機須符合本年度公告補助條件與品項。", "source": {"source_key": "farm_machine_115", "section": "附表11"}}
+      ],
+      "rounds": [
+        {
+          "id": "farm-machine-115-drone-2026",
+          "name": "115年度受理期間",
+          "window": {"type": "公告型", "start": "2026-05-25", "end": "2026-08-31", "open": "2026-05-25", "close": "2026-08-31"},
+          "metadata": {"official_form_template_id": "farm_machine_115.drone"},
+          "entry_criteria": [{"id": "drone-round-eligibility", "text": "欲購機具須為本年度公告補助品項。", "source": {"source_key": "farm_machine_115", "section": "附表11"}}],
+          "tasks": [
+            {"id": "submit-application", "title": "提出農機補助申請", "deadline": "2026-08-31", "depends_on": []},
+            {"id": "wait-review", "title": "等待受理單位審查與購機通知", "depends_on": ["submit-application"]},
+            {"id": "purchase-machine", "title": "收到通知後購置核定農機", "depends_on": ["wait-review"]},
+            {"id": "reimburse", "title": "完成購機與補助款申領", "deadline": "2026-11-30", "depends_on": ["purchase-machine"]}
+          ],
+          "form_template_id": "farm_machine_115.drone",
+          "authority": {"level": "中央", "agency": "農業部農糧署"},
+          "source": {"source_key": "farm_machine_115", "attachment": "附表11", "official_source_page": 38}
+        }
+      ],
+      "authority": {"level": "中央", "agency": "農業部農糧署"},
+      "source": {"source_key": "farm_machine_115", "attachment": "附表11", "official_source_page": 38}
+    },
+    {
+      "id": "imported",
+      "name": "引進省工農機",
+      "summary": "引進省工農機補助。",
+      "category": "農機補助",
+      "metadata": {
+        "applicant_types": ["individual_farmer", "farmer_group"],
+        "intent_keywords": ["引進", "省工農機"],
+        "official_form": {
+          "template_id": "farm_machine_115.imported",
+          "attachment": "附表12",
+          "official_source_page": 39,
+          "pack_path": "futuremode_official_forms_v2/templates.json",
+          "pdf": "futuremode_official_forms_v2/pdfs/imported.pdf",
+          "official_layout": true
+        }
+      },
+      "entry_criteria": [
+        {"id": "imported-eligibility", "text": "申請人及引進之省工農機須符合本年度公告補助條件與品項。", "source": {"source_key": "farm_machine_115", "section": "附表12"}}
+      ],
+      "rounds": [
+        {
+          "id": "farm-machine-115-imported-2026",
+          "name": "115年度受理期間",
+          "window": {"type": "公告型", "start": "2026-05-25", "end": "2026-08-31", "open": "2026-05-25", "close": "2026-08-31"},
+          "metadata": {"official_form_template_id": "farm_machine_115.imported"},
+          "entry_criteria": [{"id": "imported-round-eligibility", "text": "欲購機具須為本年度公告補助品項。", "source": {"source_key": "farm_machine_115", "section": "附表12"}}],
+          "tasks": [
+            {"id": "submit-application", "title": "提出農機補助申請", "deadline": "2026-08-31", "depends_on": []},
+            {"id": "wait-review", "title": "等待受理單位審查與購機通知", "depends_on": ["submit-application"]},
+            {"id": "purchase-machine", "title": "收到通知後購置核定農機", "depends_on": ["wait-review"]},
+            {"id": "reimburse", "title": "完成購機與補助款申領", "deadline": "2026-11-30", "depends_on": ["purchase-machine"]}
+          ],
+          "form_template_id": "farm_machine_115.imported",
+          "authority": {"level": "中央", "agency": "農業部農糧署"},
+          "source": {"source_key": "farm_machine_115", "attachment": "附表12", "official_source_page": 39}
+        }
+      ],
+      "authority": {"level": "中央", "agency": "農業部農糧署"},
+      "source": {"source_key": "farm_machine_115", "attachment": "附表12", "official_source_page": 39}
+    },
+    {
+      "id": "carbon-sink",
+      "name": "碳匯農機",
+      "summary": "碳匯農機補助。",
+      "category": "農機補助",
+      "metadata": {
+        "applicant_types": ["individual_farmer", "farmer_group"],
+        "intent_keywords": ["碳匯", "碳排", "農機"],
+        "official_form": {
+          "template_id": "farm_machine_115.carbon_sink",
+          "attachment": "附表13",
+          "official_source_page": 40,
+          "pack_path": "futuremode_official_forms_v2/templates.json",
+          "pdf": "futuremode_official_forms_v2/pdfs/carbon_sink.pdf",
+          "official_layout": true
+        }
+      },
+      "entry_criteria": [
+        {"id": "carbon-sink-eligibility", "text": "申請人及碳匯農機須符合本年度公告補助條件與品項。", "source": {"source_key": "farm_machine_115", "section": "附表13"}}
+      ],
+      "rounds": [
+        {
+          "id": "farm-machine-115-carbon-sink-2026",
+          "name": "115年度受理期間",
+          "window": {"type": "公告型", "start": "2026-05-25", "end": "2026-08-31", "open": "2026-05-25", "close": "2026-08-31"},
+          "metadata": {"official_form_template_id": "farm_machine_115.carbon_sink"},
+          "entry_criteria": [{"id": "carbon-sink-round-eligibility", "text": "欲購機具須為本年度公告補助品項。", "source": {"source_key": "farm_machine_115", "section": "附表13"}}],
+          "tasks": [
+            {"id": "submit-application", "title": "提出農機補助申請", "deadline": "2026-08-31", "depends_on": []},
+            {"id": "wait-review", "title": "等待受理單位審查與購機通知", "depends_on": ["submit-application"]},
+            {"id": "purchase-machine", "title": "收到通知後購置核定農機", "depends_on": ["wait-review"]},
+            {"id": "reimburse", "title": "完成購機與補助款申領", "deadline": "2026-11-30", "depends_on": ["purchase-machine"]}
+          ],
+          "form_template_id": "farm_machine_115.carbon_sink",
+          "authority": {"level": "中央", "agency": "農業部農糧署"},
+          "source": {"source_key": "farm_machine_115", "attachment": "附表13", "official_source_page": 40}
+        }
+      ],
+      "authority": {"level": "中央", "agency": "農業部農糧署"},
+      "source": {"source_key": "farm_machine_115", "attachment": "附表13", "official_source_page": 40}
+    },
+    {
+      "id": "electric-replacement",
+      "name": "汰舊換新電動農機",
+      "summary": "以電動農機汰換同機種燃油農機的補助。",
+      "category": "農機補助",
+      "metadata": {
+        "applicant_types": ["individual_farmer", "farmer_group"],
+        "intent_keywords": ["電動農機", "電動割草機", "汰舊換新", "換購"],
+        "required_matching_facts": ["replacement_same_type", "old_fuel_machine_year", "ghg_reduction_consent"],
+        "official_form": {
+          "template_id": "farm_machine_115.electric_replacement",
+          "attachment": "附表16",
+          "official_source_page": 43,
+          "pack_path": "futuremode_official_forms_v2/templates.json",
+          "pdf": "futuremode_official_forms_v2/pdfs/electric_replacement.pdf",
+          "official_layout": true
+        }
+      },
+      "entry_criteria": [
+        {
+          "id": "electric-replacement-eligibility",
+          "text": "欲購置電動農機，並汰換同機種燃油農機；舊燃油農機購置年度為民國109年（含）以前，且同意將溫室氣體減量效益歸屬農業部。",
+          "source": {"source_key": "farm_machine_115", "section": "汰舊換新電動農機"}
+        }
+      ],
+      "rounds": [
+        {
+          "id": "farm-machine-115-electric-replacement-2026",
+          "name": "115年度受理期間",
+          "window": {"type": "公告型", "start": "2026-05-25", "end": "2026-08-31", "open": "2026-05-25", "close": "2026-08-31"},
+          "metadata": {
+            "required_matching_facts": ["replacement_same_type", "old_fuel_machine_year", "ghg_reduction_consent"],
+            "old_machine_purchase_year_max_roc": 109,
+            "official_form_template_id": "farm_machine_115.electric_replacement"
+          },
+          "entry_criteria": [
+            {
+              "id": "electric-replacement-round-eligibility",
+              "text": "欲購置電動農機，並汰換同機種燃油農機；舊燃油農機購置年度為民國109年（含）以前，且同意溫室氣體減量效益歸屬農業部。",
+              "source": {"source_key": "farm_machine_115", "section": "汰舊換新電動農機"}
+            }
+          ],
+          "tasks": [
+            {"id": "submit-application", "title": "提出電動農機補助申請", "deadline": "2026-08-31", "depends_on": []},
+            {"id": "wait-review", "title": "等待受理單位審查與購機通知", "depends_on": ["submit-application"]},
+            {"id": "purchase-machine", "title": "收到通知後購置核定電動農機並完成汰換", "depends_on": ["wait-review"]},
+            {"id": "reimburse", "title": "完成購機與補助款申領", "deadline": "2026-11-30", "depends_on": ["purchase-machine"]}
+          ],
+          "form_template_id": "farm_machine_115.electric_replacement",
+          "authority": {"level": "中央", "agency": "農業部農糧署", "office": "受理單位"},
+          "source": {
+            "source_key": "farm_machine_115",
+            "attachment": "附表16",
+            "official_source_page": 43,
+            "pack_path": "futuremode_official_forms_v2/templates.json"
+          }
+        }
+      ],
+      "authority": {"level": "中央", "agency": "農業部農糧署"},
+      "source": {"source_key": "farm_machine_115", "attachment": "附表16", "official_source_page": 43}
+    }
+  ],
+  "eligibility": {
+    "all": [
+      {"field": "event", "op": "=", "value": "__new_demo_variant_only__", "legal_ref": "compatibility marker for the legacy loader; use variants/rounds for matching"}
+    ]
+  }
+}

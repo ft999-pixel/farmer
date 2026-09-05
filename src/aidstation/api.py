@@ -20,29 +20,26 @@ from pydantic import BaseModel
 
 from . import __version__, blockers
 from .admin import router as admin_router
-from .deadline import countdown, deadline_from_received, load_holidays
+from .deadline import deadline_from_received, load_holidays
 from .document import build_plain_card, get_translator
-from .engine import match_all, next_question
-from .fields import load_fields, normalize_facts
+from .matching import MatchingInputError, match_profile
+from .fields import load_fields
 from .knowledge import load_programs
 from .line_webhook import router as line_router
 from .members import router as members_router
+from .official_forms import router as official_forms_router
+from .schemas import MatchRequest
 
 app = FastAPI(title="農民補給站核心引擎", version=__version__)
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 app.include_router(line_router)
 app.include_router(admin_router)
 app.include_router(members_router)
+app.include_router(official_forms_router)
 
 FIELDS = load_fields()
 PROGRAMS = load_programs(fields=FIELDS)
 HOLIDAYS = load_holidays()
-
-
-class MatchRequest(BaseModel):
-    facts: dict
-    asked: list[str] = []
-    today: str | None = None  # ISO 日期，測試用；不給則用今天
 
 
 class DeadlineRequest(BaseModel):
@@ -98,13 +95,14 @@ class ChatRequest(BaseModel):
     session_id: str
     text: str = ""
     kind: str = "text"       # "text"＝對話｜"document"＝貼公文全文｜"reset"＝重新開始
+    today: date | None = None  # demo 可固定日期；不影響正式呼叫的預設行為
 
 
 @app.post("/chat")
 def post_chat(req: ChatRequest) -> dict:
     global _web_flow
-    if _web_flow is None:
-        _web_flow = Flow()
+    if _web_flow is None or (req.today is not None and _web_flow.today != req.today):
+        _web_flow = Flow(today=req.today)
     if req.kind == "reset":
         _web_sessions[req.session_id] = FlowSession()
         return {"text": "好，重新開始。跟我說發生什麼事？講一句話就好（例：我的檨仔攏落了了）。",
@@ -124,34 +122,36 @@ def get_fields() -> dict:
 
 @app.get("/programs")
 def get_programs() -> list[dict]:
-    return [{"id": p["id"], "name": p["name"], "category": p.get("category"),
-             "window": p.get("window"), "source": p.get("source")} for p in PROGRAMS]
+    rows = []
+    for p in PROGRAMS:
+        window = p.get("window")
+        if window is None:
+            # New hierarchy data keeps windows on rounds. The browse endpoint
+            # remains a compact summary and uses the first round as its legacy
+            # representative rather than exposing a second API shape.
+            for variant in getattr(p, "variants", []) or []:
+                rounds = getattr(variant, "rounds", []) or []
+                if rounds:
+                    window = rounds[0].window
+                    break
+        if hasattr(window, "model_dump"):
+            window = window.model_dump(mode="json", exclude_none=True)
+        rows.append({"id": p["id"], "name": p["name"], "category": p.get("category"),
+                     "window": window, "source": p.get("source")})
+    return rows
 
 
 @app.post("/match")
 def post_match(req: MatchRequest) -> dict:
-    facts = normalize_facts(req.facts, FIELDS)
-    today = date.fromisoformat(req.today) if req.today else date.today()
-    results = match_all(PROGRAMS, facts)
-    for r in results:
-        window = r.get("window") or {}
-        if window.get("type") == "公告型" and window.get("close"):
-            r["countdown"] = countdown(date.fromisoformat(window["close"]), today)
-    # 同狀態內，期限最近的排前面（過期的沉底）
-    order = {"符合": 0, "可能符合": 1, "不符合": 2}
-    def _urgency(r: dict) -> int:
-        c = r.get("countdown")
-        if not c:
-            return 9998
-        return 9999 if c["expired"] else c["days_left"]
-    results.sort(key=lambda r: (order[r["status"]], _urgency(r)))
-    question = next_question(results, FIELDS, asked=set(req.asked) | set(facts), today=today)
-    return {
-        "facts": facts,
-        "results": results,
-        "next_question": question,
-        "disclaimer": "本系統建議不具行政效力，最終資格認定以承辦機關公告為準。",
-    }
+    try:
+        return match_profile(
+            PROGRAMS,
+            req.profile,
+            asked=req.asked,
+            today=req.today,
+        )
+    except MatchingInputError as exc:
+        raise HTTPException(422, str(exc)) from exc
 
 
 @app.post("/translate")

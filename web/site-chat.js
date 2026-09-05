@@ -31,6 +31,8 @@ window.AidChat = (function () {
     const log = container.querySelector('.aidchat-log');
     const inp = container.querySelector('.aidchat-inp');
     const sendBtn = container.querySelector('.aidchat-send');
+    const demoToday = new URLSearchParams(window.location.search).get('demo')
+      ? '2026-08-20' : null;
 
     function scrollBottom() { log.scrollTop = log.scrollHeight; }
 
@@ -71,6 +73,20 @@ window.AidChat = (function () {
       return '<span class="rc-chip normal">常態受理</span>';
     }
 
+    // 只把推薦項目的識別資訊帶到 browser-only 表單頁；不帶 profile 或任何表單值。
+    function applicationHref(card) {
+      const params = new URLSearchParams();
+      const programId = card.program_id || card.id || card.subsidy_id;
+      if (programId) params.set('program_id', programId);
+      if (card.variant_id) params.set('variant_id', card.variant_id);
+      if (card.round_id) params.set('round_id', card.round_id);
+      const template = card.form_template_id || (card.form_template && card.form_template.id);
+      if (template) params.set('template_id', template);
+      if (card.name) params.set('program_name', card.name);
+      const query = params.toString();
+      return 'form.html' + (query ? '?' + query : '');
+    }
+
     function cardHtml(card, tier) {
       let h = '<article class="rc-card ' + tier + '">';
       h += '<div class="rc-top"><h3 class="rc-title">' + esc(card.name) + '</h3>' + chipHtml(card) + '</div>';
@@ -91,8 +107,19 @@ window.AidChat = (function () {
         h += '<div class="rc-missing">還差沒確認：' + esc(card.missing.join('、')) +
              '<br>不確定完全沒關係——帶著文件直接去問承辦，會幫你確認。</div>';
       }
+      if (card.why && tier !== 'priority') {
+        h += '<div class="rc-line rc-why">' + esc(card.why) + '</div>';
+      }
+      if (card.tasks && card.tasks.length) {
+        h += '<div class="rc-tasks"><div class="rc-docs-head">下一步</div><ul>';
+        card.tasks.slice(0, 2).forEach(task => {
+          h += '<li>' + esc(task.title || task.name || '整理申請資料') + '</li>';
+        });
+        h += '</ul></div>';
+      }
       const officeLine = [card.agency, card.office].filter(Boolean).join('・');
       if (officeLine) h += '<div class="rc-office">' + esc(officeLine) + '</div>';
+      h += '<a class="rc-tel rc-apply" href="' + esc(applicationHref(card)) + '">開始申請</a>';
       if (card.tel) {
         h += '<a class="rc-tel" href="tel:' + esc(card.tel.replace(/[^\d+#-]/g, '')) + '">找承辦電話　' + esc(card.tel) + '</a>';
       }
@@ -102,6 +129,14 @@ window.AidChat = (function () {
     }
 
     function renderResults(payload) {
+      // The response contains only the public MatchingProfile.  Keep it in a
+      // separate browser key so the local form page can prefill matching
+      // fields without putting any form/private value in a URL or request.
+      if (payload.matching_profile && typeof payload.matching_profile === 'object') {
+        try {
+          localStorage.setItem('aidstation_matching_profile', JSON.stringify(payload.matching_profile));
+        } catch (e) {}
+      }
       const wrap = el('div', 'aidchat-results');
       let h = '';
 
@@ -165,10 +200,12 @@ window.AidChat = (function () {
     }
 
     async function call(body) {
+      const request = Object.assign({ session_id: sid }, body);
+      if (demoToday) request.today = demoToday;
       const r = await fetch('/chat', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify(Object.assign({ session_id: sid }, body))
+        body: JSON.stringify(request)
       });
       if (!r.ok) throw new Error('HTTP ' + r.status);
       return r.json();

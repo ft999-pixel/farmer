@@ -1,4 +1,4 @@
-"""會員資料（Demo 版）：存農民的基本資料，換裝置也看得到。
+"""會員資料（Demo 版）：只同步可用於媒合的 profile。
 
 資料庫用 stdlib 的 sqlite3——這個規模（示範用、幾十筆）不需要 Postgres，
 也不必為此多裝一個套件。要換 Postgres 時只需改本檔的 _connect 與四個 SQL。
@@ -6,8 +6,9 @@
 ponytail: 身分用「農民自己取的代號」，不是真的登入。Demo 用，別人猜到代號就能看到那筆資料。
           要真的保護個資，改接 LINE Login（拿 LINE userId 當 line_id），本檔其餘不用動。
 
-存什麼：作物、鄉鎮、土地權屬等媒合條件，加上姓名／電話／地址（列印申請表用）。
-不存什麼：身分證字號、銀行帳號——刻意不收，農民到現場親手寫。
+存什麼：作物、鄉鎮、土地權屬等媒合條件。
+不存什麼：姓名、電話、地址、身分證字號、銀行帳號等 PrivateFormProfile。
+表單用的私密資料由瀏覽器本地保存，不能透過會員 API 同步。
 """
 from __future__ import annotations
 
@@ -23,9 +24,10 @@ from datetime import datetime
 from pathlib import Path
 
 from fastapi import APIRouter, Cookie, HTTPException, Response
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict, model_validator
 
 from .fields import DATA_DIR
+from .schemas import MatchingProfile
 
 router = APIRouter(prefix="/members", tags=["members"])
 
@@ -55,6 +57,9 @@ def _connect() -> sqlite3.Connection:
             created_at TEXT NOT NULL,
             updated_at TEXT NOT NULL
         )""")
+    # 舊版曾把聯絡資料放進 contact 欄位；privacy split 後不再保留它。
+    # 保留欄位只為讓既有 demo DB 能平順啟動，資料內容一律清空。
+    conn.execute("UPDATE members SET contact = '{}' WHERE contact <> '{}' ")
     return conn
 
 
@@ -94,11 +99,12 @@ def get_member(code: str) -> dict | None:
         row = conn.execute("SELECT * FROM members WHERE code = ?", (code,)).fetchone()
     if row is None:
         return None
-    return {"code": row["code"], "contact": json.loads(row["contact"]),
-            "facts": json.loads(row["facts"]), "updated_at": row["updated_at"]}
+    facts = json.loads(row["facts"])
+    return {"code": row["code"], "profile": facts, "facts": facts,
+            "updated_at": row["updated_at"]}
 
 
-def save_member(code: str, contact: dict, facts: dict) -> dict:
+def save_member(code: str, profile: dict) -> dict:
     now = datetime.now().isoformat(timespec="seconds")
     with _connect() as conn:
         conn.execute("""
@@ -108,8 +114,7 @@ def save_member(code: str, contact: dict, facts: dict) -> dict:
                 contact = excluded.contact,
                 facts = excluded.facts,
                 updated_at = excluded.updated_at
-        """, (code, json.dumps(contact, ensure_ascii=False),
-              json.dumps(facts, ensure_ascii=False), now, now))
+        """, (code, "{}", json.dumps(profile, ensure_ascii=False), now, now))
     return get_member(code)
 
 
@@ -126,8 +131,22 @@ class LoginRequest(BaseModel):
 
 
 class SaveRequest(BaseModel):
-    contact: dict = {}
-    facts: dict = {}
+    """Only MatchingProfile may cross the member API boundary."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    profile: MatchingProfile | None = None
+    facts: dict | None = None  # old name, retained for a short compatibility bridge
+
+    @model_validator(mode="after")
+    def normalize_profile(self) -> "SaveRequest":
+        if self.profile is None and self.facts is None:
+            self.profile = MatchingProfile()
+        elif self.profile is None:
+            self.profile = MatchingProfile.model_validate(self.facts or {})
+        elif self.facts is not None:
+            raise ValueError("profile 與 facts 請擇一提供")
+        return self
 
 
 @router.post("/login")
@@ -139,7 +158,7 @@ def login(req: LoginRequest, response: Response) -> dict:
     member = get_member(code)
     created = member is None
     if created:
-        member = save_member(code, {}, {})
+        member = save_member(code, {})
     token = _sign(code, int(time.time()) + SESSION_DAYS * 86400)
     response.set_cookie(COOKIE, token, httponly=True, samesite="lax",
                         max_age=SESSION_DAYS * 86400)
@@ -166,7 +185,7 @@ def read_me(aidstation_member: str | None = Cookie(None)) -> dict:
 @router.post("/me")
 def update_me(req: SaveRequest, aidstation_member: str | None = Cookie(None)) -> dict:
     code = require_member(aidstation_member)
-    return save_member(code, req.contact, req.facts)
+    return save_member(code, req.profile.model_dump(exclude_none=True))
 
 
 @router.delete("/me")

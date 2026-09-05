@@ -7,6 +7,8 @@
 """
 from __future__ import annotations
 
+import json
+import os
 import re
 from dataclasses import dataclass, field
 from datetime import date, timedelta
@@ -14,12 +16,18 @@ from typing import Any
 
 from . import blockers
 from .document import build_plain_card, get_translator
+from . import engine as matching_engine
 from .engine import match_all, next_question
 from .extract import get_extractor
-from .fields import load_fields, normalize_facts
+from .extract import MATCHING_PROFILE_KEYS, validate_facts
+from .fields import DATA_DIR, load_fields, normalize_facts
 from .knowledge import load_programs
 
 MAX_QUESTIONS = 5
+# The legacy disaster flow historically needed five questions.  New
+# MatchingProfile flows are intentionally tighter: a matcher can ask at most
+# three missing-info questions before returning a recommendation payload.
+NEW_MAX_QUESTIONS = 3
 STUCK_BUTTON = "我卡住了"
 STUCK_REASONS = ["太麻煩了", "文件生不出來", "看不懂"]
 
@@ -40,6 +48,50 @@ STUCK_HELP_DOCUMENT = {
              "或直接打公文右上角的承辦電話，請對方用白話說明。"),
 }
 
+_MATCHING_LABELS = {
+    "applicant_type": "申請人類型",
+    "age": "年齡",
+    "location": "地點",
+    "crops": "作物",
+    "land_area_ha": "耕作面積",
+    "farming_years": "從農年資",
+    "certifications": "驗證／登錄",
+    "intent": "申請意圖",
+    "equipment_intent": "想辦的農機",
+    "machine_model_status": "公告牌型",
+    "replacement_same_type": "是否同機種汰換",
+    "old_fuel_machine_year": "舊燃油農機年份",
+    "ghg_reduction_consent": "溫室氣體減量效益歸屬",
+    "self_operated": "本人實際經營",
+    "has_operating_site": "有實際營運場所",
+    "requested_facility_area_ha": "申請設施面積",
+}
+
+_MATCHING_OPTIONS = {
+    "machine_model_status": ["有，在公告補助牌型內", "還沒有品牌或型號", "不確定"],
+    "replacement_same_type": ["是，同機種", "不是", "不確定"],
+    "ghg_reduction_consent": ["同意", "不同意", "不確定"],
+    "self_operated": ["是", "不是", "不確定"],
+    "has_operating_site": ["有", "沒有", "不確定"],
+}
+
+
+def _plain(value: Any) -> Any:
+    """Turn a dict-like Pydantic result into plain JSON-compatible data."""
+    if hasattr(value, "model_dump"):
+        return value.model_dump(exclude_none=False)
+    if isinstance(value, dict):
+        return {key: _plain(item) for key, item in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [_plain(item) for item in value]
+    return value
+
+
+def _is_new_program(program: Any) -> bool:
+    program = _plain(program)
+    return isinstance(program, dict) and isinstance(program.get("variants"), list) \
+        and bool(program.get("variants"))
+
 
 @dataclass
 class Session:
@@ -47,10 +99,21 @@ class Session:
     facts: dict[str, Any] = field(default_factory=dict)
     asked: set[str] = field(default_factory=set)
     pending_field: str | None = None      # 等待回答的欄位
+    pending_question: dict | None = None  # 新 matcher 的 missing_info（可含 options）
     pending_stuck: bool = False           # 等待「卡住原因」三選一
     pending_doc: dict | None = None       # 等待收文日的公文
     questions_asked: int = 0
     last_context: str = "results"         # "results"＝查詢流程｜"document"＝公文流程
+    profile_mode: str | None = None        # lock legacy/new flow after first turn
+
+    @property
+    def profile(self) -> dict[str, Any]:
+        """MatchingProfile 相容別名；PrivateFormProfile 永不放進此物件。"""
+        return self.facts
+
+    @profile.setter
+    def profile(self, value: dict[str, Any]) -> None:
+        self.facts = dict(value or {})
 
 
 @dataclass
@@ -63,10 +126,62 @@ class Reply:
 class Flow:
     def __init__(self, today: date | None = None):
         self.fields = load_fields()
-        self.programs = load_programs(fields=self.fields)
+        # ``load_programs`` is intentionally kept for the old deterministic
+        # engine.  New fixtures are read as Program/Variant/Round dictionaries
+        # as well, so this adapter remains usable while the backend agent is
+        # migrating its loader and matcher.
+        self.programs = [_plain(p) for p in load_programs(fields=self.fields)]
+        # ``load_programs`` normalizes flat records into the new hierarchy, so
+        # classify legacy files before that adapter erases their original
+        # shape.  The disaster/injury smoke path still uses the old engine.
+        self.legacy_programs = self._load_legacy_programs()
+        self.demo_programs = self._load_demo_programs()
         self.extractor = get_extractor(self.fields)
         self.translator = get_translator()
-        self.today = today  # 測試用；None 則用今天
+        self.today = today or self._demo_today() or date.today()
+
+    @staticmethod
+    def _demo_today() -> date | None:
+        if os.environ.get("DEMO_MODE", "").strip().lower() not in {
+            "1", "true", "yes", "on"
+        }:
+            return None
+        raw = os.environ.get("DEMO_DATE", "").strip()
+        if not raw:
+            return None
+        try:
+            return date.fromisoformat(raw)
+        except ValueError:
+            return None
+
+    @staticmethod
+    def _load_legacy_programs() -> list[dict]:
+        programs: list[dict] = []
+        directory = DATA_DIR / "programs"
+        for path in sorted(directory.glob("*.json")):
+            try:
+                with open(path, encoding="utf-8") as f:
+                    program = json.load(f)
+            except (OSError, json.JSONDecodeError):
+                continue
+            if isinstance(program, dict) and not _is_new_program(program) \
+                    and isinstance(program.get("eligibility"), dict):
+                programs.append(program)
+        return programs
+
+    @staticmethod
+    def _load_demo_programs() -> list[dict]:
+        programs: list[dict] = []
+        directory = DATA_DIR / "programs"
+        for path in sorted(directory.glob("*.json")):
+            try:
+                with open(path, encoding="utf-8") as f:
+                    program = json.load(f)
+            except (OSError, json.JSONDecodeError):
+                continue
+            if _is_new_program(program):
+                programs.append(program)
+        return programs
 
     # ---- 主入口 ----------------------------------------------------------
 
@@ -144,10 +259,13 @@ class Flow:
     def _apply_answer(self, session: Session, text: str) -> str | None:
         """套用回答。回傳值若非 None，會加在下一則回覆前面（例如查無作物的說明）。"""
         field_name = session.pending_field
+        if field_name not in self.fields:
+            return self._apply_matching_answer(session, text)
         spec = self.fields[field_name]
         value = spec.get("option_map", {}).get(text, text)
         session.asked.add(field_name)
         session.pending_field = None
+        session.pending_question = None
         if value == "不確定":
             return None  # 不確定就先跳過，之後仍以「可能符合」呈現該補助
         if field_name == "crop" and isinstance(value, str):
@@ -172,6 +290,48 @@ class Flow:
             pass  # 答非所問（如數字欄位打了文字）→ 不寫入，下一輪可再問
         return None
 
+    def _apply_matching_answer(self, session: Session, text: str) -> str | None:
+        """Apply a new matcher ``missing_info`` answer without fields.json DSL."""
+        field_name = session.pending_field
+        if not field_name:
+            return None
+        question = session.pending_question or {}
+        option_map = question.get("option_map") or {}
+        value = option_map.get(text, text.strip())
+        # The Hero question is intentionally human-readable while the matcher
+        # receives a stable programme-specific value.
+        aliases = {
+            "有，在公告補助牌型內": "listed_subsidized_model",
+            "有，在公告補助牌型內。": "listed_subsidized_model",
+            "listed_subsidized_model": "listed_subsidized_model",
+            "還沒有品牌或型號": "model_not_confirmed",
+            "還沒有品牌或型號。": "model_not_confirmed",
+            "沒有品牌或型號": "model_not_confirmed",
+            "不確定": "unknown",
+            "unknown": "unknown",
+        }
+        value = aliases.get(value, value)
+        session.asked.add(field_name)
+        session.pending_field = None
+        session.pending_question = None
+        if value in (None, ""):
+            return None
+        # Do not let an answer accidentally introduce PII into the matching
+        # profile.  Programme-specific non-private fields are normalized here;
+        # fields known to the legacy dictionary keep its old normalization path.
+        cleaned = validate_facts({field_name: value}, self.fields)
+        if field_name in cleaned:
+            session.facts[field_name] = cleaned[field_name]
+        elif field_name not in {
+            "full_name", "name", "national_id", "id_number", "birthday", "birth_date",
+            "birth_year", "phone", "tel", "full_address", "address", "addr",
+            "bank_account", "bank_branch", "parcel_numbers", "parcel_number", "signature",
+        }:
+            # A future backend may add a safe programme-specific key to
+            # MatchingProfile before this worker receives a new fields.json.
+            session.facts[field_name] = value
+        return None
+
     def _match_crop(self, text: str) -> str | None:
         """把使用者打的作物名對回資料庫：正式名、台語別名、部分包含都認得。"""
         spec = self.fields.get("crop", {})
@@ -191,7 +351,218 @@ class Flow:
         return None
 
     def _advance(self, session: Session) -> Reply:
-        results = match_all(self.programs, session.facts)
+        if session.profile_mode is None:
+            session.profile_mode = "new" if self._uses_new_profile(session) else "legacy"
+        if session.profile_mode == "new":
+            return self._advance_matching(session)
+        return self._advance_legacy(session)
+
+    def _uses_new_profile(self, session: Session) -> bool:
+        """Detect the new profile contract while keeping old event smoke intact."""
+        return any(key in session.facts for key in MATCHING_PROFILE_KEYS) \
+            or "crops" in session.facts \
+            or "location" in session.facts \
+            or "intent" in session.facts
+
+    def _question_options(self, key: str, response: dict | None = None) -> list[str] | None:
+        """Find demo choices in programme metadata, with stable hero defaults."""
+        for result in (response or {}).get("results", []):
+            metadata = result.get("metadata") or {}
+            options = metadata.get("question_options")
+            if isinstance(options, dict) and isinstance(options.get(key), list):
+                return [str(item) for item in options[key]]
+        return list(_MATCHING_OPTIONS[key]) if key in _MATCHING_OPTIONS else None
+
+    def _advance_matching(self, session: Session) -> Reply:
+        """Bridge the canonical matcher into the shared chat Reply shape."""
+        response = matching_engine.match_profile(
+            self.demo_programs,
+            session.profile,
+            asked=sorted(session.asked),
+            today=self.today,
+        )
+        question = response.get("next_question")
+        has_recommendation = any(
+            str(result.get("status")) == "MATCH"
+            for result in response.get("results", [])
+        )
+        if question and not has_recommendation \
+                and session.questions_asked < NEW_MAX_QUESTIONS:
+            key = str(question.get("key") or "")
+            if key and key not in session.asked:
+                session.pending_field = key
+                session.pending_question = dict(question)
+                session.questions_asked += 1
+                return Reply(
+                    str(question.get("question") or f"請提供你的「{key}」資訊。"),
+                    self._question_options(key, response),
+                )
+
+        payload = self._matching_results_payload(response, session)
+        return Reply(
+            self._render_matching_results(response, payload),
+            [STUCK_BUTTON],
+            payload=payload,
+        )
+
+    def _matching_results_payload(self, response: dict, session: Session) -> dict:
+        """Convert canonical MatchResponse into the UI's three-tier cards."""
+        today = response.get("today") or self.today or date.today()
+        if isinstance(today, str):
+            try:
+                today = date.fromisoformat(today[:10])
+            except ValueError:
+                today = date.today()
+
+        def days_left(result: dict) -> int | None:
+            deadline = result.get("deadline")
+            if not deadline:
+                window = result.get("window") or {}
+                deadline = window.get("close") or window.get("end")
+            if not deadline:
+                return None
+            try:
+                remaining = (date.fromisoformat(str(deadline)[:10]) - today).days
+            except (ValueError, TypeError):
+                return None
+            return remaining if remaining >= 0 else None
+
+        def display_value(value: Any) -> str:
+            if isinstance(value, list):
+                return "、".join(str(item) for item in value)
+            if value is True:
+                return "有"
+            if value is False:
+                return "沒有"
+            return str(value)
+
+        def card(result: dict) -> dict:
+            window = result.get("window") or {}
+            authority = result.get("authority") or {}
+            source = result.get("source") or {}
+            form = result.get("form_template")
+            if not isinstance(form, dict):
+                form = None
+            metadata = result.get("metadata") or {}
+            missing_info = [
+                {"key": str(item.get("key")),
+                 "question": str(item.get("question") or "")}
+                for item in result.get("missing_info") or []
+                if isinstance(item, dict) and item.get("key")
+            ]
+            documents = []
+            for item in result.get("documents") or []:
+                if isinstance(item, dict) and item.get("name"):
+                    documents.append({
+                        "name": str(item["name"]),
+                        "where": str(item.get("where") or ""),
+                        "exempt": bool(item.get("exempt")),
+                    })
+            tasks = [
+                _plain(item) for item in (result.get("tasks") or [])
+                if isinstance(_plain(item), dict)
+            ]
+            return {
+                "program_id": result.get("program_id"),
+                "variant_id": result.get("variant_id"),
+                "round_id": result.get("round_id"),
+                "form_template_id": (form or {}).get("id"),
+                "form_template": form,
+                "name": result.get("name"),
+                "summary": result.get("summary") or "",
+                "category": result.get("category"),
+                "status": result.get("status"),
+                "reason": list(result.get("reason") or []),
+                "why": "；".join(str(item) for item in result.get("reason") or []),
+                "missing_info": missing_info,
+                "missing": [
+                    _MATCHING_LABELS.get(item["key"], item["key"])
+                    for item in missing_info
+                ],
+                "deadline": result.get("deadline"),
+                "close": window.get("close") or window.get("end") or result.get("deadline"),
+                "window_note": window.get("note"),
+                "window_type": window.get("type"),
+                "days_left": days_left(result),
+                "amount": display_value(result.get("amount")) if result.get("amount") else "",
+                "documents": documents,
+                "tasks": tasks,
+                "agency": authority.get("agency", ""),
+                "office": authority.get("office", ""),
+                "tel": authority.get("tel", ""),
+                "source": source,
+                "official_form": metadata.get("official_form"),
+                "last_verified": source.get("last_verified", ""),
+            }
+
+        profile = response.get("profile") or {}
+        you_said = [
+            {"label": _MATCHING_LABELS.get(key, key), "value": display_value(value)}
+            for key, value in profile.items()
+            if not str(key).startswith("__") and value not in (None, "", [])
+        ]
+        tiers: dict[str, list[dict]] = {"priority": [], "maybe": [], "skip": []}
+        relevant_count = 0
+        for result in response.get("results", []):
+            status = str(result.get("status") or "REVIEW")
+            if status == "MATCH":
+                tiers["priority"].append(card(result))
+                relevant_count += 1
+            elif status in {"NEED_INFO", "REVIEW"}:
+                tiers["maybe"].append(card(result))
+                relevant_count += 1
+            else:
+                reason = (result.get("reason") or ["目前資料與這筆補助的條件不相符。"])[0]
+                tiers["skip"].append({
+                    "name": result.get("name"),
+                    "status": status,
+                    "why": str(reason),
+                })
+
+        for key in ("priority", "maybe"):
+            tiers[key].sort(key=lambda item: (
+                item["days_left"] if item["days_left"] is not None else 9999,
+                str(item.get("name") or ""),
+            ))
+        # Keep the first screen demo-sized while retaining every skip reason.
+        remaining = 5
+        priority = tiers["priority"][:remaining]
+        remaining -= len(priority)
+        maybe = tiers["maybe"][:max(0, remaining)]
+        return {
+            "kind": "results",
+            "matching_profile": profile,
+            "you_said": you_said,
+            "tiers": {"priority": priority, "maybe": maybe, "skip": tiers["skip"]},
+            "relevant_count": relevant_count,
+            "disclaimer": response.get("disclaimer") or "實際資格由承辦單位認定。",
+        }
+
+    def _render_matching_results(self, response: dict, payload: dict) -> str:
+        lines: list[str] = []
+        cards = [*payload["tiers"]["priority"], *payload["tiers"]["maybe"]]
+        labels = {
+            "MATCH": ("✅", "建議優先看"),
+            "NEED_INFO": ("⚠️", "可能有關"),
+            "REVIEW": ("🟡", "建議帶資料問承辦"),
+            "CLOSED": ("⏳", "這一輪已截止"),
+        }
+        for item in cards[:3]:
+            icon, label = labels.get(str(item.get("status")), ("🟡", "可能有關"))
+            lines.append(f"{icon} {label}｜{item.get('name', '')}")
+            if item.get("close"):
+                lines.append(f"　⏰ 受理至 {item['close']}")
+            if item.get("missing"):
+                lines.append(f"　還差沒確認：{'、'.join(item['missing'])}")
+            elif item.get("tasks"):
+                lines.append(f"　下一步：{item['tasks'][0].get('title', '整理申請資料')}")
+        if not lines:
+            lines.append("目前比對不到相關的補助。你可以按「我卡住了」，我幫你找可以問的單位。")
+        lines.append("\n※ 實際資格由承辦單位認定，這裡只是幫你先整理。")
+        return "\n".join(lines)
+
+    def _advance_legacy(self, session: Session) -> Reply:
+        results = match_all(self.legacy_programs, session.facts)
         if session.questions_asked < MAX_QUESTIONS:
             q = next_question(results, self.fields,
                               asked=session.asked | set(session.facts),

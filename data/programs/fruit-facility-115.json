@@ -1,0 +1,144 @@
+{
+  "id": "fruit-facility-115",
+  "name": "115年果樹產業生產設施與設備",
+  "summary": "果樹產業生產設施、設備及水平棚架／網室申請入口示範資料。",
+  "category": "果樹設施",
+  "demo_simplified": true,
+  "source_key": "fruit_facility_115",
+  "authority": {
+    "level": "中央",
+    "agency": "農業部農糧署",
+    "office": "地方受理單位"
+  },
+  "source": {
+    "source_key": "fruit_facility_115",
+    "title": "115年果樹產業生產設施與設備補助原則",
+    "authority": "農業部農糧署",
+    "url": "https://www.afa.gov.tw/cht/index.php?article_id=31617&code=list&flag=detail&ids=1129",
+    "status": "official_demo_fixture",
+    "demo_simplified": true,
+    "last_verified": "2026-09-05",
+    "note": "示範資料；申請內容與受理期以官方計畫及地方受理單位為準。"
+  },
+  "official_form_reference": {
+    "status": "not_imported",
+    "note": "官方附表1存在，但本 pack 未匯入原始 PDF；不得自行重建或重畫。",
+    "attachment": "附表1",
+    "source_url": "https://www.afa.gov.tw/cht/index.php?act=download&ids=42752",
+    "application_channel": "依官方公告向地方受理單位申請"
+  },
+  "variants": [
+    {
+      "id": "fruit-facility-equipment",
+      "name": "果樹生產設施與設備",
+      "summary": "自然人農民可就合法農業使用土地申請果樹生產設施或設備。",
+      "category": "果樹設施",
+      "metadata": {
+        "applicant_types": ["individual_farmer"],
+        "crop_scope": ["桃", "楊桃", "紅龍果", "芒果", "番荔枝", "柑橘類", "百香果", "荔枝", "紅棗", "獼猴桃", "香蕉"],
+        "intent_keywords": ["果樹設施", "果園設備", "網室", "棚架", "設施", "設備"],
+        "land_use_required": true,
+        "non_owned_land_requires": "使用權證明",
+        "certification_required_at_application": false,
+        "later_requirements": ["國際驗證、產銷履歷、有機驗證或追溯條碼可依規定於後續取得"],
+        "form_template_status": "尚未匯入官方原始 PDF；不得自行重建",
+        "application_channel": "依官方公告向地方受理單位申請"
+      },
+      "entry_criteria": [
+        {
+          "id": "fruit-facility-base",
+          "text": "申請人為自然人農民，設施或設備所在土地須合法農業使用；非自有土地須提出使用權證明。",
+          "source": {"source_key": "fruit_facility_115", "section": "基本申請資格"}
+        },
+        {
+          "id": "fruit-facility-certification-later",
+          "text": "國際驗證、產銷履歷、有機驗證或追溯條碼於申請時尚未取得，仍可先受理，後續依規定取得；不以目前沒有驗證作為入口排除。",
+          "source": {"source_key": "fruit_facility_115", "section": "驗證文件"}
+        }
+      ],
+      "rounds": [
+        {
+          "id": "fruit-facility-115-2026",
+          "name": "115年度申請期",
+          "window": {
+            "type": "公告型",
+            "start": null,
+            "end": "2026-04-15",
+            "open": null,
+            "close": "2026-04-15",
+            "note": "申請截止日；實際受理依地方公告。"
+          },
+          "metadata": {
+            "crop_scope": ["桃", "楊桃", "紅龍果", "芒果", "番荔枝", "柑橘類", "百香果", "荔枝", "紅棗", "獼猴桃", "香蕉"],
+            "certification_required_at_application": false,
+            "later_requirements": ["依規定取得驗證或追溯文件"],
+            "form_template_status": "尚未匯入官方原始 PDF；僅保留 matching",
+            "application_channel": "依官方公告向地方受理單位申請"
+          },
+          "entry_criteria": [
+            {
+              "id": "fruit-facility-round-base",
+              "text": "自然人農民、土地合法農業使用，非自有土地須有使用權證明。",
+              "source": {"source_key": "fruit_facility_115", "section": "基本申請資格"}
+            },
+            {
+              "id": "fruit-facility-round-later",
+              "text": "申請時尚未取得國際驗證、產銷履歷、有機驗證或追溯條碼，仍可先受理；這是後續要求，不是目前的入口 blocker。",
+              "source": {"source_key": "fruit_facility_115", "section": "驗證文件"}
+            }
+          ],
+          "tasks": [
+            {"id": "fruit-submit-application", "title": "向地方受理單位提出果樹設施申請", "deadline": "2026-04-15", "depends_on": []},
+            {"id": "fruit-prepare-land-proof", "title": "準備土地合法使用及非自有土地使用權證明", "depends_on": ["fruit-submit-application"]},
+            {"id": "fruit-follow-up-certification", "title": "依承辦要求補齊後續驗證或追溯文件", "depends_on": ["fruit-submit-application"]}
+          ],
+          "authority": {"level": "中央", "agency": "農業部農糧署", "office": "地方受理單位"},
+          "source": {"source_key": "fruit_facility_115", "attachment": "附表1（未匯入）", "url": "https://www.afa.gov.tw/cht/index.php?act=download&ids=42752"}
+        }
+      ],
+      "authority": {"level": "中央", "agency": "農業部農糧署"},
+      "source": {"source_key": "fruit_facility_115", "section": "果樹生產設施與設備"}
+    },
+    {
+      "id": "horizontal-net-house",
+      "name": "水平棚架網室",
+      "summary": "指定果樹品項的水平棚架網室設施入口。",
+      "category": "果樹設施",
+      "metadata": {
+        "applicant_types": ["individual_farmer"],
+        "crop_scope": ["桃", "楊桃", "紅龍果", "芒果", "番荔枝", "柑橘類", "百香果", "荔枝", "紅棗", "獼猴桃"],
+        "intent_keywords": ["水平棚架", "網室", "果樹設施"],
+        "land_use_required": true,
+        "certification_required_at_application": false,
+        "form_template_status": "尚未匯入官方原始 PDF；不得自行重建",
+        "application_channel": "依官方公告向地方受理單位申請"
+      },
+      "entry_criteria": [
+        {"id": "horizontal-net-house-crops", "text": "水平棚架網室適用桃、楊桃、紅龍果、芒果、番荔枝、柑橘類、百香果、荔枝、紅棗及獼猴桃等指定果樹。", "source": {"source_key": "fruit_facility_115", "section": "水平棚架網室"}},
+        {"id": "horizontal-net-house-land", "text": "設施所在土地須合法農業使用；非自有土地須有使用權證明。", "source": {"source_key": "fruit_facility_115", "section": "土地使用"}}
+      ],
+      "rounds": [
+        {
+          "id": "fruit-facility-115-horizontal-net-house-2026",
+          "name": "115年度申請期",
+          "window": {"type": "公告型", "start": null, "end": "2026-04-15", "open": null, "close": "2026-04-15", "note": "申請截止日；實際受理依地方公告。"},
+          "metadata": {"crop_scope": ["桃", "楊桃", "紅龍果", "芒果", "番荔枝", "柑橘類", "百香果", "荔枝", "紅棗", "獼猴桃"], "form_template_status": "尚未匯入官方原始 PDF；僅保留 matching", "application_channel": "依官方公告向地方受理單位申請"},
+          "entry_criteria": [{"id": "horizontal-net-house-round", "text": "申請作物須為水平棚架網室指定果樹，土地須合法農業使用。", "source": {"source_key": "fruit_facility_115", "section": "水平棚架網室"}}],
+          "tasks": [
+            {"id": "fruit-horizontal-submit", "title": "向地方受理單位提出水平棚架網室申請", "deadline": "2026-04-15", "depends_on": []},
+            {"id": "fruit-horizontal-land-proof", "title": "準備土地合法使用及使用權證明", "depends_on": ["fruit-horizontal-submit"]}
+          ],
+          "authority": {"level": "中央", "agency": "農業部農糧署", "office": "地方受理單位"},
+          "source": {"source_key": "fruit_facility_115", "attachment": "附表1（未匯入）", "url": "https://www.afa.gov.tw/cht/index.php?act=download&ids=42752"}
+        }
+      ],
+      "authority": {"level": "中央", "agency": "農業部農糧署"},
+      "source": {"source_key": "fruit_facility_115", "section": "水平棚架網室"}
+    }
+  ],
+  "eligibility": {
+    "all": [
+      {"field": "event", "op": "=", "value": "__new_demo_variant_only__", "legal_ref": "compatibility marker for the legacy loader; use variants/rounds for matching"}
+    ]
+  }
+}

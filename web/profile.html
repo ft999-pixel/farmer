@@ -37,6 +37,9 @@ button.line{background:var(--line-green);border-color:var(--line-green);color:#f
 label{display:block;font-size:15px;font-weight:500;color:var(--ink-soft);margin-bottom:6px;}
 input,select{font-family:inherit;font-size:17px;padding:12px 14px;border:2px solid var(--line);
   border-radius:12px;background:#fff;color:var(--ink);width:100%;min-height:50px;}
+textarea{font-family:inherit;font-size:17px;padding:12px 14px;border:2px solid var(--line);
+  border-radius:12px;background:#fff;color:var(--ink);width:100%;min-height:100px;resize:vertical;}
+input:focus,select:focus,textarea:focus{outline:3px solid var(--green-pale);border-color:var(--green-mid);}
 .grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));}
 /* 複選勾選籤：手指點得到的大小 */
 .chips{display:flex;flex-wrap:wrap;gap:10px;}
@@ -50,6 +53,12 @@ input,select{font-family:inherit;font-size:17px;padding:12px 14px;border:2px sol
   margin-top:18px;line-height:1.8;}
 .privacy b{color:var(--green-bright);}
 .privacy .small{font-size:14.5px;color:var(--green-pale);display:block;margin-top:6px;}
+.privacy-badges{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:8px;}
+.privacy-badge{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:4px 12px;
+  font-size:14px;font-weight:700;line-height:1.45;white-space:nowrap;}
+.privacy-badge.matching{background:var(--green-bright);color:var(--ink);}
+.privacy-badge.private{background:#fff;color:var(--ink);}
+.privacy-badge.neutral{background:var(--green-tint);color:var(--ink);}
 .pill{display:inline-block;font-size:14px;padding:3px 12px;border-radius:999px;background:var(--green-tint);}
 .pill.new{background:var(--green-bright);font-weight:700;}
 .pill.warn{background:var(--warn-bg);color:#8A5A00;}
@@ -65,6 +74,14 @@ input,select{font-family:inherit;font-size:17px;padding:12px 14px;border:2px sol
 .linked{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
 .hide{display:none;}
 .disclaim{font-size:14.5px;color:var(--ink-soft);line-height:1.8;margin-top:18px;}
+.profile-preview{background:var(--green-bg);border-radius:14px;padding:12px 14px;margin-top:14px;
+  font-size:15px;line-height:1.8;}
+.profile-preview b{color:var(--ink-soft);}
+.private-note{background:#F7FFFB;border:1px solid var(--line);border-radius:12px;padding:12px 14px;
+  font-size:15px;line-height:1.75;margin:12px 0 16px;}
+.status-match{background:var(--green-tint);}
+.status-need{background:var(--warn-bg);}
+.status-review{background:#EEF0FF;color:#2B347A;}
 /* 列印用申請表：畫面上不顯示，列印時只印它 */
 #printable{display:none;}
 @media print{
@@ -100,22 +117,43 @@ input,select{font-family:inherit;font-size:17px;padding:12px 14px;border:2px sol
   <h1>我的資料</h1>
   <p class="lead">填一次，以後不用每次重講。系統會幫你留意有沒有新的補助跟你有關，也能把申請表先填好給你帶去公所。</p>
 
-  <div class="privacy">
-    <b>存了會員資料，換手機也看得到。</b>
+  <div class="privacy" data-privacy-boundary="MatchingProfile/PrivateFormProfile">
+    <div class="privacy-badges">
+      <span class="privacy-badge matching" data-privacy="matching">🔎 MatchingProfile｜會送去分析</span>
+      <span class="privacy-badge private" data-privacy="private">📱 PrivateFormProfile｜只存在這台裝置</span>
+    </div>
+    <b>找補助和填申請表，是兩份不同的資料。</b>
     <span class="small">
-      我們會保存你填的：作物、鄉鎮、土地狀況這些查補助要用的條件，以及姓名、電話、地址（列印申請表用）。<br>
-      <b>身分證字號和銀行帳號我們刻意不收</b>，那些請你到現場親手寫。<br>
-      你的資料只用來幫你找補助跟填表，不會給別人。<b>隨時可以按最下面的「刪除我的資料」，一按就從我們的資料庫刪掉。</b><br>
-      不想留資料也沒關係——不登入一樣可以用「找補助」和「看懂公文」。
+      作物、鄉鎮、土地狀況等媒合條件，登入後可以同步到會員資料，並送到「找補助」分析。<br>
+      姓名、電話、完整地址、身分證字號、出生日期、銀行資料、地號、簽名，只留在這台瀏覽器的本機儲存，不會送到任何後端，也不會跨裝置同步。<br>
+      這是示範版登入（只用代號）；不想留資料也沒關係，未登入仍可查補助。<b>按最下面的刪除會同時清掉本機私密資料和會員媒合資料。</b>
     </span>
   </div>
 
   <div id="msg"></div>
 
+  <section id="hero-demo" data-profile-kind="MatchingProfile">
+    <div class="privacy-badges">
+      <h2 style="margin:0">用一句話開始</h2>
+      <span class="privacy-badge matching" data-privacy="matching">會送去分析</span>
+    </div>
+    <p class="hint">
+      直接說你的狀況，先把有用的媒合條件整理出來；姓名、電話等私密資料不會從這個輸入送出。
+      也可以載入英雄範例試跑一次。
+    </p>
+    <textarea id="hero-text" rows="3" data-profile-input="MatchingProfile"
+      placeholder="例如：我去年才回來屏東種香蕉，大概八分地，有 QR Code，最近想買電動割草機。"></textarea>
+    <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap">
+      <button class="primary" id="hero-apply">整理並查補助</button>
+      <button id="hero-sample">載入英雄範例</button>
+    </div>
+    <div id="hero-preview" class="profile-preview hide" data-profile-preview="MatchingProfile"></div>
+  </section>
+
   <section>
     <h2>登入</h2>
     <p class="hint">
-      取一個好記的代號就能用，不用密碼、不用電子信箱。下次在任何裝置輸入同一個代號，資料就回來了。
+      取一個好記的代號就能用，不用密碼、不用電子信箱。登入只同步媒合條件；這台裝置上的私密資料不會跟著同步。
     </p>
     <div id="login-box"></div>
   </section>
@@ -135,15 +173,27 @@ input,select{font-family:inherit;font-size:17px;padding:12px 14px;border:2px sol
     <div class="grid" id="event-form"></div>
   </section>
 
-  <section>
-    <h2>聯絡資料（列印申請表時會填進去）</h2>
-    <p class="hint">只有列印申請表時才會用到，一樣只存在你手機裡。不想填就留白，印出來自己手寫也可以。</p>
-    <div class="grid">
-      <div><label for="c-name">姓名</label><input id="c-name" autocomplete="name"></div>
-      <div><label for="c-tel">聯絡電話</label><input id="c-tel" autocomplete="tel"></div>
-      <div style="grid-column:1/-1"><label for="c-addr">通訊地址</label><input id="c-addr" autocomplete="street-address"></div>
+  <section data-profile-kind="PrivateFormProfile" data-storage="localStorage">
+    <div class="privacy-badges">
+      <h2 style="margin:0">申請表私密資料</h2>
+      <span class="privacy-badge private" data-privacy="private">📱 只存在這台裝置</span>
     </div>
-    <p class="hint" style="margin-top:12px">身分證字號、銀行帳號這類資料我們刻意不收，也不會幫你填——那些請你到現場親手寫。</p>
+    <p class="hint">這些資料只在本機用來預覽／列印申請表；輸入時會自動存到瀏覽器 localStorage，刷新後會還原，不會 POST 到會員或比對 API。</p>
+    <div class="private-note" data-private-storage-note>
+      <b>本機儲存：</b> <span data-storage-kind="localStorage">localStorage</span>。換手機或清除瀏覽器資料後不會跟著過去；正式送件前請自己核對紙本內容。
+    </div>
+    <div class="grid" data-private-form="PrivateFormProfile">
+      <div><label for="c-name">姓名</label><input id="c-name" data-private-key="full_name" autocomplete="name"></div>
+      <div><label for="c-tel">聯絡電話</label><input id="c-tel" data-private-key="phone" autocomplete="tel"></div>
+      <div><label for="c-national-id">身分證字號</label><input id="c-national-id" data-private-key="national_id" autocomplete="off"></div>
+      <div><label for="c-birthday">出生日期</label><input id="c-birthday" data-private-key="birthday" type="date" autocomplete="bday"></div>
+      <div style="grid-column:1/-1"><label for="c-addr">通訊地址</label><input id="c-addr" data-private-key="full_address" autocomplete="street-address"></div>
+      <div><label for="c-bank-account">銀行帳號</label><input id="c-bank-account" data-private-key="bank_account" autocomplete="off"></div>
+      <div><label for="c-bank-branch">銀行／分行</label><input id="c-bank-branch" data-private-key="bank_branch" autocomplete="off"></div>
+      <div><label for="c-parcels">完整地號（每行一筆）</label><textarea id="c-parcels" data-private-key="parcel_numbers" rows="2" autocomplete="off"></textarea></div>
+      <div><label for="c-signature">簽名備註（選填）</label><textarea id="c-signature" data-private-key="signature" rows="2" autocomplete="off"></textarea></div>
+    </div>
+    <p class="hint" style="margin-top:12px">私密資料不會送去分析，也不會由登入功能同步。若不放心，可以完全留白，印出來後到現場親手填寫。</p>
   </section>
 
   <div style="margin-top:18px;display:flex;gap:12px;flex-wrap:wrap">
@@ -161,11 +211,110 @@ input,select{font-family:inherit;font-size:17px;padding:12px 14px;border:2px sol
 
 <div id="printable"></div>
 
+<script src="profile-store.js"></script>
 <script>
 const $ = id => document.getElementById(id);
-let FIELDS = null, profile = null, lastResults = [], loggedIn = false;
+let FIELDS = null, matchingProfile = {}, privateFormProfile = {}, lastResults = [], loggedIn = false, memberCode = null;
+let transient = {};   // 這次發生的事，只放記憶體，不寫任何 storage
 
-const blank = () => ({code: null, contact: {}, facts: {}});
+// The two objects intentionally have different lifecycles.  Nothing in this
+// file sends privateFormProfile to a network API; only matchingProfile is
+// passed through the backend request helpers below.
+const HERO_SAMPLE = '我去年才回來屏東種香蕉，大概八分地，有 QR Code，最近想買電動割草機。';
+const PRIVATE_CONTAINER_KEYS = new Set([
+  'contact', 'contacts', 'private', 'private_profile', 'private_form_profile',
+  'privateformprofile', 'personal', 'personal_info', 'form_profile'
+]);
+const blankMatchingProfile = () => ({});
+
+function normalizedKey(key){
+  return String(key || '').replace(/([a-z])([A-Z])/g, '$1_$2')
+    .replace(/[\s-]+/g, '_').toLowerCase();
+}
+
+function isPrivateProfileKey(key){
+  const normalized = normalizedKey(key);
+  return (window.ProfileStore && ProfileStore.isPrivateKey(normalized)) ||
+    PRIVATE_CONTAINER_KEYS.has(normalized);
+}
+
+function cloneMatchingValue(value){
+  if (Array.isArray(value)) return value.map(cloneMatchingValue);
+  if (!value || typeof value !== 'object') return value;
+  const result = {};
+  Object.entries(value).forEach(([key, child]) => {
+    // A nested private/contact object must not survive into a matching body.
+    if (!isPrivateProfileKey(key)) result[key] = cloneMatchingValue(child);
+  });
+  return result;
+}
+
+function sanitizeMatchingProfile(input){
+  const source = input && typeof input === 'object' && !Array.isArray(input) ? input : {};
+  const result = {};
+  Object.entries(source).forEach(([key, value]) => {
+    const normalized = normalizedKey(key);
+    if (isPrivateProfileKey(normalized) || normalized === 'facts' || normalized === 'profile') return;
+    // MatchingProfile permits programme-specific scalar/list fields.  Keep
+    // those fields, but scrub any nested private/contact keys recursively.
+    result[key] = cloneMatchingValue(value);
+  });
+  return result;
+}
+
+function asList(value){
+  if (Array.isArray(value)) return value.filter(x => x !== '' && x != null);
+  return value === '' || value == null ? [] : [value];
+}
+
+function canonicalMatchingProfile(input){
+  const source = sanitizeMatchingProfile(input);
+  const result = {...source};
+
+  // Keep old fields in the in-page object so the existing generated form and
+  // old result renderer still work; canonical aliases are what new APIs use.
+  if (source.crop != null && source.crops == null) result.crops = asList(source.crop);
+  if (source.crops != null && source.crop == null) result.crop = source.crops;
+  if (source.township != null && source.location == null) result.location = source.township;
+  if (source.location != null && source.township == null) result.township = source.location;
+  if (source.event != null && source.disaster_situation == null) {
+    result.disaster_situation = source.event;
+  }
+  if (source.disaster_situation != null && source.event == null) {
+    result.event = source.disaster_situation;
+  }
+  if (source.certification != null && source.certifications == null) {
+    result.certifications = asList(source.certification);
+  }
+  if (source.certifications != null && source.certification == null) {
+    result.certification = source.certifications;
+  }
+  return result;
+}
+
+function backendMatchingProfile(includeTransient = true){
+  // This is the single boundary object for /match and /members/me.  It is
+  // derived from MatchingProfile and can never contain private form values.
+  // Per-event facts are included only for /match, never for member persistence.
+  const source = includeTransient ? {...matchingProfile, ...transient} : matchingProfile;
+  const result = sanitizeMatchingProfile(canonicalMatchingProfile(source));
+  // Do not expose compatibility-only aliases when a canonical value exists;
+  // keeping scalar/list matching facts is harmless and supports old fixtures.
+  return result;
+}
+
+const MATCHING_STORAGE_KEY = 'aidstation_matching_profile';
+function saveMatchingLocally(){
+  try {
+    localStorage.setItem(MATCHING_STORAGE_KEY, JSON.stringify(backendMatchingProfile(false)));
+  } catch (e) {}
+}
+function loadMatchingLocally(){
+  try {
+    const raw = JSON.parse(localStorage.getItem(MATCHING_STORAGE_KEY) || '{}');
+    return canonicalMatchingProfile(raw);
+  } catch (e) { return {}; }
+}
 
 async function api(path, opts){
   const r = await fetch(path, {credentials: 'same-origin', ...opts});
@@ -180,10 +329,20 @@ const SEEN_KEY = 'aidstation_seen';
 const loadSeen = () => { try { return JSON.parse(localStorage.getItem(SEEN_KEY) || '[]'); } catch (e) { return []; } };
 const saveSeen = ids => localStorage.setItem(SEEN_KEY, JSON.stringify(ids));
 
-async function persist(){
+async function persistMatchingProfile(){
   if (!loggedIn) return;
-  await api('/members/me', {method: 'POST', headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({contact: profile.contact, facts: profile.facts})});
+  const payload = {profile: backendMatchingProfile(false)};
+  try {
+    await api('/members/me', {method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(payload)});
+  } catch (e) {
+    // The repository keeps a short-lived `facts` compatibility bridge while
+    // older servers are being upgraded.  It still contains matching data only;
+    // notably, there is no contact/private field in this fallback body.
+    if (![400, 422].includes(e.status)) throw e;
+    await api('/members/me', {method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({facts: backendMatchingProfile(false)})});
+  }
 }
 function esc(s){ return String(s ?? '').replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c])); }
 function msg(html, kind){ $('msg').innerHTML = html ? `<div class="msg ${kind}">${html}</div>` : ''; }
@@ -193,10 +352,10 @@ function renderLogin(){
   const box = $('login-box');
   if (loggedIn) {
     box.innerHTML = `<div class="linked">
-        <span class="pill">目前是：${esc(profile.code)}</span>
+        <span class="pill">目前是：${esc(memberCode)}</span>
         <button id="logout">換人／登出</button>
       </div>
-      <p class="hint" style="margin-top:12px">登出只是離開，資料還留著。要真的刪掉請按最下面的「刪除我的資料」。</p>`;
+      <p class="hint" style="margin-top:12px">登出只是離開，媒合資料仍在會員資料；這台裝置的私密資料也仍只留在本機。要全部清掉請按最下面的「刪除我的資料」。</p>`;
     $('logout').onclick = async () => {
       await api('/members/logout', {method: 'POST'});
       location.reload();
@@ -221,7 +380,9 @@ async function doLogin(){
   try {
     const m = await api('/members/login', {method: 'POST', headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({code})});
-    profile = {code: m.code, contact: m.contact || {}, facts: m.facts || {}};
+    memberCode = m.code || code;
+    matchingProfile = canonicalMatchingProfile(m.profile || m.facts || {});
+    saveMatchingLocally();
     loggedIn = true;
     msg(m.created ? `已經幫你建好「${esc(code)}」，填完記得按存起來。` : `歡迎回來，${esc(code)}。`, 'ok');
     await afterLogin();
@@ -234,7 +395,6 @@ async function doLogin(){
 const PER_EVENT = ['event', 'loss_rate'];
 // 可複選的欄位（一個農民可能同時種好幾種作物）
 const MULTI = ['crop'];
-let transient = {};   // 這次發生的事，只放記憶體，不寫 localStorage
 
 // ---- 狀況表單（依欄位字典自動生成）----------------------------------------
 function renderFacts(boxId, keys, store){
@@ -304,15 +464,66 @@ function amountText(a){
 }
 function windowText(w){
   if (!w) return '未註明';
-  if (w.close) return `${w.open ? w.open + ' 起，' : ''}${w.close} 截止`;
+  if (w.close || w.end) return `${w.open || w.start ? (w.open || w.start) + ' 起，' : ''}${w.close || w.end} 截止`;
   return w.type === '常態型' ? '隨時可辦' : (w.note || w.close_rule || '未註明');
 }
 
+function resultStatus(result){
+  const raw = String(result && result.status || '').toUpperCase();
+  if (raw === '符合' || raw === 'MATCH') return 'MATCH';
+  if (raw === '可能符合' || raw === 'NEED_INFO') return 'NEED_INFO';
+  if (raw === 'REVIEW' || raw === '待承辦確認') return 'REVIEW';
+  if (raw === 'CLOSED' || raw === '已截止') return 'CLOSED';
+  if (raw === '不符合' || raw === 'NOT_RELEVANT') return 'NOT_RELEVANT';
+  return raw || 'REVIEW';
+}
+
+function resultStatusLabel(status){
+  return ({
+    MATCH: '看起來和你蠻有關的',
+    NEED_INFO: '可能有關，再補幾項資料就知道',
+    REVIEW: '可能有關，建議帶資料問承辦',
+    CLOSED: '這一輪已截止，可留意下一輪',
+  })[status] || '目前先不用看';
+}
+
+function resultIsRelevant(result){
+  return resultStatus(result) !== 'NOT_RELEVANT';
+}
+
+function resultWindow(result){
+  return result.window || (result.deadline ? {close: result.deadline} : null);
+}
+
+function resultDocuments(result){
+  if (Array.isArray(result.documents)) return result.documents;
+  const fields = result.form_template && result.form_template.fields;
+  return Array.isArray(fields) ? fields.map(field => ({
+    name: field.label || field.name || field.key || field.id || '申請欄位',
+    where: field.storage === 'local_only' ? '只在本機填寫' : '',
+    exempt: false,
+  })) : [];
+}
+
+function resultMissingInfo(result){
+  if (Array.isArray(result.missing_info)) return result.missing_info;
+  return (result.unknown_fields || []).map(key => ({
+    key,
+    question: FIELDS[key] && (FIELDS[key].question || FIELDS[key].label),
+  }));
+}
+
+function resultReasonText(result){
+  const reasons = Array.isArray(result.reason) ? result.reason : [];
+  if (reasons.length) return reasons.map(x => typeof x === 'string' ? x : x.text || '').filter(Boolean);
+  return (result.failed || []).map(x => x.note || '').filter(Boolean);
+}
+
 function renderResults(results){
-  lastResults = results;
-  const relevant = results.filter(r => r.status !== '不符合');
+  lastResults = Array.isArray(results) ? results : [];
+  const relevant = lastResults.filter(resultIsRelevant);
   const seen = new Set(loadSeen());
-  const fresh = relevant.filter(r => !seen.has(r.program_id));
+  const fresh = relevant.filter(r => r.program_id && !seen.has(r.program_id));
 
   $('results-hint').innerHTML = relevant.length
     ? `依你填的狀況，有 <b>${relevant.length}</b> 項看起來跟你有關${
@@ -320,23 +531,30 @@ function renderResults(results){
     : '目前比對不到相關的補助。你可以到「找補助」自己看看，或按「我卡住了」找可以問的單位。';
 
   $('results').innerHTML = relevant.map(r => {
-    const isNew = !seen.has(r.program_id);
+    const status = resultStatus(r);
+    const isNew = r.program_id && !seen.has(r.program_id);
     const a = r.authority || {};
-    const docs = (r.documents || []).filter(d => !d.exempt);
-    const exempt = (r.documents || []).filter(d => d.exempt);
-    return `<div class="card match">
+    const documents = resultDocuments(r);
+    const docs = documents.filter(d => !d.exempt);
+    const exempt = documents.filter(d => d.exempt);
+    const missing = resultMissingInfo(r);
+    const reasons = resultReasonText(r);
+    const resultId = r.program_id || r.variant_id || r.round_id || r.name;
+    return `<div class="card match" data-result-status="${esc(status)}">
       <h3>${esc(r.name)} ${isNew ? '<span class="pill new">新</span>' : ''}</h3>
-      <span class="pill">${r.status === '符合' ? '看起來和你蠻有關的' : '可能有關，再補幾項資料就知道'}</span>
+      <span class="pill ${status === 'MATCH' ? 'status-match' : status === 'NEED_INFO' ? 'status-need' : status === 'REVIEW' ? 'status-review' : ''}">${esc(resultStatusLabel(status))}</span>
       <p class="meta">
-        ⏰ 期限：${esc(windowText(r.window))}<br>
+        ⏰ 期限：${esc(windowText(resultWindow(r)))}<br>
         🏛 承辦：${esc(a.agency || '未註明')}${a.tel ? `（<a href="tel:${esc(a.tel)}">${esc(a.tel)}</a>）` : ''}
         ${amountText(r.amount) ? `<br>💰 ${esc(amountText(r.amount))}` : ''}
       </p>
+      ${reasons.length ? `<p class="meta">💡 ${reasons.map(esc).join('；')}</p>` : ''}
+      ${missing.length ? `<p class="meta">🧩 還要確認：${missing.map(x => esc(typeof x === 'string' ? x : x.question || x.key)).join('、')}</p>` : ''}
       ${docs.length ? `<div class="meta">📄 要帶的東西：<ul class="docs">${
         docs.map(d => `<li>${esc(d.name)}${d.where ? `（${esc(d.where)}）` : ''}</li>`).join('')}</ul></div>` : ''}
       ${exempt.length ? `<p class="meta">✅ 你可以免附：${exempt.map(d => esc(d.name)).join('、')}</p>` : ''}
       <div class="actions">
-        <button class="primary" data-print="${esc(r.program_id)}">列印申請表（已幫你填好）</button>
+        <button class="primary" data-print="${esc(resultId)}">列印申請表（已幫你填好）</button>
         ${a.tel ? `<button onclick="location.href='tel:${esc(a.tel)}'">打電話問承辦</button>` : ''}
       </div>
     </div>`;
@@ -346,26 +564,104 @@ function renderResults(results){
     b.onclick = () => printForm(b.dataset.print));
 
   // 看過了就記起來，下次只有真正新增的才標「新」
-  saveSeen(relevant.map(r => r.program_id));
+  saveSeen(relevant.map(r => r.program_id).filter(Boolean));
   $('results-box').classList.remove('hide');
 }
 
-function allFacts(){ return {...profile.facts, ...transient}; }
+function matchingFormFacts(){
+  const source = canonicalMatchingProfile(matchingProfile);
+  const facts = {};
+  if (!FIELDS) return facts;
+  const aliases = {
+    crop: 'crops', township: 'location', event: 'disaster_situation',
+    certification: 'certifications',
+  };
+  Object.keys(FIELDS).forEach(key => {
+    if (Object.prototype.hasOwnProperty.call(source, key)) facts[key] = source[key];
+    else if (aliases[key] && Object.prototype.hasOwnProperty.call(source, aliases[key])) {
+      facts[key] = source[aliases[key]];
+    }
+  });
+  return facts;
+}
+
+function allFacts(){
+  // Used only for local rendering/legacy compatibility.  It is still
+  // explicitly derived from matching data and transient matching data.
+  return sanitizeMatchingProfile({...matchingFormFacts(), ...transient});
+}
 
 async function match(){
+  const matching = backendMatchingProfile();
+  const request = {profile: matching};
+  if (new URLSearchParams(location.search).get('demo')) request.today = '2026-08-20';
   const r = await fetch('/match', {
     method: 'POST', headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({facts: allFacts()}),
+    body: JSON.stringify(request),
   });
-  if (!r.ok) throw new Error('比對失敗');
-  return (await r.json()).results;
+  if (r.ok) {
+    const body = await r.json();
+    return body.results || body.matches || [];
+  }
+
+  // Compatibility bridge for the original facts-only endpoint.  This body
+  // also contains matching fields only; privateFormProfile is never read.
+  if ([400, 422].includes(r.status)) {
+    const legacy = await fetch('/match', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({facts: allFacts()}),
+    });
+    if (legacy.ok) {
+      const body = await legacy.json();
+      return body.results || body.matches || [];
+    }
+  }
+  throw new Error('比對失敗');
+}
+
+// ---- PrivateFormProfile（純前端產生，資料不離開這台裝置）-----------------
+function collectPrivateForm(){
+  const form = document.querySelector('[data-private-form]');
+  const result = {};
+  if (!form) return result;
+  form.querySelectorAll('[data-private-key]').forEach(el => {
+    const key = el.dataset.privateKey;
+    const raw = el.value.trim();
+    if (!raw) return;
+    if (key === 'parcel_numbers') {
+      const values = raw.split(/[\n,，、]+/).map(x => x.trim()).filter(Boolean);
+      if (values.length) result[key] = values;
+    } else result[key] = raw;
+  });
+  return result;
+}
+
+function renderPrivateForm(){
+  const form = document.querySelector('[data-private-form]');
+  if (!form) return;
+  form.querySelectorAll('[data-private-key]').forEach(el => {
+    const value = privateFormProfile[el.dataset.privateKey];
+    el.value = Array.isArray(value) ? value.join('\n') : (value || '');
+  });
+  const note = document.querySelector('[data-private-storage-note]');
+  if (note) note.dataset.hasLocalData = ProfileStore.hasData() ? 'true' : 'false';
+}
+
+function savePrivateForm(){
+  privateFormProfile = ProfileStore.save(collectPrivateForm());
+  renderPrivateForm();
+}
+
+function privateValue(key){
+  const value = privateFormProfile[key];
+  return Array.isArray(value) ? value.join('、') : (value || '');
 }
 
 // ---- 預填申請表（純前端產生，資料不離開這台裝置）--------------------------
 function printForm(programId){
-  const r = lastResults.find(x => x.program_id === programId);
+  const r = lastResults.find(x => (x.program_id || x.variant_id || x.round_id || x.name) === programId);
   if (!r) return;
-  const c = profile.contact || {}, a = r.authority || {};
+  const a = r.authority || {};
   const label = k => (FIELDS[k] && FIELDS[k].label) || k;
   // 把內部值換回白話（loss_rate 的 0.6 → 「超過一半」），不然表上印出來沒人看得懂
   const shown = (k, v) => {
@@ -391,77 +687,265 @@ function printForm(programId){
     <h2>${esc(r.name)}　申請資料表</h2>
     <div>受理機關：${esc(a.agency || '')}　${esc(a.office || '')}　${esc(a.tel || '')}</div>
     <table>
-      <tr><th>姓名</th><td>${esc(c.name || '')}</td></tr>
-      <tr><th>聯絡電話</th><td>${esc(c.tel || '')}</td></tr>
-      <tr><th>通訊地址</th><td>${esc(c.addr || '')}</td></tr>
+      <tr><th>姓名</th><td>${esc(privateValue('full_name'))}</td></tr>
+      <tr><th>聯絡電話</th><td>${esc(privateValue('phone'))}</td></tr>
+      <tr><th>身分證字號</th><td>${esc(privateValue('national_id'))}</td></tr>
+      <tr><th>出生日期</th><td>${esc(privateValue('birthday'))}</td></tr>
+      <tr><th>通訊地址</th><td>${esc(privateValue('full_address'))}</td></tr>
+      <tr><th>銀行／分行</th><td>${esc(privateValue('bank_branch'))}</td></tr>
+      <tr><th>銀行帳號</th><td>${esc(privateValue('bank_account'))}</td></tr>
+      <tr><th>完整地號</th><td>${esc(privateValue('parcel_numbers'))}</td></tr>
       ${factRows}
-      <tr><th>申請期限</th><td>${esc(windowText(r.window))}</td></tr>
+      <tr><th>申請期限</th><td>${esc(windowText(resultWindow(r)))}</td></tr>
     </table>
     <div class="note"><b>要帶的東西</b><ul>${docs || '<li>—</li>'}</ul></div>
     <div class="note">
       ※ 這張是<b>自己整理用的資料表</b>，不是正式申請書。正式表格請向受理機關索取，本表可帶去現場對照抄寫。<br>
-      ※ 身分證字號、銀行帳號請到現場親手填寫，本系統刻意不收也不代填。<br>
+      ※ 上面的姓名、身分證、銀行等欄位只從本機 PrivateFormProfile 帶入，從未送到後端；請在送件前自行核對。<br>
       ※ 實際資格由承辦單位認定；本表內容由申請人自行填寫，系統不負認定責任。
     </div>
-    <div class="sign">申請人簽名：＿＿＿＿＿＿＿＿＿　　日期：＿＿＿年＿＿月＿＿日</div>`;
+    <div class="sign">申請人簽名：${esc(privateValue('signature') || '＿＿＿＿＿＿＿＿＿')}　　日期：＿＿＿年＿＿月＿＿日</div>`;
   window.print();
 }
 
-// ---- 啟動 ---------------------------------------------------------------
-$('save').onclick = async () => {
-  profile.facts = collectFacts('facts-form');       // 只存基本資料
-  transient = collectFacts('event-form');           // 這次的事：只放記憶體，不進資料庫
-  profile.contact = {name: $('c-name').value.trim(), tel: $('c-tel').value.trim(),
-                     addr: $('c-addr').value.trim()};
+function replaceStableMatching(facts){
+  const next = {...matchingProfile};
+  // Values represented by the generated form are replaceable, so clearing a
+  // form control really clears the matching value instead of resurrecting an
+  // old server value on the next save.  Programme-specific keys not rendered
+  // by the current fields dictionary are preserved.
+  const aliases = {
+    crop: ['crop', 'crops'], township: ['township', 'location'],
+    certification: ['certification', 'certifications'],
+  };
+  if (FIELDS) Object.keys(FIELDS).filter(k => !PER_EVENT.includes(k)).forEach(key => {
+    delete next[key];
+    (aliases[key] || []).forEach(alias => delete next[alias]);
+  });
+  matchingProfile = canonicalMatchingProfile({...next, ...facts});
+  saveMatchingLocally();
+}
+
+function chineseNumber(text){
+  const digits = {零:0,〇:0,一:1,二:2,兩:2,三:3,四:4,五:5,六:6,七:7,八:8,九:9};
+  if (/^\d+(?:\.\d+)?$/.test(text)) return Number(text);
+  if (text === '十') return 10;
+  if (text.includes('十')) {
+    const [left, right] = text.split('十');
+    return (left ? (digits[left] || 0) * 10 : 10) + (right ? (digits[right] || 0) : 0);
+  }
+  return [...text].reduce((sum, char) => sum * 10 + (digits[char] ?? 0), 0);
+}
+
+function parseHeroText(text){
+  const source = String(text || '').trim();
+  const stable = {};
+  const event = {};
+  if (!source) return {stable, event};
+
+  const cropSpec = (FIELDS && FIELDS.crop) || {};
+  const cropNames = [...(cropSpec.values || []), ...Object.keys(cropSpec.aliases || {})]
+    .sort((a, b) => b.length - a.length);
+  const crop = cropNames.find(name => source.includes(name));
+  if (crop) {
+    const canonical = (cropSpec.aliases || {})[crop] || crop;
+    stable.crop = canonical;
+    stable.crops = [canonical];
+  }
+
+  const exactLocation = source.match(/([\u4e00-\u9fff]{1,5}(?:縣|市)[\u4e00-\u9fff]{1,8}(?:鄉|鎮|市|區))/);
+  if (exactLocation) stable.township = exactLocation[1];
+  else {
+    const county = source.match(/(屏東|臺南|台南|高雄|嘉義|花蓮|臺東|台東|宜蘭|彰化|雲林|南投|桃園|新竹|苗栗|臺中|台中|新北|基隆)(?:縣|市)?/);
+    if (county) stable.location = county[1].replace('台南', '臺南').replace('台東', '臺東');
+  }
+
+  const hectares = source.match(/(\d+(?:\.\d+)?)\s*(?:公頃|ha)/i);
+  const fen = source.match(/([0-9零〇一二兩三四五六七八九十]+)\s*分地?/);
+  if (hectares) stable.land_area_ha = Number(hectares[1]);
+  else if (fen) stable.land_area_ha = chineseNumber(fen[1]) * 0.1;
+
+  const years = source.match(/(?:從農|耕作|種了|務農)\s*(\d+(?:\.\d+)?)\s*年/);
+  if (years) stable.farming_years = Number(years[1]);
+  else if (/去年才|去年回來|剛回來|今年開始/.test(source)) stable.farming_years = 1;
+
+  const age = source.match(/(\d+(?:\.\d+)?)\s*歲/);
+  if (age) stable.age = Number(age[1]);
+  if (/青年農民|青農/.test(source)) {
+    stable.young_farmer = true;
+    stable.young_farmer_status = true;
+  }
+  if (/自有|自己的地|我的地/.test(source)) stable.land_tenure = '自有';
+  if (/農保/.test(source)) stable.insured_farmer = true;
+  if (/有在耕作|實際耕作/.test(source)) stable.is_farming = true;
+
+  if (/QR\s*Code|溯源農糧|產銷履歷/i.test(source)) {
+    stable.certifications = ['QR Code'];
+    stable.certification = stable.certifications;
+  }
+
+  const intent = source.match(/想(?:買|要買|申請|用)\s*([^，。！？,.!?]+)/);
+  if (intent && intent[1].trim()) {
+    const value = intent[1].trim();
+    stable.intent = value;
+    stable.equipment_intent = value;
+  }
+
+  if (/天然災害|颱風|豪雨|寒害|淹水|受災|災損|吹倒|落了/.test(source)) {
+    event.event = '天然災害';
+    event.disaster_situation = '天然災害';
+  } else if (/受傷|跌倒|割到|骨折/.test(source)) {
+    event.event = '職業傷害';
+    event.disaster_situation = '職業傷害';
+  }
+  const loss = source.match(/([0-9零〇一二兩三四五六七八九十]+)\s*成/);
+  if (loss) event.loss_rate = chineseNumber(loss[1]) / 10;
+  return {stable: sanitizeMatchingProfile(stable), event: sanitizeMatchingProfile(event)};
+}
+
+function renderHeroPreview(){
+  const box = $('hero-preview');
+  if (!box) return;
+  const source = canonicalMatchingProfile({...matchingProfile, ...transient});
+  const items = [
+    ['地點', source.location || source.township],
+    ['作物', asList(source.crops || source.crop).join('、')],
+    ['面積', source.land_area_ha != null ? `${source.land_area_ha} 公頃` : ''],
+    ['從農', source.farming_years != null ? `${source.farming_years} 年` : ''],
+    ['資格', asList(source.certifications || source.certification).join('、')],
+    ['需求', source.equipment_intent || source.intent],
+    ['情境', source.disaster_situation || source.event],
+  ].filter(([, value]) => value !== undefined && value !== null && value !== '');
+  if (!items.length) {
+    box.classList.add('hide');
+    box.innerHTML = '';
+    return;
+  }
+  box.innerHTML = `<b>已整理成 MatchingProfile（只會送這些媒合條件）</b><br>${items.map(([key, value]) => `${esc(key)}：${esc(value)}`).join('　｜　')}`;
+  box.classList.remove('hide');
+}
+
+function applyHeroProfile(){
+  const text = $('hero-text').value.trim();
+  if (!text) { msg('先用一句話說說你的狀況。', 'warn'); return false; }
+  const parsed = parseHeroText(text);
+  if (!Object.keys(parsed.stable).length && !Object.keys(parsed.event).length) {
+    msg('我還沒抓到媒合條件；可以先說作物、地點或想申請的事情。', 'warn');
+    return false;
+  }
+  replaceStableMatching(parsed.stable);
+  transient = {...transient, ...parsed.event};
+  renderAllForms();
+  renderHeroPreview();
+  return true;
+}
+
+async function saveAndMatch(){
+  replaceStableMatching(collectFacts('facts-form')); // 只更新 MatchingProfile
+  transient = collectFacts('event-form');           // 只在本次查詢使用
   try {
-    await persist();
-    msg(loggedIn ? '已經存好了，換手機輸入同一個代號就找得回來。（「這次發生的事」不會存）'
-                 : '還沒登入，這次的結果看完就沒了。想留起來請先在上面輸入代號。', 'ok');
+    savePrivateForm();                               // browser-only
+    await persistMatchingProfile();                 // matching-only, if logged in
+    msg(loggedIn ? '媒合資料已存好；私密資料只留在這台裝置。'
+                 : '這次先用本機的媒合資料查詢；私密資料只留在這台裝置。', 'ok');
     renderResults(await match());
+    renderHeroPreview();
     $('results-box').scrollIntoView({behavior: 'smooth'});
-  } catch (e) { msg('存檔或比對時出了問題，請稍後再試。', 'warn'); }
+  } catch (e) {
+    msg('本機存檔或比對時出了問題，請稍後再試。', 'warn');
+  }
+}
+
+// ---- 啟動 ---------------------------------------------------------------
+document.querySelectorAll('[data-private-key]').forEach(el => {
+  const saveLocalOnly = () => {
+    try {
+      privateFormProfile = ProfileStore.save(collectPrivateForm());
+      const note = document.querySelector('[data-private-storage-note]');
+      if (note) note.dataset.hasLocalData = ProfileStore.hasData() ? 'true' : 'false';
+    } catch (e) {
+      msg('這台裝置目前無法保存私密資料；你仍可以留白後查補助。', 'warn');
+    }
+  };
+  el.addEventListener('input', saveLocalOnly);
+  el.addEventListener('change', saveLocalOnly);
+});
+
+$('save').onclick = saveAndMatch;
+$('hero-sample').onclick = () => {
+  $('hero-text').value = HERO_SAMPLE;
+  applyHeroProfile();
+};
+$('hero-apply').onclick = async () => {
+  if (applyHeroProfile()) await saveAndMatch();
 };
 
 $('clear').onclick = async () => {
-  if (!loggedIn) { msg('你還沒登入，沒有資料需要刪除。', 'warn'); return; }
-  if (!confirm(`確定刪除「${profile.code}」的資料？\n會從我們的資料庫整筆刪掉，沒辦法復原。`)) return;
-  await api('/members/me', {method: 'DELETE'});
-  localStorage.removeItem(SEEN_KEY);
-  profile = blank(); transient = {}; loggedIn = false;
-  renderAllForms();
-  $('c-name').value = $('c-tel').value = $('c-addr').value = '';
-  $('results-box').classList.add('hide');
-  msg('已刪除。我們的資料庫裡不留任何你的資料了。', 'ok');
+  const hasLocalPrivate = ProfileStore.hasData();
+  if (!loggedIn && !hasLocalPrivate) {
+    msg('目前沒有登入中的會員資料或本機私密資料。', 'warn');
+    return;
+  }
+  const target = loggedIn ? `「${memberCode}」的媒合資料和這台裝置的私密資料` : '這台裝置的私密資料';
+  if (!confirm(`確定刪除${target}？\n這個動作沒辦法復原。`)) return;
+  try {
+    if (loggedIn) await api('/members/me', {method: 'DELETE'});
+    ProfileStore.clear();
+    localStorage.removeItem(SEEN_KEY);
+    localStorage.removeItem(MATCHING_STORAGE_KEY);
+    matchingProfile = blankMatchingProfile();
+    privateFormProfile = {};
+    transient = {};
+    memberCode = null;
+    loggedIn = false;
+    renderAllForms();
+    $('results-box').classList.add('hide');
+    msg('已刪除：會員端只留媒合資料的紀錄也清掉了，本機私密資料已移除。', 'ok');
+  } catch (e) {
+    msg('刪除失敗，原資料先保留，請稍後再試。', 'warn');
+  }
 };
 
 function renderAllForms(){
   renderLogin();
-  const stable = Object.keys(FIELDS).filter(k => !PER_EVENT.includes(k));
-  renderFacts('facts-form', stable, profile.facts);
+  const stable = Object.keys(FIELDS || {}).filter(k => !PER_EVENT.includes(k));
+  renderFacts('facts-form', stable, matchingFormFacts());
   renderFacts('event-form', PER_EVENT.filter(k => FIELDS[k]), transient);
-  const c = profile.contact || {};
-  $('c-name').value = c.name || ''; $('c-tel').value = c.tel || ''; $('c-addr').value = c.addr || '';
+  renderPrivateForm();
+  renderHeroPreview();
 }
 
 async function afterLogin(){
-  // 舊版可能把「這次發生的事」存進去了，載入時清掉——那些不該留在會員資料裡
-  PER_EVENT.forEach(k => delete profile.facts[k]);
+  // 災害事件是一次性的，永遠不進會員 MatchingProfile。
+  PER_EVENT.forEach(k => delete matchingProfile[k]);
+  delete matchingProfile.disaster_situation;
   renderAllForms();
-  if (Object.keys(profile.facts).length) {
+  if (Object.keys(backendMatchingProfile(false)).length) {
     try { renderResults(await match()); } catch (e) {}
   }
 }
 
 (async () => {
-  profile = blank();
+  // The only profile restored before any server call is browser-local private
+  // form data.  No member response is used to populate it.
+  privateFormProfile = ProfileStore.load();
+  matchingProfile = loadMatchingLocally();
   FIELDS = await (await fetch('/fields')).json();
   const me = await api('/members/me');
   if (me.logged_in) {
-    profile = {code: me.code, contact: me.contact || {}, facts: me.facts || {}};
+    memberCode = me.code || null;
+    matchingProfile = canonicalMatchingProfile(me.profile || me.facts || {});
+    saveMatchingLocally();
     loggedIn = true;
     await afterLogin();
   } else {
     renderAllForms();
+  }
+
+  const params = new URLSearchParams(location.search);
+  if (params.get('demo') === '1' || params.get('demo') === 'hero') {
+    $('hero-text').value = HERO_SAMPLE;
+    if (applyHeroProfile()) await saveAndMatch();
   }
 })();
 </script>
