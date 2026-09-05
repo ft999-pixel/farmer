@@ -360,19 +360,12 @@
 
   function selectTemplate(params) {
     const askedId = params.get('template_id') || '';
-    const programId = params.get('program_id') || '';
-    const programName = params.get('program_name') || '';
     const exact = OFFICIAL_TEMPLATES.find(t => t.id === askedId);
     if (exact) return exact;
 
-    const haystack = (askedId + ' ' + programId + ' ' + programName).toLowerCase();
-    if (/electric|replacement|換購|電動|汰舊/.test(haystack)) {
-      return OFFICIAL_TEMPLATES.find(t => t.id === 'farm_machine_115.electric_replacement');
-    }
-    if (/labor|machine|machinery|農機|省工|新研發/.test(haystack)) {
-      return OFFICIAL_TEMPLATES.find(t => t.id === 'farm_machine_115.labor_saving');
-    }
-    if (!askedId && !programId && !programName) {
+    // An explicit but unknown template id must never be guessed from a broad
+    // programme name.  Guessing could show the wrong official attachment.
+    if (!askedId && !params.get('program_id') && !params.get('program_name')) {
       return OFFICIAL_TEMPLATES.find(t => t.id === DEFAULT_TEMPLATE_ID);
     }
     return null;

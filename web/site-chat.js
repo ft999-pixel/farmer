@@ -87,6 +87,12 @@ window.AidChat = (function () {
       return 'form.html' + (query ? '?' + query : '');
     }
 
+    function hasBrowserOfficialTemplate(card) {
+      const template = card.form_template_id || (card.form_template && card.form_template.id);
+      return template === 'farm_machine_115.labor_saving' ||
+        template === 'farm_machine_115.electric_replacement';
+    }
+
     function cardHtml(card, tier) {
       let h = '<article class="rc-card ' + tier + '">';
       h += '<div class="rc-top"><h3 class="rc-title">' + esc(card.name) + '</h3>' + chipHtml(card) + '</div>';
@@ -119,7 +125,8 @@ window.AidChat = (function () {
       }
       const officeLine = [card.agency, card.office].filter(Boolean).join('・');
       if (officeLine) h += '<div class="rc-office">' + esc(officeLine) + '</div>';
-      h += '<a class="rc-tel rc-apply" href="' + esc(applicationHref(card)) + '">開始申請</a>';
+      h += '<a class="rc-tel rc-apply" href="' + esc(applicationHref(card)) + '">' +
+           (hasBrowserOfficialTemplate(card) ? '準備官方表單' : '查看申請方式') + '</a>';
       if (card.tel) {
         h += '<a class="rc-tel" href="tel:' + esc(card.tel.replace(/[^\d+#-]/g, '')) + '">找承辦電話　' + esc(card.tel) + '</a>';
       }
