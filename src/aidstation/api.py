@@ -160,6 +160,20 @@ def read_guide(guide_id: str) -> dict:
     return {**guide, "html": guides.render_markdown(guide.get("body", ""))}
 
 
+@app.get("/disaster-stats")
+def get_disaster_stats() -> dict:
+    """全國農業天然災害救助統計，供儀表板的長期趨勢圖使用。
+
+    年度總計為官方統計；各災害類型的分配為示範推估。
+    兩者的 source_kind 不同，前端據此標示，不把推估當成官方數字呈現。
+    """
+    import json as _json
+    path = _WebPath(__file__).resolve().parents[2] / "data" / "disaster_stats.json"
+    if not path.exists():
+        raise HTTPException(404, "尚無災害統計資料")
+    return _json.loads(path.read_text(encoding="utf-8"))
+
+
 @app.get("/fields")
 def get_fields() -> dict:
     return FIELDS

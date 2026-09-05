@@ -86,6 +86,17 @@ table.heat th.col{font-size:12px;line-height:1.25;vertical-align:bottom;width:62
 table.heat th.row{text-align:right;white-space:nowrap;}
 table.heat td{text-align:center;padding:10px 4px;border-radius:7px;font-weight:700;}
 .empty{color:var(--ink-soft);font-size:14px;padding:20px 0;text-align:center;}
+/* 區塊標題旁的資料來源標籤：官方統計與示範推估必須一眼分得出來 */
+.sec-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:2px;}
+.sec-head h2{margin:0;}
+.tag-src{font-size:11.5px;font-weight:700;border-radius:999px;padding:3px 10px;white-space:nowrap;}
+.tag-src.official{background:var(--green-bright);color:#06301F;}
+.tag-src.demo{background:#FFD24D;color:#3A2A00;}
+/* 折線圖的滑過提示 */
+.spark-dot{cursor:pointer;}
+.chart-legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:10px;font-size:13px;align-items:center;}
+.chart-legend span{display:flex;align-items:center;gap:6px;}
+.chart-legend i{width:14px;height:14px;border-radius:4px;display:block;}
 footer{margin-top:26px;font-size:12px;color:var(--ink-soft);line-height:1.8;}
 a.back{color:var(--ink-soft);font-size:14px;text-decoration:none;}
 </style>
@@ -126,6 +137,24 @@ a.back{color:var(--ink-soft);font-size:14px;text-decoration:none;}
 <div class="cards" id="kpi"></div>
 
 <section>
+  <div class="sec-head">
+    <h2>全國農業天然災害救助趨勢</h2>
+    <span class="tag-src official">官方統計</span>
+  </div>
+  <p class="hint" id="hint-yearly">民國 97–106 年，全國核定的救助農戶數與金額。峰值對應當年度重大災害。</p>
+  <div id="chart-yearly"></div>
+</section>
+
+<section>
+  <div class="sec-head">
+    <h2>近五年各類災害救助戶數</h2>
+    <span class="tag-src demo">類型為推估</span>
+  </div>
+  <p class="hint" id="hint-disaster">每年總戶數為官方統計，各災害類型的分配為示範推估，不是官方數字。</p>
+  <div id="chart-disaster"></div>
+</section>
+
+<section>
   <h2>① 卡點原因排行</h2>
   <p class="hint">哪一種理由最常擋住民眾。綠色是公文寫的理由，黃色是農民自己講的，同一條左右接續。條越長＝越該優先處理。</p>
   <div id="chart-bar"></div>
@@ -163,6 +192,88 @@ const $ = id => document.getElementById(id);
 let weeks = 8;
 
 function colorOf(i){ return PALETTE[i % PALETTE.length]; }
+const esc = s => String(s ?? '').replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
+
+// ---- 全國災害救助趨勢（官方統計）--------------------------------------
+const C_HOUSE = '#02DF82', C_AMOUNT = '#5AB6F5';
+
+function renderYearly(rows){
+  const box = $('chart-yearly');
+  if (!rows || !rows.length) { box.innerHTML = '<p class="empty">沒有資料。</p>'; return; }
+  const W = 900, H = 300, P = {t: 18, r: 16, b: 40, l: 62};
+  const maxH = Math.max(...rows.map(r => r.households));
+  const maxA = Math.max(...rows.map(r => r.amount));
+  const x = i => P.l + i * (W - P.l - P.r) / Math.max(1, rows.length - 1);
+  // 兩條線量級不同，各自正規化後疊在同一張圖，只看趨勢不比絕對值
+  const y = (v, max) => P.t + (1 - v / max) * (H - P.t - P.b);
+
+  const grid = [0, .25, .5, .75, 1].map(f => {
+    const v = Math.round(maxH * f);
+    return `<line x1="${P.l}" y1="${y(v, maxH)}" x2="${W - P.r}" y2="${y(v, maxH)}" stroke="rgba(159,217,194,.16)"/>
+      <text x="${P.l - 10}" y="${y(v, maxH) + 4}" text-anchor="end" font-size="11" fill="#9FD9C2">${(v / 1000).toFixed(0)}k</text>`;
+  }).join('');
+  const ticks = rows.map((r, i) =>
+    `<text x="${x(i)}" y="${H - 14}" text-anchor="middle" font-size="11" fill="#9FD9C2">${r.year}</text>`).join('');
+
+  const line = (key, max, color) => {
+    const pts = rows.map((r, i) => `${x(i)},${y(r[key], max)}`).join(' ');
+    const area = `${P.l},${H - P.b} ${pts} ${x(rows.length - 1)},${H - P.b}`;
+    const dots = rows.map((r, i) =>
+      `<circle class="spark-dot" cx="${x(i)}" cy="${y(r[key], max)}" r="4.5" fill="${color}">
+        <title>${r.year}（民國 ${r.year_roc}）：${r[key].toLocaleString()} ${key === 'households' ? '戶' : '萬元'}</title>
+      </circle>`).join('');
+    return `<polygon points="${area}" fill="${color}" opacity=".10"/>
+      <polyline points="${pts}" fill="none" stroke="${color}" stroke-width="2.5"
+        stroke-linejoin="round" stroke-linecap="round"/>${dots}`;
+  };
+
+  box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto">
+      ${grid}${ticks}${line('amount', maxA, C_AMOUNT)}${line('households', maxH, C_HOUSE)}
+    </svg>
+    <div class="chart-legend">
+      <span><i style="background:${C_HOUSE}"></i>救助農戶數</span>
+      <span><i style="background:${C_AMOUNT}"></i>核定救助金額</span>
+      <span style="color:var(--ink-soft)">兩者量級不同，各自縮放後疊圖，看的是趨勢不是絕對值</span>
+    </div>`;
+}
+
+// ---- 近五年各類災害（堆疊長條，類型為推估）------------------------------
+function renderDisaster(data){
+  const box = $('chart-disaster');
+  const rows = data.rows || [], types = data.types || [];
+  if (!rows.length) { box.innerHTML = '<p class="empty">沒有資料。</p>'; return; }
+  const totals = rows.map(r => types.reduce((n, t) => n + (r[t] || 0), 0));
+  const max = Math.max(...totals);
+  const W = 900, H = 300, P = {t: 18, r: 16, b: 40, l: 62};
+  const bw = Math.min(72, (W - P.l - P.r) / rows.length * 0.55);
+  const x = i => P.l + (i + 0.5) * (W - P.l - P.r) / rows.length;
+  const y = v => P.t + (1 - v / max) * (H - P.t - P.b);
+
+  const grid = [0, .25, .5, .75, 1].map(f => {
+    const v = Math.round(max * f);
+    return `<line x1="${P.l}" y1="${y(v)}" x2="${W - P.r}" y2="${y(v)}" stroke="rgba(159,217,194,.16)"/>
+      <text x="${P.l - 10}" y="${y(v) + 4}" text-anchor="end" font-size="11" fill="#9FD9C2">${(v / 1000).toFixed(0)}k</text>`;
+  }).join('');
+
+  const bars = rows.map((r, i) => {
+    let acc = 0;
+    const segs = types.map((t, ti) => {
+      const v = r[t] || 0;
+      if (!v) return '';
+      const yTop = y(acc + v), h = y(acc) - y(acc + v);
+      acc += v;
+      return `<rect x="${x(i) - bw / 2}" y="${yTop}" width="${bw}" height="${Math.max(h, 1)}"
+        fill="${colorOf(ti)}" rx="2"><title>${r.year} ${t}：${v.toLocaleString()} 戶</title></rect>`;
+    }).join('');
+    return segs + `<text x="${x(i)}" y="${y(totals[i]) - 8}" text-anchor="middle"
+        font-size="11.5" font-weight="700" fill="#EAFBF3">${(totals[i] / 1000).toFixed(0)}k</text>
+      <text x="${x(i)}" y="${H - 14}" text-anchor="middle" font-size="11" fill="#9FD9C2">${r.year}</text>`;
+  }).join('');
+
+  box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto">${grid}${bars}</svg>
+    <div class="chart-legend">${types.map((t, i) =>
+      `<span><i style="background:${colorOf(i)}"></i>${esc(t)}</span>`).join('')}</div>`;
+}
 
 function renderKpi(s){
   const top = s.ranking[0];
@@ -308,6 +419,21 @@ async function load(){
   renderKpi(s); renderBar(s); renderCategory(s); renderLevel(s); renderHeat(s);
 }
 
+// 全國統計不隨「期間」切換而變，載入一次就好
+async function loadDisasterStats(){
+  try {
+    const d = await (await fetch('/disaster-stats')).json();
+    renderYearly(d.yearly.rows);
+    renderDisaster(d.by_disaster);
+    $('hint-yearly').textContent =
+      `民國 97–106 年，全國核定的救助農戶數與金額。資料來源：${d.yearly.source}`;
+    $('hint-disaster').textContent = d.by_disaster.source;
+  } catch (e) {
+    $('chart-yearly').innerHTML = '<p class="empty">載入不到全國統計資料。</p>';
+    $('chart-disaster').innerHTML = '';
+  }
+}
+
 document.querySelectorAll('.toolbar button').forEach(b => b.onclick = () => {
   document.querySelectorAll('.toolbar button').forEach(x => x.removeAttribute('aria-pressed'));
   b.setAttribute('aria-pressed', 'true');
@@ -315,6 +441,7 @@ document.querySelectorAll('.toolbar button').forEach(b => b.onclick = () => {
   load();
 });
 load();
+loadDisasterStats();
 </script>
 </body>
 </html>
