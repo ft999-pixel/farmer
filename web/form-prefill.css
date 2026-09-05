@@ -491,6 +491,8 @@ textarea.field-value { min-height: 100px; resize: vertical; line-height: 1.55; }
   height: 100%;
   border: 0;
   background: #FFFFFF;
+  display: block;
+  object-fit: fill;
 }
 .official-overlay {
   position: absolute;
@@ -563,39 +565,15 @@ footer p { max-width: 760px; margin: 0 auto; }
 }
 
 @media print {
+  @page { size: A4 portrait; margin: 0; }
   html { font-size: 12pt; }
   body { background: #FFFFFF; color: #000000; }
   .demo-banner, .nav-wrap, .privacy-panel, .task-section, .screen-only,
   .form-legend, .form-actions, .save-status, .form-source-note, footer,
-  .preview-section, .back-link { display: none !important; }
-  main { width: 100%; max-width: none; margin: 0; padding: 0; }
-  .form-hero { margin: 0 0 12pt; }
-  .eyebrow { padding: 0; color: #000000; background: none; }
-  h1 { font-size: 18pt; }
-  .lead { font-size: 10pt; color: #000000; }
-  .context-card { margin-top: 8pt; padding: 8pt; border: 1px solid #333333; box-shadow: none; }
-  .context-meta { color: #000000; font-size: 9pt; }
-  .context-meta strong, .context-title { color: #000000; }
-  .panel.form-section { margin-top: 12pt; padding: 0; border: 0; box-shadow: none; }
-  .panel h2 { font-size: 14pt; }
-  .panel-intro { font-size: 9pt; color: #000000; }
-  .field-group { margin-bottom: 10pt; }
-  .field-group legend { font-size: 11pt; }
-  .field-group legend small { font-size: 8.5pt; color: #000000; }
-  .field-grid { display: block; }
-  .field-card { display: inline-block; width: 49%; margin: 0 1% 7pt 0; padding: 7pt; border: 1px solid #777777; border-left: 3px solid #555555; border-radius: 0; vertical-align: top; break-inside: avoid; }
-  .field-card.full-width { width: 100%; margin-right: 0; }
-  .field-card label { font-size: 9.5pt; }
-  .storage-badge, .required, .field-note { font-size: 7.5pt; }
-  .field-value { min-height: 25pt; padding: 4pt 5pt; border: 0; border-bottom: 1px solid #777777; border-radius: 0; font-size: 10pt; }
-  textarea.field-value { min-height: 36pt; }
-  .prefill-note { display: none; }
-}
-
-@media print {
-  .official-section { margin-top: 12pt; padding: 0; border: 0; box-shadow: none; }
-  .official-section-head h2 { font-size: 14pt; }
-  .official-source, .official-help, .official-overlay-note { font-size: 8pt; color: #000000; }
+  .preview-section, .back-link, .form-hero, .official-section-head,
+  .official-help, .official-overlay-note { display: none !important; }
+  html, body, .page, main { width: 100%; min-height: 0; margin: 0; padding: 0; }
+  .official-section { margin: 0; padding: 0; border: 0; box-shadow: none; }
   .official-sheet-wrap { display: block; overflow: visible; padding: 0; }
   .official-sheet {
     width: 210mm;
@@ -603,8 +581,9 @@ footer p { max-width: 760px; margin: 0 auto; }
     max-width: none;
     border: 0;
     box-shadow: none;
+    break-inside: avoid;
+    page-break-inside: avoid;
   }
-  .official-pdf { display: block; }
   .overlay-text {
     padding: 0;
     color: #000000;

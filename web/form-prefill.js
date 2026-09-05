@@ -171,6 +171,7 @@
       official_source_page: 36,
       official_pdf: 'futuremode_official_forms_v2/pdfs/labor_saving.pdf',
       pdf_url: '/official-forms/pdf/labor_saving.pdf',
+      preview_image: '/app/official-forms/labor_saving.png',
       web_pdf: 'official-forms/labor_saving.pdf',
       official_layout: true,
       program_ids: ['farm-machine-115', 'afa115-appendix-09', 'afa-farm-machinery'],
@@ -197,6 +198,7 @@
       official_source_page: 43,
       official_pdf: 'futuremode_official_forms_v2/pdfs/electric_replacement.pdf',
       pdf_url: '/official-forms/pdf/electric_replacement.pdf',
+      preview_image: '/app/official-forms/electric_replacement.png',
       web_pdf: 'official-forms/electric_replacement.pdf',
       official_layout: true,
       program_ids: ['farm-machine-115.electric-replacement', 'electric-replacement', 'afa115-appendix-16'],
@@ -703,8 +705,10 @@
 
     if (missing) missing.hidden = true;
     const pdfUrl = template.pdf_url || template.web_pdf;
+    const previewImageUrl = template.preview_image;
     if (pdf) {
-      pdf.src = pdfUrl + '#toolbar=0&navpanes=0&view=FitH';
+      pdf.src = previewImageUrl || pdfUrl;
+      pdf.alt = template.name + '官方表單原始背景';
     }
     if (openLink) {
       openLink.href = pdfUrl;

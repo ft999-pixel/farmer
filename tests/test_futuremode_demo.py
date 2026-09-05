@@ -98,3 +98,5 @@ def test_hero_static_pages_are_served_by_existing_app_mount():
     assert landing.status_code == 200
     assert form.status_code == 200
     assert "form-prefill.js" in form.text
+    assert '<img class="official-pdf"' in form.text
+    assert client.get("/app/official-forms/labor_saving.png").status_code == 200
