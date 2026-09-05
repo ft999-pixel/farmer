@@ -669,13 +669,27 @@
     const previewSection = doc.getElementById('preview-section');
     const previewContent = doc.getElementById('preview-content');
     const saveStatus = doc.getElementById('save-status');
+    const openFormButton = doc.getElementById('open-form');
 
     function onFieldChange(key, value) {
       values[key] = value;
       updateOfficialOverlay(overlay, values);
     }
 
+    if (openFormButton) openFormButton.addEventListener('click', function () {
+      if (!template) {
+        officialSection.scrollIntoView({behavior: 'smooth', block: 'start'});
+        return;
+      }
+      formSection.hidden = false;
+      formSection.scrollIntoView({behavior: 'smooth', block: 'start'});
+    });
+
     if (!template) {
+      if (openFormButton) {
+        openFormButton.textContent = '下一步：查看申請方式';
+        openFormButton.setAttribute('aria-controls', 'official-section');
+      }
       if (formSection) formSection.hidden = true;
       if (missing) missing.hidden = false;
       if (sheetWrap) sheetWrap.hidden = true;
@@ -729,7 +743,6 @@
     const printButton = doc.getElementById('print-form');
     const officialPreviewButton = doc.getElementById('official-preview');
     const closePreviewButton = doc.getElementById('close-preview');
-    const openFormButton = doc.getElementById('open-form');
 
     if (saveButton) saveButton.addEventListener('click', function () { save(false); });
     if (previewButton) previewButton.addEventListener('click', function () {
@@ -741,11 +754,6 @@
     if (closePreviewButton) closePreviewButton.addEventListener('click', function () {
       previewSection.hidden = true;
     });
-    if (openFormButton) openFormButton.addEventListener('click', function () {
-      formSection.hidden = false;
-      formSection.scrollIntoView({behavior: 'smooth', block: 'start'});
-    });
-
     function printOfficial() {
       save(true);
       officialSection.scrollIntoView({behavior: 'smooth', block: 'start'});
