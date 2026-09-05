@@ -59,6 +59,7 @@ input:focus{outline:3px solid var(--green-pale);border-color:var(--green-mid);}
 .foot{text-align:center;margin-top:30px;font-size:.9375rem;color:var(--ink-soft);line-height:1.8;}
 .foot a{color:var(--green-mid);}
 </style>
+<script src="site-nav.js" defer></script>
 </head>
 <body>
 <div class="nav-outer">
@@ -80,7 +81,10 @@ input:focus{outline:3px solid var(--green-pale);border-color:var(--green-mid);}
 
 <div class="wrap">
   <h1>登入</h1>
-  <p class="lead">不登入也可以查補助、看公文。登入是為了把你的狀況記起來，下次不用重講。</p>
+  <p class="lead">
+    登入後才看得到「我的資料」——你填過的作物、鄉鎮會留著，下次不用重講。<br>
+    只是想查補助或看公文的話，不登入也可以直接用。
+  </p>
 
   <div id="msg"></div>
 
@@ -149,7 +153,10 @@ async function submit(path){
     });
     const body = await r.json();
     if (!r.ok) throw body;
-    location.href = body.redirect;
+    // 從被擋下的頁面過來就回去那裡；只收站內相對路徑，避免被導到外部網站
+    const next = new URLSearchParams(location.search).get('next');
+    const safeNext = next && /^\/app\/[\w.-]+\.html/.test(next) ? next : null;
+    location.href = safeNext || body.redirect;
   } catch (e) {
     msg(esc((e && (e.detail?.message || e.detail)) || '登入失敗，請再試一次。'), 'err');
   }

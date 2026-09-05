@@ -84,6 +84,7 @@ input:focus,select:focus,textarea:focus{outline:3px solid var(--green-pale);bord
 .status-need{background:var(--warn-bg);}
 .status-review{background:#EEF0FF;color:#2B347A;}
 </style>
+<script src="site-nav.js" defer></script>
 </head>
 <body>
 <div class="nav-outer">
@@ -311,26 +312,17 @@ function esc(s){ return String(s ?? '').replace(/[<>&"]/g, c => ({'<':'&lt;','>'
 function msg(html, kind){ $('msg').innerHTML = html ? `<div class="msg ${kind}">${html}</div>` : ''; }
 
 // ---- 登入（Demo 版：只輸入代號，沒有密碼）---------------------------------
+// 這一頁未登入會在載入時就被導走，所以這裡只會遇到已登入的情況
 function renderLogin(){
-  const box = $('login-box');
-  if (loggedIn) {
-    box.innerHTML = `<div class="linked">
-        <span class="pill">目前是：${esc(memberCode)}</span>
-        <button id="logout">換人／登出</button>
-      </div>
-      <p class="hint" style="margin-top:12px">登出只是離開，媒合資料仍在會員資料；這台裝置的私密資料也仍只留在本機。要全部清掉請按最下面的「刪除我的資料」。</p>`;
-    $('logout').onclick = async () => {
-      await api('/members/logout', {method: 'POST'});
-      location.reload();
-    };
-  } else {
-    // 登入表單集中在 login.html，這裡只給入口，避免兩處各有一份要維護
-    box.innerHTML = `<p class="hint" style="margin:0 0 14px">
-        還沒登入。登入後填過的資料會留著，下次不用重講。不登入也可以繼續用，
-        只是這次填的東西關掉就沒了。
-      </p>
-      <a class="action-link primary" href="login.html">前往登入</a>`;
-  }
+  $('login-box').innerHTML = `<div class="linked">
+      <span class="pill">目前是：${esc(memberCode)}</span>
+      <button id="logout">換人／登出</button>
+    </div>
+    <p class="hint" style="margin-top:12px">登出只是離開，媒合資料仍在會員資料；這台裝置的私密資料也仍只留在本機。要全部清掉請按最下面的「刪除我的資料」。</p>`;
+  $('logout').onclick = async () => {
+    await api('/auth/logout', {method: 'POST'});
+    location.href = 'index.html';
+  };
 }
 
 // 每次災害都不同，不該存進會員資料——只在當次查詢用
@@ -816,15 +808,17 @@ async function afterLogin(){
   matchingProfile = loadMatchingLocally();
   FIELDS = await (await fetch('/fields')).json();
   const me = await api('/members/me');
-  if (me.logged_in) {
-    memberCode = me.code || null;
-    matchingProfile = canonicalMatchingProfile(me.profile || me.facts || {});
-    saveMatchingLocally();
-    loggedIn = true;
-    await afterLogin();
-  } else {
-    renderAllForms();
+  if (!me.logged_in) {
+    // 「我的資料」是登入後才有的頁面，未登入直接送去登入頁，
+    // 並記住原本要去哪，登入完再回來。
+    location.replace('login.html?next=' + encodeURIComponent(location.pathname + location.search));
+    return;
   }
+  memberCode = me.code || null;
+  matchingProfile = canonicalMatchingProfile(me.profile || me.facts || {});
+  saveMatchingLocally();
+  loggedIn = true;
+  await afterLogin();
 
   const params = new URLSearchParams(location.search);
   if (params.get('demo') === '1' || params.get('demo') === 'hero') {
