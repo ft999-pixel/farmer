@@ -22,6 +22,7 @@ from pydantic import BaseModel
 
 from . import __version__, blockers, guides
 from .admin import router as admin_router
+from .auth import router as auth_router
 from .deadline import deadline_from_received, load_holidays
 from .document import ImageReadError, build_plain_card, get_translator, read_image
 from .matching import MatchingInputError, match_profile
@@ -39,6 +40,7 @@ app.include_router(line_router)
 app.include_router(admin_router)
 app.include_router(members_router)
 app.include_router(line_login_router)
+app.include_router(auth_router)
 app.include_router(official_forms_router)
 
 FIELDS = load_fields()
