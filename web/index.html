@@ -281,7 +281,6 @@ footer { background: var(--ink); color: var(--green-bg); padding: 40px 24px 32px
   .dash-head{padding:0 18px;}
   .dash-track{padding-left:18px;padding-right:18px;scroll-padding-left:18px;}
 }
-@media (prefers-reduced-motion:reduce){ .dash-track{scroll-behavior:auto;} }
 </style>
 </head>
 <body>
@@ -577,18 +576,31 @@ AidChat.init(document.getElementById('talk'), {
     dots.appendChild(b);
   });
 
+  // offsetLeft 是相對於最近的定位祖先（這裡是 .dash-carousel），不是捲動容器，
+  // 直接拿來當 scrollLeft 會差一個 padding。改用「相對第一張」的距離就與基準無關。
+  const offsetOf = i => slides[i].offsetLeft - slides[0].offsetLeft;
+
+  const atEnd = () => track.scrollLeft > track.scrollWidth - track.clientWidth - 4;
+
   const current = () => {
-    // 找出離左緣最近的那一張，就是目前顯示的
+    // 捲到底時最後一張不見得對齊左緣，但使用者看到的就是它
+    if (atEnd()) return slides.length - 1;
     let best = 0, min = Infinity;
-    slides.forEach((s, i) => {
-      const d = Math.abs(s.offsetLeft - track.scrollLeft - track.clientLeft);
+    slides.forEach((_, i) => {
+      const d = Math.abs(offsetOf(i) - track.scrollLeft);
       if (d < min) { min = d; best = i; }
     });
     return best;
   };
   const go = i => {
-    const s = slides[Math.max(0, Math.min(slides.length - 1, i))];
-    track.scrollTo({left: s.offsetLeft - track.offsetLeft, behavior: 'smooth'});
+    const n = Math.max(0, Math.min(slides.length - 1, i));
+    // 直接指定位置，不用平滑捲動：scrollTo({behavior:'smooth'}) 與 CSS
+    // scroll-behavior:smooth 在部分瀏覽器完全不作用，按了會沒反應。
+    // 動畫是加分，會動才是必要。用手指滑動時仍有系統原生的慣性與吸附。
+    track.scrollLeft = offsetOf(n);
+    // 按鈕、圓點、鍵盤是我們自己觸發的，當場更新狀態就好，
+    // 不要繞一圈等 scroll 事件——那條路只用來接手指滑動。
+    sync();
   };
 
   function sync() {
@@ -596,7 +608,7 @@ AidChat.init(document.getElementById('talk'), {
     [...dots.children].forEach((d, n) => d.setAttribute('aria-selected', n === i));
     // 用捲動範圍判斷頭尾，避免最後一張沒對齊時按鈕還亮著
     prev.disabled = track.scrollLeft < 4;
-    next.disabled = track.scrollLeft > track.scrollWidth - track.clientWidth - 4;
+    next.disabled = atEnd();
   }
   prev.onclick = () => go(current() - 1);
   next.onclick = () => go(current() + 1);
@@ -605,6 +617,7 @@ AidChat.init(document.getElementById('talk'), {
     if (e.key === 'ArrowLeft')  { e.preventDefault(); go(current() - 1); }
   };
 
+  // 手指滑動沒有經過 go()，靠 scroll 事件補上狀態
   let t; track.addEventListener('scroll', () => { clearTimeout(t); t = setTimeout(sync, 60); });
   addEventListener('resize', sync);
   sync();

@@ -126,6 +126,7 @@ function renderDisaster(data){
 }
 
 function renderKpi(s){
+  if (!$('kpi')) return;   // 首頁只放圖表輪播，沒有 KPI 卡
   const top = s.ranking[0];
   const topCat = s.by_category[0];
   const t = s.by_level.totals, known = t['中央'] + t['縣市'];
@@ -270,7 +271,10 @@ function renderHeat(s){
 
 async function load(){
   const s = await (await fetch(`/blockers/stats?weeks=${weeks}`)).json();
-  renderKpi(s); renderBar(s); renderCategory(s); renderLevel(s); renderHeat(s);
+  // 逐張畫並各自吃掉錯誤：一張圖畫壞不該讓後面五張跟著空白
+  [renderKpi, renderBar, renderCategory, renderLevel, renderHeat].forEach(fn => {
+    try { fn(s); } catch (e) { console.error(fn.name, e); }
+  });
 }
 
 // 全國統計不隨「期間」切換而變，載入一次就好
@@ -280,8 +284,9 @@ async function loadDisasterStats(){
     renderYearly(d.yearly.rows);
     renderDisaster(d.by_disaster);
   } catch (e) {
-    $('chart-yearly').innerHTML = '<p class="empty">載入不到全國統計資料。</p>';
-    $('chart-disaster').innerHTML = '';
+    console.error('disaster-stats', e);
+    if ($('chart-yearly')) $('chart-yearly').innerHTML = '<p class="empty">載入不到全國統計資料。</p>';
+    if ($('chart-disaster')) $('chart-disaster').innerHTML = '';
   }
 }
 
