@@ -1,0 +1,52 @@
+{
+  "tasks": [
+    {
+      "id": "eligibility-check",
+      "title": "資格確認",
+      "description": "確認是否符合一項申請資格：有機、產銷履歷、CAS、溯源QR Code、友善耕作、登錄青農、花卉產銷班或農糧產業調整與轉型計畫。",
+      "status": "pending"
+    },
+    {
+      "id": "select-subsidy",
+      "title": "選擇補助方案",
+      "description": "確認申請「省工農業機械補助」，並點選附表9：省工農業機械／新研發農機補助申請書。",
+      "status": "pending"
+    },
+    {
+      "id": "fill-form",
+      "title": "填寫附表9",
+      "description": "從本機資料自動預填：姓名、電話、身分證、出生年、地址、作物、申請資格。補齊：機種、規格／牌型、預計交貨日期。",
+      "status": "pending"
+    },
+    {
+      "id": "print-sign",
+      "title": "列印簽名",
+      "description": "下載PDF後簽名，並準備身分證件、申請資格證明文件。",
+      "status": "pending"
+    },
+    {
+      "id": "submit",
+      "title": "送件",
+      "description": "攜帶填寫完成的附表9與證件，至所在地農會辦理。",
+      "status": "pending"
+    },
+    {
+      "id": "approval",
+      "title": "審核通過",
+      "description": "農會審核後通知結果；若通過，通知得購置農機。",
+      "status": "pending"
+    },
+    {
+      "id": "purchase",
+      "title": "購機",
+      "description": "購置符合補助規範的農機，並保留訂單、交貨證明。",
+      "status": "pending"
+    },
+    {
+      "id": "verify-claim",
+      "title": "驗收申領",
+      "description": "審核通過1個月內申請驗收，檢附交貨證明，申領補助款。",
+      "status": "pending"
+    }
+  ]
+}
