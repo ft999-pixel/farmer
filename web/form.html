@@ -14,17 +14,20 @@
 
   <div data-site-nav></div>
   <script src="site-nav.js"></script>
+  <script src="profile-store.js"></script>
+  <script src="application-store.js"></script>
 
   <main id="form-app" data-form-app>
     <a href="javascript:history.back()" class="back-link">回上一頁</a>
     <header class="form-hero">
       <p class="eyebrow">開始準備申請</p>
       <h1>把申請準備好，<span class="grad-text">再去問承辦</span></h1>
-      <p class="lead">先完成下面的申請任務清單，再用官方 PDF 做預填檢查。你填的東西只會留在自己的手機或電腦裡，不會自動送出申請。</p>
+      <p class="lead">先完成下面的申請任務清單；有官方表單時，直接在原始 PDF 畫面上檢查與修改。你填的東西只會留在自己的手機或電腦裡，不會自動送出申請。</p>
       <div class="context-card" aria-live="polite">
         <p class="context-title" id="program-name">正在準備推薦項目</p>
         <p class="context-meta">
           <span><strong>表單：</strong><span id="template-name">載入中</span></span>
+          <span><strong>方案：</strong><span id="application-variant">—</span></span>
           <span><strong>官方頁：</strong><span id="official-page">—</span></span>
           <span><strong>來源：</strong><span id="official-authority">農業部農糧署</span></span>
         </p>
@@ -42,8 +45,10 @@
       </div>
       <div class="task-list" id="task-list" aria-live="polite"></div>
       <p class="save-status" id="task-status" aria-live="polite"></p>
+      <p class="task-next" id="task-next" aria-live="polite"></p>
       <div class="task-actions">
         <button class="button primary" id="open-form" type="button">下一步：開始填表</button>
+        <button class="button secondary" id="complete-application" type="button" hidden>完成申請</button>
       </div>
     </section>
 
@@ -65,7 +70,7 @@
         <div id="matching-fields"></div>
         <div id="helper-fields" class="helper-fields"></div>
       </form>
-      <p class="form-source-note">下面是官方表單的原始樣子，你在上面填的字會疊上去。沒有對應欄位的內容只會留著給你參考，不會印到官方表單上。</p>
+      <p class="form-source-note">欄位直接放在官方表單原始版面上，可以點選文字修改；沒有對應座標的內容只會留在本機備註，不會印到官方表單上。</p>
       <div class="form-actions">
         <button class="button primary" id="save-local" type="button">先存起來</button>
         <button class="button secondary" id="preview-form" type="button">預覽官方表單</button>
@@ -89,7 +94,7 @@
       <div class="official-sheet-wrap" id="official-sheet-wrap">
         <div class="official-sheet" id="official-sheet">
           <img class="official-pdf" id="official-pdf" alt="官方申請表 PDF 原始背景" src="about:blank">
-          <div class="official-overlay" id="official-overlay" aria-hidden="true"></div>
+          <div class="official-overlay" id="official-overlay"></div>
         </div>
       </div>
       <p class="official-overlay-note" id="official-overlay-note">畫面上的字是疊上去的，官方表單原檔不會被改到。</p>

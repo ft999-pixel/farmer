@@ -151,6 +151,11 @@ class TaskTemplate(BaseModel):
     deadline: date | str | None = None
     depends_on: list[str] = Field(default_factory=list)
     description: str | None = None
+    # The application UI is driven by the task's nature, never by its title.
+    # ``completion`` is the backwards-compatible default for older seeds.
+    status_type: Literal["completion", "submission", "form_submission"] = "completion"
+    action_label: str | None = None
+    action_url: str | None = None
 
 
 class FormField(BaseModel):

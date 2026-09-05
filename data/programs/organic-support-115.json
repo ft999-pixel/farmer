@@ -55,7 +55,7 @@
           "window": {"type": "常態", "start": null, "end": null, "open": null, "close": null, "note": "中央原則沒有單一全國統一截止日，請向受理單位確認。"},
           "metadata": {"form_template_status": "尚未匯入官方申請表", "application_channel": "依官方公告向地方受理單位或相關農業團體洽辦"},
           "entry_criteria": [{"id": "organic-fertilizer-round", "text": "具備有機、轉型或友善環境耕作登錄身分即可先行洽詢適用肥料。", "source": {"source_key": "organic_support_115", "section": "有機農業適用肥料"}}],
-          "tasks": [{"id": "organic-fertilizer-consult", "title": "向受理單位確認適用肥料與申請文件", "depends_on": []}],
+          "tasks": [{"id": "organic-fertilizer-consult", "title": "向受理單位確認適用肥料與申請文件", "depends_on": [], "status_type": "completion"}],
           "authority": {"level": "中央", "agency": "農業部農糧署", "office": "地方受理單位或相關農業團體"},
           "source": {"source_key": "organic_support_115", "note": "無單一全國截止日；官方申請表尚未匯入。"}
         }
@@ -85,7 +85,7 @@
           "window": {"type": "常態", "start": null, "end": null, "open": null, "close": null, "note": "中央原則沒有單一全國統一截止日，請向受理單位確認。"},
           "metadata": {"form_template_status": "尚未匯入官方申請表", "application_channel": "依官方公告向地方受理單位或相關農業團體洽辦"},
           "entry_criteria": [{"id": "organic-facility-round", "text": "有機或轉型生產設施需求可先洽詢，農地所有權屬於優先考量，不直接排除。", "source": {"source_key": "organic_support_115", "section": "溫網室設施"}}],
-          "tasks": [{"id": "organic-facility-consult", "title": "向受理單位確認設施補助與後續驗證要求", "depends_on": []}],
+          "tasks": [{"id": "organic-facility-consult", "title": "向受理單位確認設施補助與後續驗證要求", "depends_on": [], "status_type": "completion"}],
           "authority": {"level": "中央", "agency": "農業部農糧署", "office": "地方受理單位或相關農業團體"},
           "source": {"source_key": "organic_support_115", "note": "官方申請表尚未匯入。"}
         }
@@ -123,7 +123,7 @@
             {"id": "organic-compost-round-certification", "text": "具備有機、轉型或友善環境耕作登錄身分。", "source": {"source_key": "organic_support_115", "section": "堆肥設施"}},
             {"id": "organic-compost-round-scale", "text": "個別農民面積至少1.0公頃；團體共同使用合計至少5.0公頃；需自製自用。", "source": {"source_key": "organic_support_115", "section": "堆肥設施"}}
           ],
-          "tasks": [{"id": "organic-compost-consult", "title": "向受理單位確認自製自用堆肥設施申請文件", "depends_on": []}],
+          "tasks": [{"id": "organic-compost-consult", "title": "向受理單位確認自製自用堆肥設施申請文件", "depends_on": [], "status_type": "completion"}],
           "authority": {"level": "中央", "agency": "農業部農糧署", "office": "地方受理單位或相關農業團體"},
           "source": {"source_key": "organic_support_115", "note": "官方申請表尚未匯入。"}
         }
@@ -153,7 +153,7 @@
           "window": {"type": "常態", "start": null, "end": null, "open": null, "close": null, "note": "中央原則沒有單一全國統一截止日，請向受理單位確認。"},
           "metadata": {"form_template_status": "尚未匯入官方申請表", "application_channel": "依官方公告向地方受理單位或相關農業團體洽辦"},
           "entry_criteria": [{"id": "organic-production-round", "text": "有機或轉型生產設備需求可先洽詢受理單位。", "source": {"source_key": "organic_support_115", "section": "生產設備"}}],
-          "tasks": [{"id": "organic-production-consult", "title": "向受理單位確認有機生產設備補助", "depends_on": []}],
+          "tasks": [{"id": "organic-production-consult", "title": "向受理單位確認有機生產設備補助", "depends_on": [], "status_type": "completion"}],
           "authority": {"level": "中央", "agency": "農業部農糧署", "office": "地方受理單位或相關農業團體"},
           "source": {"source_key": "organic_support_115", "note": "官方申請表尚未匯入。"}
         }
@@ -184,7 +184,7 @@
           "window": {"type": "常態", "start": null, "end": null, "open": null, "close": null, "note": "中央原則沒有單一全國統一截止日，請向受理單位確認。"},
           "metadata": {"form_template_status": "尚未匯入官方申請表", "application_channel": "依官方公告向地方受理單位或相關農業團體洽辦"},
           "entry_criteria": [{"id": "organic-processing-round", "text": "有機加工設備需求可先洽詢；農企業限加工設備。", "source": {"source_key": "organic_support_115", "section": "加工設備"}}],
-          "tasks": [{"id": "organic-processing-consult", "title": "向受理單位確認有機加工設備申請文件", "depends_on": []}],
+          "tasks": [{"id": "organic-processing-consult", "title": "向受理單位確認有機加工設備申請文件", "depends_on": [], "status_type": "completion"}],
           "authority": {"level": "中央", "agency": "農業部農糧署", "office": "地方受理單位或相關農業團體"},
           "source": {"source_key": "organic_support_115", "note": "官方申請表尚未匯入。"}
         }

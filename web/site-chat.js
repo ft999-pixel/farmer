@@ -81,24 +81,15 @@ window.AidChat = (function () {
       return '<span class="rc-chip normal">常態受理</span>';
     }
 
-    // 只把推薦項目的識別資訊帶到 browser-only 表單頁；不帶 profile 或任何表單值。
+    // 只把推薦項目的公開識別資訊帶到補助詳情；申請紀錄由詳情頁的
+    // 「開始申請」建立，不帶 profile 或任何表單值。
     function applicationHref(card) {
       const params = new URLSearchParams();
       const programId = card.program_id || card.id || card.subsidy_id;
-      if (programId) params.set('program_id', programId);
+      if (programId) params.set('id', programId);
       if (card.variant_id) params.set('variant_id', card.variant_id);
       if (card.round_id) params.set('round_id', card.round_id);
-      const template = card.form_template_id || (card.form_template && card.form_template.id);
-      if (template) params.set('template_id', template);
-      if (card.name) params.set('program_name', card.name);
-      const query = params.toString();
-      return 'form.html' + (query ? '?' + query : '');
-    }
-
-    function hasBrowserOfficialTemplate(card) {
-      const template = card.form_template_id || (card.form_template && card.form_template.id);
-      return template === 'farm_machine_115.labor_saving' ||
-        template === 'farm_machine_115.electric_replacement';
+      return 'program.html?' + params.toString();
     }
 
     function cardHtml(card, tier) {
@@ -133,8 +124,7 @@ window.AidChat = (function () {
       }
       const officeLine = [card.agency, card.office].filter(Boolean).join('・');
       if (officeLine) h += '<div class="rc-office">' + esc(officeLine) + '</div>';
-      h += '<a class="rc-tel rc-apply" href="' + esc(applicationHref(card)) + '">' +
-           (hasBrowserOfficialTemplate(card) ? '準備官方表單' : '查看申請方式') + '</a>';
+      h += '<a class="rc-tel rc-apply" href="' + esc(applicationHref(card)) + '">查看／開始申請</a>';
       if (card.tel) {
         h += '<a class="rc-tel" href="tel:' + esc(card.tel.replace(/[^\d+#-]/g, '')) + '">找承辦電話　' + esc(card.tel) + '</a>';
       }

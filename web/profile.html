@@ -436,19 +436,18 @@ function resultTemplateId(result){
 
 function officialFormHref(result){
   const params = new URLSearchParams();
-  if (result.program_id) params.set('program_id', result.program_id);
+  if (result.program_id) params.set('id', result.program_id);
   if (result.variant_id) params.set('variant_id', result.variant_id);
   if (result.round_id) params.set('round_id', result.round_id);
-  params.set('template_id', resultTemplateId(result));
-  if (result.name) params.set('program_name', result.name);
-  return `form.html?${params.toString()}`;
+  return `program.html?${params.toString()}`;
 }
 
 function resultApplicationAction(result){
   const templateId = resultTemplateId(result);
-  // 沒有官方 PDF 的項目就不顯示按鈕，也不再多寫一段說明佔版面
-  if (!BROWSER_OFFICIAL_TEMPLATE_IDS.has(templateId)) return '';
-  return `<a class="action-link primary" href="${esc(officialFormHref(result))}">準備官方表單</a>`;
+  const note = BROWSER_OFFICIAL_TEMPLATE_IDS.has(templateId)
+    ? ''
+    : '<p class="meta">📄 這個方案沒有本機官方 PDF，開始後會以承辦單位的正式方式辦理。</p>';
+  return note + `<a class="action-link primary" href="${esc(officialFormHref(result))}">查看／開始申請</a>`;
 }
 
 function resultMissingInfo(result){

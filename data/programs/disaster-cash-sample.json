@@ -2,6 +2,13 @@
   "id": "moa-disaster-cash-sample-2026",
   "name": "農業天然災害現金救助（示範公告：芒果）",
   "category": "災害救助",
+  "tasks": [
+    {"id": "disaster-photograph", "title": "先拍照再整理田地", "description": "保留災損現場照片，清理前先留下可供勘查的證明。", "status_type": "completion"},
+    {"id": "disaster-confirm-announcement", "title": "確認公告地區與品項", "description": "向公所農業課確認鄉鎮與作物是否列在這次公告。", "status_type": "completion", "depends_on": ["disaster-photograph"]},
+    {"id": "disaster-submit", "title": "到公所填寫並送出申請", "description": "帶齊文件到公所農業課填寫申請書並完成送件。", "status_type": "form_submission", "depends_on": ["disaster-confirm-announcement"]},
+    {"id": "disaster-survey", "title": "配合現場勘查", "description": "等待承辦到場勘查並確認實際損失。", "status_type": "completion", "depends_on": ["disaster-submit"]},
+    {"id": "disaster-payment", "title": "確認救助金核定入帳", "description": "核定後確認救助金已匯入指定帳戶。", "status_type": "completion", "depends_on": ["disaster-survey"]}
+  ],
   "authority": {
     "level": "中央",
     "agency": "農糧署（示範）",

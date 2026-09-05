@@ -2,6 +2,12 @@
   "id": "afa-green-payment-enrollment",
   "name": "綠色環境給付申報（災前資格健檢引導目標）",
   "category": "平時申報",
+  "tasks": [
+    {"id": "green-visit-office", "title": "在申報期間到公所或農會", "description": "確認當年度申報期間與受理窗口。", "status_type": "completion"},
+    {"id": "green-submit-declaration", "title": "填寫並送出申報書", "description": "說明這塊地要種什麼，完成現場申報送件。", "status_type": "form_submission", "depends_on": ["green-visit-office"]},
+    {"id": "green-land-check", "title": "配合地籍資料核對", "description": "讓承辦核對耕作地與地籍資料。", "status_type": "completion", "depends_on": ["green-submit-declaration"]},
+    {"id": "green-review", "title": "確認查核與獎勵結果", "description": "配合後續查核，確認符合條件後的給付結果。", "status_type": "completion", "depends_on": ["green-land-check"]}
+  ],
   "authority": {
     "level": "中央", "agency": "農糧署",
     "office": "耕作地所在的公所農業課或農會",

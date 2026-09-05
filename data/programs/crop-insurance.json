@@ -2,6 +2,13 @@
   "id": "afa-crop-insurance-sample",
   "name": "農業保險保費補助（示範：芒果／水稻險）",
   "category": "農業保險",
+  "tasks": [
+    {"id": "insurance-confirm-policy", "title": "確認作物有沒有保單", "description": "向農會或產險公司確認你的作物與地區是否有對應保單。", "status_type": "completion"},
+    {"id": "insurance-confirm-premium", "title": "確認保費與補助金額", "description": "問清楚保費、政府補助與自己需要負擔的金額。", "status_type": "completion", "depends_on": ["insurance-confirm-policy"]},
+    {"id": "insurance-submit", "title": "在投保期間完成投保", "description": "在投保期限內填寫並送出投保資料。", "status_type": "submission", "depends_on": ["insurance-confirm-premium"]},
+    {"id": "insurance-report-loss", "title": "災損時通知保險公司勘查", "description": "遇到災損時保留現場並通知保險公司到場勘查。", "status_type": "submission", "depends_on": ["insurance-submit"]},
+    {"id": "insurance-claim", "title": "確認理賠結果", "description": "勘查認定後，確認保險公司理賠是否已完成。", "status_type": "completion", "depends_on": ["insurance-report-loss"]}
+  ],
   "authority": {
     "level": "中央", "agency": "農業金融署",
     "office": "各產險公司、農會或漁會的保險窗口",

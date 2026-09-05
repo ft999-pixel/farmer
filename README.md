@@ -25,9 +25,9 @@ src/aidstation/
 data/
   fields.json   欄位字典
   holidays.json 國定假日（上線前須換完整行事曆）
-  programs/     補助種子資料（目前 5 項，均標示 sample）
+  programs/     補助種子資料（目前 10 筆，均標示示範或待人工覆核）
 scripts/demo.py 終端機互動展示
-tests/          pytest（30 項）
+tests/          pytest（核心、API 與申請流程契約）
 ```
 
 ## 環境變數
@@ -67,12 +67,13 @@ curl -X POST localhost:8000/match -H 'content-type: application/json' \
 2. 公文白話化 ✅（document.py）；**OCR 接入待辦**（PaddleOCR 台灣公文微調）
 3. LINE 接入 ✅（line_webhook.py）；**待辦**：建立官方帳號、設定 Rich Menu 三大鍵、
    影像下載→OCR 串接、語音下載→台語 ASR（Breeze-ASR）串接
-4. 協辦者 PWA 工作台（案件列表＋A4 摘要匯出）
-5. 真實公告資料匯入與人工覆核流程
-6. 卡點回報落庫（flow.py 的 `_handle_stuck` 已留落點）
+4. 主站申請流程 ✅（詳情 → 開始申請 → 正在申請 → 本機預填／列印）
+5. 協辦者 PWA 工作台（案件列表＋A4 摘要匯出）
+6. 真實公告資料匯入與人工覆核流程
+7. 卡點回報落庫（flow.py 的 `_handle_stuck` 已留落點）
 
 ⚠️ `data/programs/` 目前全為示範資料（source.status = "sample"），不可用於真實申辦指引。
 
 ## 子模組
 
-- `module/prefill/`：預填表單服務（Flask，獨立 SQLite，預設 port 5000）。啟動與 API 見該目錄的 README。
+- `module/prefill/`：舊版預填表單服務（Flask，獨立 SQLite，預設 port 5000）。主站 Demo 的申請流程不依賴此服務；啟動與 API 見該目錄的 README。

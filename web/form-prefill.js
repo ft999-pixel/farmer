@@ -2,9 +2,9 @@
  * 農民補給站 browser-only Form Prefill
  *
  * The official PDF is always the visual source of truth.  This file only
- * reads localStorage, renders editable HTML controls, and places text spans
- * over the PDF at the coordinates in data/form_templates.json.  It does not
- * submit form values to a server.
+ * reads localStorage, renders editable HTML controls over the PDF, and keeps
+ * print-only text spans at the coordinates in data/form_templates.json.  It
+ * does not submit form values to a server.
  */
 (function (root, doc) {
   'use strict';
@@ -406,6 +406,8 @@
 
   function draftStorageKey(template, params) {
     const templateId = template ? template.id : 'no-official-template';
+    const applicationId = params.get('application_id') || '';
+    if (applicationId) return 'application::' + applicationId + '::' + templateId;
     const programId = params.get('program_id') || params.get('program_name') || 'direct';
     return templateId + '::' + programId;
   }
@@ -413,7 +415,13 @@
   function loadDraft(template, params) {
     const drafts = readJson(STORAGE_KEYS.drafts);
     if (!isObject(drafts)) return {};
-    const value = drafts[draftStorageKey(template, params)];
+    let value = drafts[draftStorageKey(template, params)];
+    // Keep early demo drafts readable after an application record gets an
+    // application-scoped key.  New saves never write to the broad key.
+    if (!isObject(value) && params.get('application_id')) {
+      const legacyProgram = params.get('program_id') || params.get('program_name') || 'direct';
+      value = drafts[(template ? template.id : 'no-official-template') + '::' + legacyProgram];
+    }
     return isObject(value) ? value : {};
   }
 
@@ -526,11 +534,12 @@
     return value;
   }
 
-  function collectValues(form, values) {
+  function collectValues(form, values, extraRoot) {
     const next = Object.assign({}, values);
-    if (!form) return next;
-    form.querySelectorAll('[data-field-key]').forEach(function (control) {
-      next[control.dataset.fieldKey] = control.value;
+    [form, extraRoot].filter(Boolean).forEach(function (container) {
+      container.querySelectorAll('[data-field-key]').forEach(function (control) {
+        next[control.dataset.fieldKey] = control.value;
+      });
     });
     return next;
   }
@@ -550,7 +559,21 @@
     const drafts = readJson(STORAGE_KEYS.drafts);
     const nextDrafts = isObject(drafts) ? drafts : {};
     nextDrafts[draftStorageKey(template, params)] = values;
-    const privateOk = writeJson(STORAGE_KEYS.privateForm, privateForm);
+    let privateOk = writeJson(STORAGE_KEYS.privateForm, privateForm);
+    // ProfileStore is the canonical versioned private profile used by the
+    // profile page.  Keep the legacy key as a compatibility read path while
+    // ensuring new edits are visible to both existing entry points.
+    if (root.ProfileStore && typeof root.ProfileStore.save === 'function') {
+      try {
+        const canonical = root.ProfileStore.save(privateForm);
+        Object.assign(privateForm, canonical || {});
+        // The versioned key is a valid persistence path even when an older
+        // browser key could not be written (for example after a migration).
+        privateOk = true;
+      } catch (e) {
+        privateOk = false;
+      }
+    }
     const matchingOk = writeJson(STORAGE_KEYS.matching, matching);
     const draftOk = writeJson(STORAGE_KEYS.drafts, nextDrafts);
     return {
@@ -560,68 +583,213 @@
     };
   }
 
-  function renderTasks(container, template, params, onChange) {
+  function taskType(task) {
+    const type = task && task.status_type;
+    return ['completion', 'submission', 'form_submission'].includes(type) ? type : 'completion';
+  }
+
+  function localTaskState(progress, task) {
+    const value = progress && progress[task.id];
+    if (value && typeof value === 'object') {
+      const type = taskType(task);
+      return {
+        completed: Boolean(value.completed),
+        submitted: Boolean(value.submitted),
+        filled: Boolean(value.filled),
+        complete: type === 'form_submission' ? Boolean(value.filled && value.submitted)
+          : type === 'submission' ? Boolean(value.submitted) : Boolean(value.completed),
+      };
+    }
+    const done = Boolean(value);
+    return {completed: done, submitted: done, filled: done, complete: done};
+  }
+
+  function taskStateLabel(task, state) {
+    const type = taskType(task);
+    if (type === 'form_submission') {
+      return [state.filled ? '已填寫' : '待填寫', state.submitted ? '已送出' : '待送出'];
+    }
+    if (type === 'submission') return [state.submitted ? '已送出' : '待送出'];
+    return [state.completed ? '已完成' : '待完成'];
+  }
+
+  function renderTasks(container, template, params, onChange, application, onOpenForm) {
     container.innerHTML = '';
-    const tasks = template && template.tasks && template.tasks.length ? template.tasks : FALLBACK_TASKS;
-    const progress = loadTaskProgress(template, params);
+    const appMode = Boolean(application && root.ApplicationStore);
+    const tasks = appMode
+      ? (application.items || [])
+      : (template && template.tasks && template.tasks.length ? template.tasks : FALLBACK_TASKS);
+    const legacyProgress = appMode ? null : loadTaskProgress(template, params);
     const count = doc.getElementById('task-count');
     const status = doc.getElementById('task-status');
+    const nextNode = doc.getElementById('task-next');
+    const completeButton = doc.getElementById('complete-application');
+    const openFormButton = doc.getElementById('open-form');
+
+    function currentRecord() {
+      return appMode ? (root.ApplicationStore.get(application.id) || application) : null;
+    }
 
     function refresh() {
-      const done = tasks.filter(task => progress[task.id]).length;
-      if (count) count.textContent = done + ' / ' + tasks.length + ' 已完成';
+      const record = currentRecord();
+      const info = appMode ? root.ApplicationStore.progress(record) : {
+        completed: tasks.filter(task => localTaskState(legacyProgress, task).complete).length,
+        total: tasks.length,
+      };
+      info.percent = info.total ? Math.round(info.completed * 100 / info.total) : 0;
+      if (count) count.textContent = info.completed + ' / ' + info.total + ' 項完成';
+      const next = appMode ? root.ApplicationStore.nextTask(record) :
+        tasks.find(task => !localTaskState(legacyProgress, task).complete);
+      if (nextNode) nextNode.textContent = next ? '接下來：' + next.title : (appMode ? '所有申請項目都完成了，請確認完成申請。' : '目前清單已完成。');
+      if (completeButton) completeButton.hidden = !appMode || !root.ApplicationStore.canComplete(record);
+      if (openFormButton && appMode) openFormButton.textContent = template ? '下一步：編輯申請表' : '下一步：查看申請方式';
       container.querySelectorAll('.task-item').forEach(item => {
-        const input = item.querySelector('input');
-        item.classList.toggle('done', Boolean(input && input.checked));
+        const task = tasks.find(candidate => candidate.id === item.dataset.taskId);
+        const state = appMode ? root.ApplicationStore.taskState(record, task) : localTaskState(legacyProgress, task);
+        item.classList.toggle('done', Boolean(state.complete));
+        item.querySelectorAll('input[data-task-key]').forEach(input => {
+          const key = input.dataset.taskKey;
+          input.checked = Boolean(state[key]);
+          if (!appMode) return;
+          const type = taskType(task);
+          input.disabled = type === 'form_submission' && key === 'filled'
+            ? Boolean(template)
+            : type === 'form_submission' && key === 'submitted'
+              ? Boolean(!state.filled) && !state.complete
+              : false;
+        });
+        item.querySelectorAll('[data-state-key]').forEach(node => {
+          const key = node.dataset.stateKey;
+          node.classList.toggle('active', Boolean(state[key]));
+          node.textContent = key === 'filled' ? (state.filled ? '已填寫' : '待填寫') :
+            key === 'submitted' ? (state.submitted ? '已送出' : '待送出') : (state.complete ? '已完成' : '待完成');
+        });
       });
-      if (status) status.textContent = done ? '清單進度已留在這台裝置。' : '';
+      if (status) status.textContent = info.completed ? '清單進度已留在這台裝置。' : '';
+    }
+
+    function addCheckbox(parent, task, state, key, labelText, disabled, change) {
+      const label = textElement('label', 'task-control');
+      const input = doc.createElement('input');
+      input.type = 'checkbox';
+      input.checked = Boolean(state[key]);
+      input.disabled = Boolean(disabled);
+      input.dataset.taskKey = key;
+      input.setAttribute('aria-label', task.title + '：' + labelText);
+      input.addEventListener('change', () => change(input.checked));
+      label.appendChild(input);
+      label.appendChild(textElement('span', '', labelText));
+      parent.appendChild(label);
     }
 
     tasks.forEach(function (task) {
-      const item = textElement('label', 'task-item');
-      const checkbox = doc.createElement('input');
-      checkbox.type = 'checkbox';
-      checkbox.value = task.id;
-      checkbox.checked = Boolean(progress[task.id]);
-      checkbox.setAttribute('aria-label', task.title);
-      const copy = doc.createElement('span');
+      const item = textElement('article', 'task-item');
+      item.dataset.taskId = task.id;
+      const record = currentRecord();
+      const state = appMode ? root.ApplicationStore.taskState(record, task) : localTaskState(legacyProgress, task);
+      const copy = textElement('div', 'task-copy');
       copy.appendChild(textElement('span', 'task-title', task.title));
       copy.appendChild(textElement('span', 'task-description', task.description || ''));
-      item.appendChild(checkbox);
-      item.appendChild(copy);
-      checkbox.addEventListener('change', function () {
-        progress[task.id] = checkbox.checked;
-        const saved = saveTaskProgress(template, params, progress);
-        refresh();
-        if (onChange) onChange(saved);
+      if (task.deadline) copy.appendChild(textElement('span', 'task-deadline', '期限：' + task.deadline));
+      const states = textElement('div', 'task-states');
+      taskStateLabel(task, state).forEach(label => {
+        const key = label.indexOf('填') >= 0 ? 'filled' : label.indexOf('送') >= 0 ? 'submitted' : 'complete';
+        states.appendChild(textElement('span', 'task-state' + (state[key] ? ' active' : ''), label));
       });
+      copy.appendChild(states);
+      item.appendChild(copy);
+      const controls = textElement('div', 'task-controls');
+      const type = taskType(task);
+      if (appMode) {
+        const update = patch => {
+          const saved = root.ApplicationStore.updateTask(application.id, task.id, patch);
+          if (saved) application = saved;
+          refresh();
+          if (onChange) onChange(Boolean(saved), saved);
+        };
+        if (type === 'completion') addCheckbox(controls, task, state, 'completed', '已完成', false, checked => update({completed: checked}));
+        if (type === 'submission') addCheckbox(controls, task, state, 'submitted', '已送出', false, checked => update({submitted: checked}));
+        if (type === 'form_submission') {
+          addCheckbox(controls, task, state, 'filled', template ? '已填寫（儲存表單後更新）' : '已填寫', Boolean(template), checked => update({filled: checked}));
+          addCheckbox(controls, task, state, 'submitted', '已送出', Boolean(!state.filled) && !state.complete, checked => update({submitted: checked}));
+          if (template) {
+            const button = textElement('button', 'button small task-open-form', '編輯表單');
+            button.type = 'button';
+            button.addEventListener('click', () => { if (onOpenForm) onOpenForm(); });
+            controls.appendChild(button);
+          }
+        }
+        if (task.action_url) {
+          const link = textElement('a', 'button small', task.action_label || '查看辦理方式');
+          link.href = task.action_url;
+          link.target = '_blank';
+          link.rel = 'noopener';
+          controls.appendChild(link);
+        }
+      } else {
+        const checkbox = doc.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.checked = Boolean(state.complete);
+        checkbox.value = task.id;
+        checkbox.setAttribute('aria-label', task.title);
+        checkbox.addEventListener('change', function () {
+          legacyProgress[task.id] = checkbox.checked;
+          const saved = saveTaskProgress(template, params, legacyProgress);
+          refresh();
+          if (onChange) onChange(saved, null);
+        });
+        controls.appendChild(checkbox);
+      }
+      item.appendChild(controls);
       container.appendChild(item);
     });
     refresh();
+    return refresh;
   }
 
-  function renderOfficialOverlay(overlay, template, values) {
+  function positionNode(node, field) {
+    const top = ((PDF_HEIGHT - Number(field.pos_y) - Number(field.height || 16)) / PDF_HEIGHT) * 100;
+    node.style.left = (Number(field.pos_x) / PDF_WIDTH * 100) + '%';
+    node.style.top = Math.max(0, top) + '%';
+    node.style.width = (Number(field.width || 100) / PDF_WIDTH * 100) + '%';
+    node.style.height = (Number(field.height || 16) / PDF_HEIGHT) * 100 + '%';
+  }
+
+  function renderOfficialOverlay(overlay, template, values, onChange) {
     overlay.innerHTML = '';
     if (!template) return;
     (template.fields || []).filter(function (field) {
       return field.overlay !== false && field.pos_x != null && field.pos_y != null;
     }).forEach(function (field) {
-      const span = textElement('span', 'overlay-text');
-      const top = ((PDF_HEIGHT - Number(field.pos_y) - Number(field.height || 16)) / PDF_HEIGHT) * 100;
-      span.dataset.overlayKey = field.field_key;
-      span.style.left = (Number(field.pos_x) / PDF_WIDTH * 100) + '%';
-      span.style.top = Math.max(0, top) + '%';
-      span.style.width = (Number(field.width || 100) / PDF_WIDTH * 100) + '%';
-      span.style.height = (Number(field.height || 16) / PDF_HEIGHT * 100) + '%';
-      span.textContent = escapeText(values[field.field_key] || '');
-      span.classList.toggle('empty', !span.textContent);
-      overlay.appendChild(span);
+      const input = field.type === 'textarea' ? doc.createElement('textarea') : doc.createElement('input');
+      input.className = 'overlay-control';
+      input.id = 'overlay-' + safeId(field.field_key);
+      input.name = field.field_key;
+      input.value = escapeText(values[field.field_key] || '');
+      input.dataset.fieldKey = field.field_key;
+      input.dataset.overlayKey = field.field_key;
+      input.setAttribute('aria-label', field.label + (field.required ? '（必填）' : ''));
+      if (field.type !== 'textarea') input.type = field.type === 'number' ? 'number' : (field.type || 'text');
+      if (field.required) input.required = true;
+      if (field.editable === false) input.readOnly = true;
+      if (field.autocomplete) input.autocomplete = field.autocomplete;
+      if (field.inputmode) input.inputMode = field.inputmode;
+      positionNode(input, field);
+      input.addEventListener('input', () => { if (onChange) onChange(field.field_key, input.value); });
+      overlay.appendChild(input);
+
+      const print = textElement('span', 'overlay-print-text');
+      print.dataset.overlayKey = field.field_key;
+      positionNode(print, field);
+      print.textContent = escapeText(values[field.field_key] || '');
+      print.classList.toggle('empty', !print.textContent);
+      overlay.appendChild(print);
     });
   }
 
   function updateOfficialOverlay(overlay, values) {
     if (!overlay) return;
-    overlay.querySelectorAll('[data-overlay-key]').forEach(function (span) {
+    overlay.querySelectorAll('.overlay-print-text[data-overlay-key]').forEach(function (span) {
       const value = escapeText(values[span.dataset.overlayKey] || '');
       span.textContent = value;
       span.classList.toggle('empty', !value);
@@ -660,26 +828,32 @@
     const app = doc.querySelector('[data-form-app]');
     if (!app) return;
     const params = new URLSearchParams(root.location.search);
+    const applicationId = params.get('application_id') || '';
+    let application = applicationId && root.ApplicationStore
+      ? root.ApplicationStore.get(applicationId) : null;
+    if (applicationId && !application) {
+      app.innerHTML = '<p class="empty-state">找不到這筆申請進度，請回「正在申請」重新選擇。</p>';
+      return;
+    }
+    if (application && application.form_template_id && !params.get('template_id')) {
+      params.set('template_id', application.form_template_id);
+    }
+    if (application && application.program_id && !params.get('program_id')) {
+      params.set('program_id', application.program_id);
+    }
     const template = await resolveTemplate(params);
     const profiles = loadProfiles();
     const draft = loadDraft(template, params);
     const values = composeFormValues(template, profiles, draft);
-    const programName = params.get('program_name') || (template && template.name) || '推薦申請項目';
+    const programName = (application && application.program_name) || params.get('program_name') || (template && template.name) || '推薦申請項目';
+    const variantName = application ? [application.variant_name, application.round_name].filter(Boolean).join('・') : '';
 
     setText('program-name', programName);
+    setText('application-variant', variantName || '—');
     setText('template-name', template ? template.name : '目前沒有官方紙本表單');
     setText('official-page', template ? '第 ' + template.official_source_page + ' 頁・' + template.attachment : '—');
     setText('official-page-inline', template ? String(template.official_source_page) : '—');
     setText('official-attachment', template ? template.attachment + '｜' + template.name : '官方申請表');
-
-    const taskList = doc.getElementById('task-list');
-    renderTasks(taskList, template, params, function (saved) {
-      const status = doc.getElementById('task-status');
-      if (status && !saved) {
-        status.textContent = '瀏覽器暫時無法保存進度，請確認未使用無痕限制儲存。';
-        status.classList.add('warn');
-      }
-    });
 
     const formSection = doc.getElementById('form-section');
     const officialSection = doc.getElementById('official-section');
@@ -698,20 +872,43 @@
     const previewContent = doc.getElementById('preview-content');
     const saveStatus = doc.getElementById('save-status');
     const openFormButton = doc.getElementById('open-form');
+    let refreshTasks = null;
 
     function onFieldChange(key, value) {
       values[key] = value;
       updateOfficialOverlay(overlay, values);
     }
 
-    if (openFormButton) openFormButton.addEventListener('click', function () {
-      if (!template) {
-        officialSection.scrollIntoView({behavior: 'smooth', block: 'start'});
-        return;
+    function scrollToForm() {
+      if (formSection) formSection.hidden = false;
+      if (template && officialSection) officialSection.scrollIntoView({behavior: 'smooth', block: 'start'});
+      else if (officialSection) officialSection.scrollIntoView({behavior: 'smooth', block: 'start'});
+    }
+
+    if (openFormButton) openFormButton.addEventListener('click', scrollToForm);
+    refreshTasks = renderTasks(doc.getElementById('task-list'), template, params, function (saved) {
+      const status = doc.getElementById('task-status');
+      if (status && !saved) {
+        status.textContent = '瀏覽器暫時無法保存進度，請確認未使用無痕限制儲存。';
+        status.classList.add('warn');
       }
-      formSection.hidden = false;
-      formSection.scrollIntoView({behavior: 'smooth', block: 'start'});
-    });
+    }, application, scrollToForm);
+
+    const formTask = application && application.items
+      ? application.items.find(task => taskType(task) === 'form_submission') : null;
+
+    function syncApplicationFilled() {
+      if (!application || !formTask || !template || !root.ApplicationStore) return;
+      const filled = root.ApplicationStore.requiredFieldsComplete(template, values);
+      const saved = root.ApplicationStore.updateTask(application.id, formTask.id, {filled});
+      if (saved) application = saved;
+      if (refreshTasks) refreshTasks();
+    }
+
+    // A user may have saved this form before leaving the flow.  Reconcile the
+    // stored draft on resume so the checklist does not ask them to repeat a
+    // completed fill step just because they did not press the task checkbox.
+    if (template) syncApplicationFilled();
 
     if (!template) {
       if (openFormButton) {
@@ -726,6 +923,9 @@
       if (overlayNote) overlayNote.hidden = true;
       const officialActions = doc.getElementById('official-preview');
       if (officialActions) officialActions.parentElement.hidden = true;
+      const completeButton = doc.getElementById('complete-application');
+      if (completeButton && application) completeButton.hidden = !root.ApplicationStore.canComplete(application);
+      attachCompletion(application);
       return;
     }
 
@@ -740,24 +940,24 @@
       openLink.href = pdfUrl;
       openLink.setAttribute('aria-label', '開新分頁看' + template.name + '原始 PDF');
     }
-    renderOfficialOverlay(overlay, template, values);
+    renderOfficialOverlay(overlay, template, values, onFieldChange);
 
-    const officialFields = (template.fields || []).filter(f => !f.helper_only);
-    const privateList = officialFields.filter(f => f.storage_scope === 'private');
-    const matchingList = officialFields.filter(f => f.storage_scope === 'matching');
+    // Official fields are now edited on the sheet itself.  Keep the form
+    // container for helper-only fields and legacy direct links, but never
+    // render a second copy of calibrated fields beside the PDF.
+    if (privateFields) { privateFields.innerHTML = ''; privateFields.hidden = true; }
+    if (matchingFields) { matchingFields.innerHTML = ''; matchingFields.hidden = true; }
     const helperList = (template.fields || []).filter(f => f.helper_only);
-    renderFieldGroup(privateFields, '你的個人資料', '這些只存在你的手機或電腦裡，不會送出去。', privateList, values, onFieldChange);
-    renderFieldGroup(matchingFields, '當次媒合欄位', '作物與申請條件可由 MatchingProfile 預填，仍可修改。', matchingList, values, onFieldChange);
-    if (helperList.length) {
-      renderFieldGroup(helperFields, '其他備註', '這些只是留給你自己看的，不會印到官方表單上。', helperList, values, onFieldChange);
-    }
+    if (helperFields) helperFields.innerHTML = '';
+    if (helperList.length) renderFieldGroup(helperFields, '其他備註', '這些只是留給你自己看的，不會印到官方表單上。', helperList, values, onFieldChange);
 
     function save(silent) {
-      const nextValues = collectValues(form, values);
+      const nextValues = collectValues(form, values, overlay);
       Object.assign(values, nextValues);
       const saved = saveProfiles(template, values, profiles, params);
       profiles.privateForm = saved.privateForm;
       profiles.matching = saved.matching;
+      syncApplicationFilled();
       updateOfficialOverlay(overlay, values);
       if (saveStatus) {
         saveStatus.classList.toggle('warn', !saved.ok);
@@ -791,10 +991,31 @@
     }
     if (printButton) printButton.addEventListener('click', printOfficial);
     if (officialPreviewButton) officialPreviewButton.addEventListener('click', printOfficial);
+    attachCompletion(application);
 
     root.addEventListener('beforeprint', function () {
-      updateOfficialOverlay(overlay, collectValues(form, values));
+      updateOfficialOverlay(overlay, collectValues(form, values, overlay));
     });
+
+    function attachCompletion(record) {
+      const completeButton = doc.getElementById('complete-application');
+      if (!completeButton || !record || !root.ApplicationStore) return;
+      completeButton.onclick = function () {
+        // Capture any direct-on-sheet edits before the final gate.  This keeps
+        // an unsaved blank required field from being marked complete and makes
+        // the completed application reopen with exactly what was printed.
+        if (template) save(true);
+        const current = root.ApplicationStore.get(record.id) || record;
+        if (!root.ApplicationStore.canComplete(current)) return;
+        const done = root.ApplicationStore.complete(current.id);
+        if (done) {
+          completeButton.hidden = true;
+          const status = doc.getElementById('task-status');
+          if (status) status.textContent = '這筆申請已完成，已從「正在申請」移除。';
+          root.setTimeout(() => { root.location.href = 'applications.html'; }, 500);
+        }
+      };
+    }
   }
 
   root.FormPrefill = {

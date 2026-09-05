@@ -215,7 +215,7 @@ h1 {
 .task-list { display: grid; gap: 10px; margin-top: 16px; }
 .task-item {
   display: grid;
-  grid-template-columns: auto 1fr;
+  grid-template-columns: minmax(0, 1fr) auto;
   gap: 12px;
   align-items: start;
   padding: 14px 15px;
@@ -224,6 +224,7 @@ h1 {
   border-radius: 13px;
 }
 .task-item.done { background: var(--green-bg); border-color: var(--green-mid); }
+.task-copy { min-width: 0; }
 .task-item input {
   width: 24px;
   height: 24px;
@@ -232,6 +233,15 @@ h1 {
 }
 .task-title { display: block; font-size: 1.08rem; font-weight: 700; }
 .task-description { display: block; margin-top: 2px; color: var(--muted); font-size: 0.96rem; line-height: 1.55; }
+.task-deadline { display: block; margin-top: 4px; color: var(--orange); font-size: .86rem; }
+.task-states { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.task-state { display: inline-flex; align-items: center; min-height: 25px; padding: 2px 8px; color: var(--muted); background: #F0F5F2; border-radius: 999px; font-size: .84rem; font-weight: 700; }
+.task-state.active { color: var(--green-mid); background: var(--green-tint); }
+.task-controls { display: flex; align-items: center; justify-content: flex-end; gap: 8px; flex-wrap: wrap; min-width: 130px; }
+.task-control { display: inline-flex; align-items: center; gap: 5px; color: var(--ink-soft); font-size: .9rem; white-space: nowrap; }
+.task-control input { width: 20px; height: 20px; margin: 0; }
+.task-open-form { min-height: 38px; padding: 4px 10px; font-size: .88rem; }
+.task-next { min-height: 26px; margin: 11px 0 0; color: var(--green-mid); font-weight: 700; }
 .task-item.done .task-title { text-decoration: line-through; text-decoration-thickness: 2px; }
 .task-actions {
   display: flex;
@@ -377,6 +387,7 @@ textarea.field-value { min-height: 100px; resize: vertical; line-height: 1.55; }
   font-weight: 500;
 }
 .save-status.warn { color: var(--orange); }
+.empty-state { max-width: 720px; margin: 80px auto; padding: 28px; color: var(--ink-soft); background: #FFFFFF; border: 2px dashed var(--line); border-radius: 16px; text-align: center; font-size: 1.08rem; }
 
 .preview-section { scroll-margin-top: 22px; }
 .preview-card {
@@ -465,9 +476,9 @@ textarea.field-value { min-height: 100px; resize: vertical; line-height: 1.55; }
   position: absolute;
   z-index: 1;
   inset: 0;
-  pointer-events: none;
+  pointer-events: auto;
 }
-.overlay-text {
+.overlay-control, .overlay-print-text {
   position: absolute;
   display: block;
   overflow: hidden;
@@ -481,7 +492,20 @@ textarea.field-value { min-height: 100px; resize: vertical; line-height: 1.55; }
   white-space: nowrap;
   text-overflow: clip;
 }
-.overlay-text.empty { background: rgba(255, 255, 255, 0.34); }
+.overlay-control {
+  z-index: 2;
+  min-width: 0;
+  min-height: 0;
+  border: 1px dashed rgba(1, 185, 107, 0.78);
+  border-radius: 2px;
+  outline: none;
+  resize: none;
+}
+.overlay-control:focus { border: 2px solid var(--green-mid); background: rgba(255, 255, 255, .94); }
+.overlay-control[readonly] { background: rgba(255, 255, 255, .52); }
+textarea.overlay-control { white-space: pre-wrap; overflow: auto; }
+.overlay-print-text { z-index: 1; display: none; pointer-events: none; }
+.overlay-control.empty, .overlay-print-text.empty { background: rgba(255, 255, 255, 0.34); }
 .official-overlay-note {
   margin: 0;
   color: var(--muted);
@@ -524,6 +548,8 @@ footer p { max-width: 760px; margin: 0 auto; }
   .context-card { padding: 15px 16px; }
   .button { width: 100%; }
   .task-actions .button { width: 100%; }
+  .task-item { grid-template-columns: 1fr; }
+  .task-controls { justify-content: flex-start; min-width: 0; }
   .preview-table th { width: 36%; }
 }
 
@@ -547,7 +573,9 @@ footer p { max-width: 760px; margin: 0 auto; }
     break-inside: avoid;
     page-break-inside: avoid;
   }
-  .overlay-text {
+  .overlay-control { display: none !important; }
+  .overlay-print-text {
+    display: block;
     padding: 0;
     color: #000000;
     background: transparent;
@@ -555,6 +583,6 @@ footer p { max-width: 760px; margin: 0 auto; }
     font-size: 8pt;
     line-height: 1.2;
   }
-  .overlay-text.empty { background: transparent; }
+  .overlay-print-text.empty { background: transparent; }
   .helper-fields { display: none; }
 }

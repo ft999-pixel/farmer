@@ -69,8 +69,8 @@
             {"id": "young-a-round-scale", "text": "香蕉以果樹類檢視，單一作物面積須達0.7公頃；蜂箱須達50箱。", "source": {"source_key": "young_farmer_reserve_115", "section": "A方案經營規模"}}
           ],
           "tasks": [
-            {"id": "young-online-application", "title": "於青年農民申辦系統完成線上申請", "deadline": "2026-09-01", "depends_on": []},
-            {"id": "young-prepare-proof", "title": "依線上系統提示準備經營場域、規模及技術資格證明", "depends_on": ["young-online-application"]}
+            {"id": "young-online-application", "title": "於青年農民申辦系統完成線上申請", "deadline": "2026-09-01", "depends_on": [], "status_type": "submission"},
+            {"id": "young-prepare-proof", "title": "依線上系統提示準備經營場域、規模及技術資格證明", "depends_on": ["young-online-application"], "status_type": "completion"}
           ],
           "authority": {"level": "中央", "agency": "農業部", "office": "青年農民農業經營準備金申辦系統"},
           "source": {"source_key": "young_farmer_reserve_115", "url": "https://yfreserves.moa.gov.tw/yf/project115u.php", "application_channel": "官方線上申辦"}
@@ -105,7 +105,7 @@
           "window": {"type": "公告型", "start": "2026-08-17", "end": "2026-09-01", "open": "2026-08-17", "close": "2026-09-01", "note": "官方線上申辦期間。"},
           "metadata": {"form_template_status": "online_only", "application_channel": "官方線上申辦", "online_application_url": "https://yfreserves.moa.gov.tw/yf/project115u.php"},
           "entry_criteria": [{"id": "young-b-round-mix", "text": "二種作物主次比例與面積須依B方案規定由申辦系統檢核。", "source": {"source_key": "young_farmer_reserve_115", "section": "B方案經營規模"}}],
-          "tasks": [{"id": "young-b-online-application", "title": "於青年農民申辦系統完成線上申請", "deadline": "2026-09-01", "depends_on": []}],
+          "tasks": [{"id": "young-b-online-application", "title": "於青年農民申辦系統完成線上申請", "deadline": "2026-09-01", "depends_on": [], "status_type": "submission"}],
           "authority": {"level": "中央", "agency": "農業部", "office": "青年農民農業經營準備金申辦系統"},
           "source": {"source_key": "young_farmer_reserve_115", "application_channel": "官方線上申辦"}
         }
@@ -139,7 +139,7 @@
           "window": {"type": "公告型", "start": "2026-08-17", "end": "2026-09-01", "open": "2026-08-17", "close": "2026-09-01", "note": "官方線上申辦期間。"},
           "metadata": {"form_template_status": "online_only", "application_channel": "官方線上申辦", "online_application_url": "https://yfreserves.moa.gov.tw/yf/project115u.php"},
           "entry_criteria": [{"id": "young-c-round-organic", "text": "有機或轉型驗證面積比例須達70%，由申辦系統及承辦單位核對。", "source": {"source_key": "young_farmer_reserve_115", "section": "C方案經營規模"}}],
-          "tasks": [{"id": "young-c-online-application", "title": "於青年農民申辦系統完成線上申請", "deadline": "2026-09-01", "depends_on": []}],
+          "tasks": [{"id": "young-c-online-application", "title": "於青年農民申辦系統完成線上申請", "deadline": "2026-09-01", "depends_on": [], "status_type": "submission"}],
           "authority": {"level": "中央", "agency": "農業部", "office": "青年農民農業經營準備金申辦系統"},
           "source": {"source_key": "young_farmer_reserve_115", "application_channel": "官方線上申辦"}
         }

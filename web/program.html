@@ -66,11 +66,27 @@ strong{background:linear-gradient(transparent 62%, var(--green-pale) 62%);}
 .sample-warn{background:var(--warn-bg);border-radius:14px;padding:16px 20px;margin-bottom:18px;
   font-size:1rem;line-height:1.8;color:#6B4A00;}
 .empty{text-align:center;color:var(--ink-soft);padding:50px 0;font-size:1.0625rem;}
+.flow-section{border-color:var(--green-bright);background:linear-gradient(180deg,#fff,#F7FFFA);}
+.flow-intro{margin:0 0 15px;color:var(--ink-soft);font-size:1.05rem;line-height:1.8;}
+.flow-grid{display:grid;gap:12px;}
+.flow-card{padding:15px 16px;border:2px solid var(--line);border-radius:13px;background:#FAFFFC;}
+.flow-card.selected{border-color:var(--green-mid);background:var(--green-tint);}
+.flow-card h3{margin:0;font-size:1.12rem;}
+.flow-card p{margin:4px 0 0;color:var(--ink-soft);line-height:1.7;}
+.flow-card .flow-meta{color:var(--muted);font-size:.94rem;}
+.flow-state{display:inline-block;margin-top:9px;color:var(--green-mid);font-size:.92rem;font-weight:700;}
+.flow-card a{display:inline-block;margin-top:9px;color:var(--ink);font-weight:700;text-decoration:none;}
+.flow-card a:hover{color:var(--green-mid);}
+.flow-actions{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:16px;}
+.flow-actions .hint{margin:0;color:var(--muted);font-size:.95rem;}
+.flow-status{margin:12px 0 0;color:var(--green-mid);font-weight:700;}
+@media (max-width:600px){.nav-pill{border-radius:18px}.wrap{padding-top:16px}section{padding:18px 18px}.actions .btn{width:100%;text-align:center}.flow-actions .btn{width:100%;text-align:center}}
 </style>
 </head>
 <body>
 <div data-site-nav></div>
 <script src="site-nav.js"></script>
+<script src="application-store.js"></script>
 
 <div class="wrap">
   <a class="back" href="browse.html">← 回補助列表</a>
@@ -93,7 +109,8 @@ function windowText(w){
 }
 
 (async () => {
-  const id = new URLSearchParams(location.search).get('id');
+  const params = new URLSearchParams(location.search);
+  const id = params.get('id');
   const box = document.getElementById('content');
   if (!id) { box.innerHTML = '<p class="empty">沒有指定哪一筆補助。<a href="browse.html">回列表</a></p>'; return; }
 
@@ -108,13 +125,51 @@ function windowText(w){
   }
 
   document.title = p.name + '｜農民補給站';
-  const plain = p.plain || {}, a = p.authority || {}, src = p.source || {};
-  const w = p.window || {};
+  const plain = p.plain || {};
+  const variants = Array.isArray(p.variants) ? p.variants : [];
+  const choices = [];
+  variants.forEach(variant => {
+    const rounds = Array.isArray(variant.rounds) && variant.rounds.length ? variant.rounds : [{}];
+    rounds.forEach(round => choices.push({variant, round}));
+  });
+  let selected = choices.find(item => item.variant.id === params.get('variant_id') && item.round.id === params.get('round_id'));
+  if (!selected && choices.length === 1) selected = choices[0];
+  const selectedVariant = selected ? selected.variant : null;
+  const selectedRound = selected ? selected.round : null;
+  const w = (selectedRound && selectedRound.window) || (selectedVariant && selectedVariant.window) || p.window || {};
+  const a = Object.assign({}, p.authority || {}, (selectedVariant && selectedVariant.authority) || {}, (selectedRound && selectedRound.authority) || {});
+  const src = Object.assign({}, p.source || {}, (selectedVariant && selectedVariant.source) || {}, (selectedRound && selectedRound.source) || {});
   const left = w.close ? Math.ceil((new Date(w.close) - new Date()) / 86400000) : null;
-
   const list = (arr, tag = 'ul') => arr && arr.length
-    ? `<${tag}>${arr.map(x => `<li>${md(x)}</li>`).join('')}</${tag}>` : '';
+    ? `<${tag}>${arr.map(x => `<li>${md(typeof x === 'string' ? x : x.text || x.title || '')}</li>`).join('')}</${tag}>` : '';
+  const documents = (selectedRound && selectedRound.documents) || (selectedVariant && selectedVariant.documents) || p.documents || [];
+  const context = selected ? {program: p, variant: selectedVariant, round: selectedRound} : null;
+  const currentApplication = context && window.ApplicationStore
+    ? window.ApplicationStore.listActive().find(row => row.scope_key === window.ApplicationStore.scopeKey(context)) : null;
+  const statusText = type => ({completion: '完成後打勾', submission: '送出後確認', form_submission: '填寫後再確認送出'})[type] || '完成後確認';
+  const flowCards = choices.map(item => {
+    const isSelected = selected && item.variant.id === selected.variant.id && item.round.id === selected.round.id;
+    const href = 'program.html?id=' + encodeURIComponent(p.id) + '&variant_id=' + encodeURIComponent(item.variant.id) + '&round_id=' + encodeURIComponent(item.round.id);
+    const tasks = Array.isArray(item.round.tasks) ? item.round.tasks : [];
+    const formId = item.round.form_template_id || '';
+    return `<article class="flow-card${isSelected ? ' selected' : ''}">
+      <h3>${esc(item.variant.name || p.name)}</h3>
+      ${item.round.name ? `<p>${esc(item.round.name)}</p>` : ''}
+      ${item.variant.summary ? `<p>${esc(item.variant.summary)}</p>` : ''}
+      <p class="flow-meta">${tasks.length ? '申請項目 ' + tasks.length + ' 項・' + tasks.slice(0, 2).map(task => statusText(task.status_type)).join('、') : '申請項目待補充'}${formId ? '・有官方表單' : ''}</p>
+      ${isSelected ? '<span class="flow-state">目前選擇</span>' : `<a href="${href}">選這個方案 →</a>`}
+    </article>`;
+  }).join('');
+  const flowSection = choices.length ? `<section class="flow-section">
+    <h2>🧭 申請流程</h2>
+    <p class="flow-intro">一個方案就是一條清楚的申請流程。選好方案後，系統會記住每個項目，下一次可從「正在申請」接著辦。</p>
+    <div class="flow-grid">${flowCards}</div>
+    ${selected ? `<div class="flow-actions"><button class="btn" id="start-application" type="button">${currentApplication ? '繼續申請' : '開始申請'}</button><p class="hint">${currentApplication ? '這個方案已有未完成的申請紀錄。' : '按下後會建立一筆本機申請紀錄。'}</p></div><p id="flow-status" class="flow-status" aria-live="polite"></p>` : '<p class="disclaim">請先選一個方案，才可以開始申請。</p>'}
+  </section>` : `<section class="flow-section"><h2>🧭 申請流程</h2><p class="flow-intro">這筆補助目前以一般說明為主，請依下方辦理步驟向承辦單位確認。</p></section>`;
 
+  const summary = plain.summary || (selectedVariant && selectedVariant.summary) || p.summary;
+  const who = plain.who || (selectedVariant && selectedVariant.entry_criteria && selectedVariant.entry_criteria.map(x => x.text || x)) || [];
+  const steps = plain.steps || [];
   box.innerHTML = `
     ${src.status === 'sample' ? `<div class="sample-warn">
       ⚠️ <b>這是示範資料，不是現行公告。</b>實際的救助品項、地區、金額與期限每次都不一樣，
@@ -124,11 +179,13 @@ function windowText(w){
     <div>
       ${p.category ? `<span class="tag">${esc(p.category)}</span>` : ''}
       ${(p.display || {}).amount_text ? `<span class="tag">${esc(p.display.amount_text)}</span>` : ''}
+      ${selectedVariant ? `<span class="tag">${esc(selectedVariant.name)}</span>` : ''}
       ${left !== null && left >= 0 && left <= 14 ? `<span class="tag urgent">⏰ 只剩 ${left} 天</span>` : ''}
       ${src.last_verified ? `<span class="tag warn">最後查核 ${esc(src.last_verified)}</span>` : ''}
     </div>
 
-    ${plain.summary ? `<div class="summary">${md(plain.summary)}</div>` : ''}
+    ${summary ? `<div class="summary">${md(summary)}</div>` : ''}
+    ${flowSection}
 
     <section>
       <h2>⏰ 什麼時候要辦</h2>
@@ -136,11 +193,11 @@ function windowText(w){
       ${w.close_rule ? `<p class="disclaim" style="margin-top:8px">規則原文：${esc(w.close_rule)}</p>` : ''}
     </section>
 
-    ${plain.who ? `<section><h2>👤 誰可以申請</h2>${list(plain.who)}</section>` : ''}
+    ${who.length ? `<section><h2>👤 誰可以申請</h2>${list(who)}</section>` : ''}
 
     <section>
       <h2>📄 要準備哪些文件</h2>
-      <div id="docs">${(p.documents || []).map(d => `
+      <div id="docs">${documents.map(d => `
         <div class="doc">
           <div class="doc-check"></div>
           <div>
@@ -151,8 +208,7 @@ function windowText(w){
         </div>`).join('') || '<p class="disclaim">承辦單位會告訴你要帶什麼，建議先打電話問。</p>'}</div>
     </section>
 
-    ${plain.steps ? `<section><h2>📝 怎麼辦理</h2>${list(plain.steps, 'ol')}</section>` : ''}
-
+    ${steps.length ? `<section><h2>📝 怎麼辦理</h2>${list(steps, 'ol')}</section>` : ''}
     ${plain.notes ? `<section><h2>💡 一定要知道的事</h2>${list(plain.notes)}</section>` : ''}
 
     <div class="contact">
@@ -172,6 +228,21 @@ function windowText(w){
       本頁為白話說明，<b>不具行政效力</b>。實際資格、金額與期限由承辦單位認定，
       有疑問請直接電洽上面的受理單位。${src.note ? `<br>資料來源說明：${esc(src.note)}` : ''}
     </p>`;
+
+  const startButton = document.getElementById('start-application');
+  if (startButton && selected) startButton.addEventListener('click', () => {
+    const status = document.getElementById('flow-status');
+    if (!window.ApplicationStore) {
+      if (status) status.textContent = '申請進度功能尚未載入，請重新整理後再試。';
+      return;
+    }
+    const record = window.ApplicationStore.start(context);
+    if (!record) {
+      if (status) status.textContent = '瀏覽器暫時無法保存申請進度，請確認允許本機儲存。';
+      return;
+    }
+    location.href = 'form.html?application_id=' + encodeURIComponent(record.id);
+  });
 })();
 </script>
 </body>

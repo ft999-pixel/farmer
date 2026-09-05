@@ -151,14 +151,23 @@ def _normalise_tasks(raw: Any, prefix: str) -> list[dict[str, Any]]:
     tasks: list[dict[str, Any]] = []
     for index, item in enumerate(raw):
         if isinstance(item, str):
-            tasks.append({"id": f"{prefix}-task-{index + 1}", "title": item})
+            tasks.append({
+                "id": f"{prefix}-task-{index + 1}",
+                "title": item,
+                "description": f"完成「{item}」後，再繼續下一步。",
+                "status_type": "completion",
+            })
             continue
         if not isinstance(item, Mapping):
             continue
         task = dict(item)
         task.setdefault("id", f"{prefix}-task-{index + 1}")
-        task.setdefault("title", task.get("name") or task.get("label") or
-                        f"申請步驟 {index + 1}")
+        if not task.get("title"):
+            task["title"] = task.get("name") or task.get("label") or f"申請步驟 {index + 1}"
+        if not task.get("description"):
+            task["description"] = f"完成「{task['title']}」後，再繼續下一步。"
+        if not task.get("status_type"):
+            task["status_type"] = "completion"
         tasks.append(task)
     return tasks
 
@@ -201,7 +210,10 @@ def _normalise_round(raw: Mapping[str, Any], *, prefix: str,
     round_data = dict(raw)
     round_id = str(round_data.get("id") or f"{prefix}-round")
     round_data["id"] = round_id
-    round_data.setdefault("name", round_data.get("title") or round_id)
+    if not round_data.get("name"):
+        round_data["name"] = round_data.get("title") or (
+            "一般申請流程" if not raw.get("id") else round_id
+        )
 
     window = round_data.get("window")
     if window is None:
