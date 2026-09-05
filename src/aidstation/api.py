@@ -192,10 +192,16 @@ def get_programs() -> list[dict]:
 
 @app.get("/programs/{program_id}")
 def get_program(program_id: str) -> dict:
-    """單筆補助的完整內容，補助詳情頁（program.html）用。"""
+    """單筆補助的完整內容，補助詳情頁（program.html）用。
+
+    load_programs 現在回傳 Pydantic 的 LoadedProgram，不是純 dict，
+    直接回傳會序列化失敗，所以在這裡轉成 JSON 可用的形式。
+    """
     program = next((p for p in PROGRAMS if p["id"] == program_id), None)
     if program is None:
         raise HTTPException(404, "找不到這筆補助")
+    if hasattr(program, "model_dump"):
+        return program.model_dump(mode="json", exclude_none=True)
     return program
 
 
