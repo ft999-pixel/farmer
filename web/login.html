@@ -96,25 +96,24 @@ input:focus{outline:3px solid var(--green-pale);border-color:var(--green-mid);}
       <p class="hint" style="text-align:center">農民用這個最快，不用記帳號密碼</p>
     </div>
 
-    <div class="divider">或用代號登入</div>
+    <div class="divider">或用帳號密碼</div>
 
     <div>
-      <label for="code">你的代號</label>
+      <label for="code">帳號</label>
       <input id="code" placeholder="例如：阿明伯" autocomplete="username">
     </div>
 
     <div style="margin-top:14px">
-      <label for="pw">密碼<span class="opt">承辦人員才需要填，農民請留空</span></label>
-      <input id="pw" type="password" autocomplete="current-password" placeholder="農民不用填">
+      <label for="pw">密碼</label>
+      <input id="pw" type="password" autocomplete="current-password" placeholder="至少 6 個字">
     </div>
 
     <button class="btn btn-primary" id="do-login" style="margin-top:18px">登入</button>
+    <button class="btn-ghost" id="do-register" style="margin-top:10px">我是第一次來，註冊一個</button>
 
     <p class="hint">
-      系統會依你填的內容判斷身分：<br>
-      · 只填代號 → 進「我的資料」<br>
-      · 代號＋密碼 → 進「後臺維護」<br>
-      第一次用代號登入會自動幫你建一個。
+      登入後系統會依你的帳號自動帶你到該去的地方 —— 農民進「我的資料」，
+      承辦人員進「後臺維護」，不用自己選。
     </p>
   </section>
 
@@ -136,16 +135,17 @@ const LINE_ERRORS = {
   failed: 'LINE 登入沒有成功，請再試一次，或改用代號登入。',
 };
 
-// 身分與去處由後端 /auth/login 判斷（有沒有填密碼），前端不做決定。
-async function doLogin(){
-  const identifier = $('code').value.trim();
+// 角色寫在帳號上，去哪一頁由後端回傳的 redirect 決定，前端不做判斷。
+async function submit(path){
+  const username = $('code').value.trim();
   const password = $('pw').value;
-  if (!identifier && !password) { msg('請輸入你的代號。', 'warn'); return; }
+  if (!username) { msg('請輸入帳號。', 'warn'); return; }
+  if (!password) { msg('請輸入密碼。', 'warn'); return; }
   try {
-    const r = await fetch('/auth/login', {
+    const r = await fetch(path, {
       method: 'POST', credentials: 'same-origin',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({identifier, password}),
+      body: JSON.stringify({username, password}),
     });
     const body = await r.json();
     if (!r.ok) throw body;
@@ -155,9 +155,10 @@ async function doLogin(){
   }
 }
 
-$('do-login').onclick = doLogin;
+$('do-login').onclick = () => submit('/auth/login');
+$('do-register').onclick = () => submit('/auth/register');
 ['code', 'pw'].forEach(id =>
-  $(id).addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); }));
+  $(id).addEventListener('keydown', e => { if (e.key === 'Enter') submit('/auth/login'); }));
 
 (async () => {
   const params = new URLSearchParams(location.search);
