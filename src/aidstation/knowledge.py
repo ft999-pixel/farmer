@@ -151,14 +151,23 @@ def _normalise_tasks(raw: Any, prefix: str) -> list[dict[str, Any]]:
     tasks: list[dict[str, Any]] = []
     for index, item in enumerate(raw):
         if isinstance(item, str):
-            tasks.append({"id": f"{prefix}-task-{index + 1}", "title": item})
+            tasks.append({
+                "id": f"{prefix}-task-{index + 1}",
+                "title": item,
+                "description": f"完成「{item}」後，再繼續下一步。",
+                "status_type": "completion",
+            })
             continue
         if not isinstance(item, Mapping):
             continue
         task = dict(item)
         task.setdefault("id", f"{prefix}-task-{index + 1}")
-        task.setdefault("title", task.get("name") or task.get("label") or
-                        f"申請步驟 {index + 1}")
+        if not task.get("title"):
+            task["title"] = task.get("name") or task.get("label") or f"申請步驟 {index + 1}"
+        if not task.get("description"):
+            task["description"] = f"完成「{task['title']}」後，再繼續下一步。"
+        if not task.get("status_type"):
+            task["status_type"] = "completion"
         tasks.append(task)
     return tasks
 
@@ -196,12 +205,16 @@ def _normalise_round(raw: Mapping[str, Any], *, prefix: str,
                      inherited_criteria: Any = None,
                      inherited_tasks: Any = None,
                      inherited_form: Any = None,
+                     inherited_form_id: Any = None,
                      inherited_authority: Mapping[str, Any] | None = None,
                      inherited_source: Mapping[str, Any] | None = None) -> dict[str, Any]:
     round_data = dict(raw)
     round_id = str(round_data.get("id") or f"{prefix}-round")
     round_data["id"] = round_id
-    round_data.setdefault("name", round_data.get("title") or round_id)
+    if not round_data.get("name"):
+        round_data["name"] = round_data.get("title") or (
+            "一般申請流程" if not raw.get("id") else round_id
+        )
 
     window = round_data.get("window")
     if window is None:
@@ -223,6 +236,11 @@ def _normalise_round(raw: Mapping[str, Any], *, prefix: str,
     if tasks is None:
         tasks = inherited_tasks
     round_data["tasks"] = _normalise_tasks(tasks, round_id)
+
+    # 補助只掛一個 form_template_id（純量）時也要往下傳。先前只有 form_template
+    # 物件會繼承，於是「補助層宣告了官方表單，申請流程卻看不到」。
+    if round_data.get("form_template_id") is None and inherited_form_id is not None:
+        round_data["form_template_id"] = inherited_form_id
 
     form = round_data.get("form_template")
     if form is None:
@@ -262,6 +280,9 @@ def _normalise_variant(raw: Mapping[str, Any], *, program: Mapping[str, Any],
     variant_tasks = variant.get("tasks") or variant.get("task_templates") or program_tasks
     program_form = program.get("form_template") or program.get("form")
     variant_form = variant.get("form_template") or variant.get("form") or program_form
+    variant_form_id = variant.get("form_template_id") or program.get("form_template_id")
+    if variant_form_id is not None:
+        variant["form_template_id"] = variant_form_id
     authority = variant.get("authority") or program.get("authority") or {}
     source = variant.get("source") or program.get("source") or {}
 
@@ -291,6 +312,7 @@ def _normalise_variant(raw: Mapping[str, Any], *, program: Mapping[str, Any],
             inherited_criteria=variant_criteria,
             inherited_tasks=variant_tasks,
             inherited_form=variant_form,
+            inherited_form_id=variant_form_id,
             inherited_authority=authority,
             inherited_source=source,
         ))

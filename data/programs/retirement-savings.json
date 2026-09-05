@@ -2,6 +2,13 @@
   "id": "moa-retirement-savings",
   "name": "農民退休儲金",
   "category": "農民福利",
+  "tasks": [
+    {"id": "retirement-join", "title": "到投保農會辦理參加", "description": "向投保農會提出參加農民退休儲金的申請。", "status_type": "submission"},
+    {"id": "retirement-rate", "title": "選擇每月提繳比例", "description": "和農會確認適合自己的每月提繳比例。", "status_type": "completion", "depends_on": ["retirement-join"]},
+    {"id": "retirement-debit", "title": "確認帳戶按月扣款", "description": "確認指定帳戶能按月完成扣款。", "status_type": "completion", "depends_on": ["retirement-rate"]},
+    {"id": "retirement-match", "title": "確認政府同步提繳", "description": "確認政府相對提繳已進入你的專戶。", "status_type": "completion", "depends_on": ["retirement-debit"]},
+    {"id": "retirement-claim", "title": "年滿 65 歲後提出領取申請", "description": "符合條件時向承辦單位提出按月領取申請。", "status_type": "submission", "depends_on": ["retirement-match"]}
+  ],
   "authority": {
     "level": "中央", "agency": "農業部（勞保局核付）",
     "office": "你投保的基層農會",

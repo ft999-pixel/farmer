@@ -72,10 +72,10 @@
             }
           ],
           "tasks": [
-            {"id": "submit-application", "title": "提出農機補助申請", "deadline": "2026-08-31", "depends_on": []},
-            {"id": "wait-review", "title": "等待受理單位審查與購機通知", "depends_on": ["submit-application"]},
-            {"id": "purchase-machine", "title": "收到通知後購置核定農機", "depends_on": ["wait-review"]},
-            {"id": "reimburse", "title": "完成購機與補助款申領", "deadline": "2026-11-30", "depends_on": ["purchase-machine"]}
+            {"id": "submit-application", "title": "提出農機補助申請", "deadline": "2026-08-31", "depends_on": [], "status_type": "submission"},
+            {"id": "wait-review", "title": "等待受理單位審查與購機通知", "depends_on": ["submit-application"], "status_type": "completion"},
+            {"id": "purchase-machine", "title": "收到通知後購置核定農機", "depends_on": ["wait-review"], "status_type": "completion"},
+            {"id": "reimburse", "title": "完成購機與補助款申領", "deadline": "2026-11-30", "depends_on": ["purchase-machine"], "status_type": "completion"}
           ],
           "form_template_id": "farm_machine_115.farm_service",
           "authority": {"level": "中央", "agency": "農業部農糧署", "office": "受理單位"},
@@ -155,10 +155,10 @@
             }
           ],
           "tasks": [
-            {"id": "submit-application", "title": "提出農機補助申請", "deadline": "2026-08-31", "depends_on": []},
-            {"id": "wait-review", "title": "等待受理單位審查與購機通知", "depends_on": ["submit-application"]},
-            {"id": "purchase-machine", "title": "收到通知後購置核定農機", "depends_on": ["wait-review"]},
-            {"id": "reimburse", "title": "完成購機與補助款申領", "deadline": "2026-11-30", "depends_on": ["purchase-machine"]}
+            {"id": "submit-application", "title": "提出農機補助申請", "deadline": "2026-08-31", "depends_on": [], "status_type": "form_submission"},
+            {"id": "wait-review", "title": "等待受理單位審查與購機通知", "depends_on": ["submit-application"], "status_type": "completion"},
+            {"id": "purchase-machine", "title": "收到通知後購置核定農機", "depends_on": ["wait-review"], "status_type": "completion"},
+            {"id": "reimburse", "title": "完成購機與補助款申領", "deadline": "2026-11-30", "depends_on": ["purchase-machine"], "status_type": "completion"}
           ],
           "form_template_id": "farm_machine_115.labor_saving",
           "authority": {"level": "中央", "agency": "農業部農糧署", "office": "受理單位"},
@@ -201,10 +201,10 @@
           "metadata": {"official_form_template_id": "farm_machine_115.drone"},
           "entry_criteria": [{"id": "drone-round-eligibility", "text": "欲購機具須為本年度公告補助品項。", "source": {"source_key": "farm_machine_115", "section": "附表11"}}],
           "tasks": [
-            {"id": "submit-application", "title": "提出農機補助申請", "deadline": "2026-08-31", "depends_on": []},
-            {"id": "wait-review", "title": "等待受理單位審查與購機通知", "depends_on": ["submit-application"]},
-            {"id": "purchase-machine", "title": "收到通知後購置核定農機", "depends_on": ["wait-review"]},
-            {"id": "reimburse", "title": "完成購機與補助款申領", "deadline": "2026-11-30", "depends_on": ["purchase-machine"]}
+            {"id": "submit-application", "title": "提出農機補助申請", "deadline": "2026-08-31", "depends_on": [], "status_type": "submission"},
+            {"id": "wait-review", "title": "等待受理單位審查與購機通知", "depends_on": ["submit-application"], "status_type": "completion"},
+            {"id": "purchase-machine", "title": "收到通知後購置核定農機", "depends_on": ["wait-review"], "status_type": "completion"},
+            {"id": "reimburse", "title": "完成購機與補助款申領", "deadline": "2026-11-30", "depends_on": ["purchase-machine"], "status_type": "completion"}
           ],
           "form_template_id": "farm_machine_115.drone",
           "authority": {"level": "中央", "agency": "農業部農糧署"},
@@ -242,10 +242,10 @@
           "metadata": {"official_form_template_id": "farm_machine_115.imported"},
           "entry_criteria": [{"id": "imported-round-eligibility", "text": "欲購機具須為本年度公告補助品項。", "source": {"source_key": "farm_machine_115", "section": "附表12"}}],
           "tasks": [
-            {"id": "submit-application", "title": "提出農機補助申請", "deadline": "2026-08-31", "depends_on": []},
-            {"id": "wait-review", "title": "等待受理單位審查與購機通知", "depends_on": ["submit-application"]},
-            {"id": "purchase-machine", "title": "收到通知後購置核定農機", "depends_on": ["wait-review"]},
-            {"id": "reimburse", "title": "完成購機與補助款申領", "deadline": "2026-11-30", "depends_on": ["purchase-machine"]}
+            {"id": "submit-application", "title": "提出農機補助申請", "deadline": "2026-08-31", "depends_on": [], "status_type": "submission"},
+            {"id": "wait-review", "title": "等待受理單位審查與購機通知", "depends_on": ["submit-application"], "status_type": "completion"},
+            {"id": "purchase-machine", "title": "收到通知後購置核定農機", "depends_on": ["wait-review"], "status_type": "completion"},
+            {"id": "reimburse", "title": "完成購機與補助款申領", "deadline": "2026-11-30", "depends_on": ["purchase-machine"], "status_type": "completion"}
           ],
           "form_template_id": "farm_machine_115.imported",
           "authority": {"level": "中央", "agency": "農業部農糧署"},
@@ -283,10 +283,10 @@
           "metadata": {"official_form_template_id": "farm_machine_115.carbon_sink"},
           "entry_criteria": [{"id": "carbon-sink-round-eligibility", "text": "欲購機具須為本年度公告補助品項。", "source": {"source_key": "farm_machine_115", "section": "附表13"}}],
           "tasks": [
-            {"id": "submit-application", "title": "提出農機補助申請", "deadline": "2026-08-31", "depends_on": []},
-            {"id": "wait-review", "title": "等待受理單位審查與購機通知", "depends_on": ["submit-application"]},
-            {"id": "purchase-machine", "title": "收到通知後購置核定農機", "depends_on": ["wait-review"]},
-            {"id": "reimburse", "title": "完成購機與補助款申領", "deadline": "2026-11-30", "depends_on": ["purchase-machine"]}
+            {"id": "submit-application", "title": "提出農機補助申請", "deadline": "2026-08-31", "depends_on": [], "status_type": "submission"},
+            {"id": "wait-review", "title": "等待受理單位審查與購機通知", "depends_on": ["submit-application"], "status_type": "completion"},
+            {"id": "purchase-machine", "title": "收到通知後購置核定農機", "depends_on": ["wait-review"], "status_type": "completion"},
+            {"id": "reimburse", "title": "完成購機與補助款申領", "deadline": "2026-11-30", "depends_on": ["purchase-machine"], "status_type": "completion"}
           ],
           "form_template_id": "farm_machine_115.carbon_sink",
           "authority": {"level": "中央", "agency": "農業部農糧署"},
@@ -339,10 +339,10 @@
             }
           ],
           "tasks": [
-            {"id": "submit-application", "title": "提出電動農機補助申請", "deadline": "2026-08-31", "depends_on": []},
-            {"id": "wait-review", "title": "等待受理單位審查與購機通知", "depends_on": ["submit-application"]},
-            {"id": "purchase-machine", "title": "收到通知後購置核定電動農機並完成汰換", "depends_on": ["wait-review"]},
-            {"id": "reimburse", "title": "完成購機與補助款申領", "deadline": "2026-11-30", "depends_on": ["purchase-machine"]}
+            {"id": "submit-application", "title": "提出電動農機補助申請", "deadline": "2026-08-31", "depends_on": [], "status_type": "form_submission"},
+            {"id": "wait-review", "title": "等待受理單位審查與購機通知", "depends_on": ["submit-application"], "status_type": "completion"},
+            {"id": "purchase-machine", "title": "收到通知後購置核定電動農機並完成汰換", "depends_on": ["wait-review"], "status_type": "completion"},
+            {"id": "reimburse", "title": "完成購機與補助款申領", "deadline": "2026-11-30", "depends_on": ["purchase-machine"], "status_type": "completion"}
           ],
           "form_template_id": "farm_machine_115.electric_replacement",
           "authority": {"level": "中央", "agency": "農業部農糧署", "office": "受理單位"},

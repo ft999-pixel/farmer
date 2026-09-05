@@ -2,6 +2,12 @@
   "id": "moa-occupational-injury",
   "name": "農民職業災害保險給付",
   "category": "農民福利",
+  "tasks": [
+    {"id": "injury-seek-care", "title": "就醫並說明是農事受傷", "description": "看診時告訴醫生是在農事工作中受傷。", "status_type": "completion"},
+    {"id": "injury-keep-documents", "title": "保留診斷證明與醫療單據", "description": "向醫療院所取得診斷證明，並保留所有收據。", "status_type": "completion", "depends_on": ["injury-seek-care"]},
+    {"id": "injury-submit", "title": "到投保農會送出申請", "description": "帶著單據到投保農會填寫並送出給付申請。", "status_type": "form_submission", "depends_on": ["injury-keep-documents"]},
+    {"id": "injury-review", "title": "等待審核結果", "description": "確認農會已協助送件並等待審核。", "status_type": "completion", "depends_on": ["injury-submit"]}
+  ],
   "authority": {
     "level": "中央", "agency": "農業部（勞保局核付）",
     "office": "你投保的基層農會",

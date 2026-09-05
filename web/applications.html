@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>正在申請｜農民補給站</title>
+<link rel="stylesheet" href="site-nav.css">
+<style>
+:root{--green-bright:#02DF82;--green-mid:#01B96B;--green-bg:#F0FDF6;--green-tint:#D9FBEC;--ink:#06301F;--ink-soft:#0A4A32;--line:#CBEEDC;--muted:#52645B;--orange:#D85A30;}
+@font-face{font-family:'GenSen';src:url('fonts/GenSenRounded2TW-R.woff2') format('woff2');font-weight:400;font-display:swap}
+@font-face{font-family:'GenSen';src:url('fonts/GenSenRounded2TW-M.woff2') format('woff2');font-weight:500;font-display:swap}
+@font-face{font-family:'GenSen';src:url('fonts/GenSenRounded2TW-H.woff2') format('woff2');font-weight:700;font-display:swap}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(180deg,var(--green-bg),#fff 56%);color:var(--ink);font-family:'GenSen','Yuanti TC','Microsoft JhengHei',sans-serif;line-height:1.6}
+.wrap{width:min(100% - 32px,900px);margin:0 auto;padding:42px 0 90px}.eyebrow{display:inline-block;margin:0 0 8px;padding:4px 13px;color:var(--green-mid);background:var(--green-tint);border-radius:999px;font-weight:700}.back{display:inline-block;margin-bottom:18px;color:var(--ink-soft);text-decoration:none}.back:hover{color:var(--green-mid)}h1{margin:0;font-size:clamp(2rem,5vw,3rem);line-height:1.25}.lead{max-width:720px;margin:12px 0 26px;color:var(--ink-soft);font-size:1.12rem}.notice{padding:14px 17px;margin:0 0 18px;background:#fff;border:1px dashed var(--line);border-radius:14px;color:var(--muted)}.notice.warn{background:#FEF3D8;color:#6B4A00;border-color:#E7C979}.list{display:grid;gap:15px}.card{padding:20px 21px;background:#fff;border:2px solid var(--line);border-radius:17px;box-shadow:0 7px 24px rgba(6,48,31,.06)}.card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:14px}.card h2{margin:0;font-size:1.35rem;line-height:1.4}.variant{margin:4px 0 0;color:var(--ink-soft);font-size:.98rem}.status{flex:none;padding:4px 11px;color:var(--green-mid);background:var(--green-tint);border-radius:999px;font-size:.9rem;font-weight:700}.meta{margin:12px 0;color:var(--muted);font-size:.98rem}.progress{height:12px;overflow:hidden;background:#E9F5EE;border-radius:999px}.progress i{display:block;height:100%;background:linear-gradient(90deg,var(--green-bright),var(--green-mid));border-radius:inherit}.next{margin:12px 0 0;color:var(--ink-soft)}.next strong{color:var(--ink)}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}.button{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:7px 19px;border:2px solid var(--line);border-radius:999px;color:var(--ink);background:#fff;text-decoration:none;font-weight:700}.button.primary{border-color:var(--green-bright);background:var(--green-bright)}.button:hover{border-color:var(--green-mid);color:var(--ink)}.empty{text-align:center;padding:55px 20px;background:#fff;border:2px dashed var(--line);border-radius:17px;color:var(--ink-soft);font-size:1.08rem}.empty .button{margin-top:15px}
+@media(max-width:620px){.wrap{width:min(100% - 22px,900px);padding-top:29px}.card{padding:17px}.card-head{display:block}.status{display:inline-block;margin-top:10px}.button{width:100%}}
+</style>
+</head>
+<body>
+<div data-site-nav></div>
+<script src="site-nav.js"></script>
+<main class="wrap">
+  <a class="back" href="browse.html">← 回補助列表</a>
+  <p class="eyebrow">申請進度留在這台裝置</p>
+  <h1>正在申請</h1>
+  <p class="lead">這裡會記得你已經做到哪裡，下一次直接接著辦。表單內的姓名、電話等私密資料仍只留在本機，不會放進申請進度。</p>
+  <div id="notice" class="notice" hidden></div>
+  <section id="applications" class="list" aria-live="polite"></section>
+</main>
+<script src="application-store.js"></script>
+<script>
+(() => {
+  const box = document.getElementById('applications');
+  const notice = document.getElementById('notice');
+  const esc = value => String(value == null ? '' : value).replace(/[&<>\"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]));
+  function render(){
+    const rows = window.ApplicationStore ? window.ApplicationStore.listActive() : [];
+    if (!rows.length) {
+      box.innerHTML = '<div class="empty">目前沒有尚未完成的申請。<br>找到想辦的補助後，按「開始申請」就會出現在這裡。<br><a class="button primary" href="browse.html">找補助</a></div>';
+      return;
+    }
+    box.innerHTML = rows.map(row => {
+      const info = window.ApplicationStore.progress(row);
+      const next = window.ApplicationStore.nextTask(row);
+      const label = [row.variant_name, row.round_name].filter(Boolean).join('・');
+      return `<article class="card">
+        <div class="card-head"><div><h2>${esc(row.program_name || '未命名補助')}</h2>${label ? `<p class="variant">${esc(label)}</p>` : ''}</div><span class="status">進行中</span></div>
+        <p class="meta">目前進度：${info.completed} / ${info.total} 項完成（${info.percent}%）</p>
+        <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${info.percent}" aria-label="申請進度"><i style="width:${info.percent}%"></i></div>
+        <p class="next"><strong>接下來：</strong>${esc(next ? next.title : '確認完成申請')}</p>
+        <div class="actions"><a class="button primary" href="form.html?application_id=${encodeURIComponent(row.id)}">繼續申請</a></div>
+      </article>`;
+    }).join('');
+  }
+  try { render(); } catch (error) {
+    notice.hidden = false;
+    notice.className = 'notice warn';
+    notice.textContent = '這台裝置目前無法讀取申請進度，請確認瀏覽器允許本機儲存。';
+    box.innerHTML = '';
+  }
+  window.addEventListener('storage', event => {
+    if (window.ApplicationStore && event.key === window.ApplicationStore.STORAGE_KEY) render();
+  });
+})();
+</script>
+</body>
+</html>
