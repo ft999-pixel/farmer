@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>補助總覽｜農民補給站</title>
 <meta name="description" content="自己找補助：依產業別、分類、地區篩選，快截止的排在前面。">
+<link rel="stylesheet" href="site-nav.css">
 <style>
 :root {
   --green-bright: #02DF82;
@@ -155,29 +156,8 @@ footer { background: var(--ink); color: var(--green-bg); padding: 40px 24px 32px
 <div class="page">
   <div class="demo-banner">目前為示範資料，實際申請請洽農會或公所</div>
 
-  <div class="nav-wrap">
-    <nav class="nav-pill">
-      <a href="index.html" class="nav-logo" aria-label="農民補給站首頁">
-        <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><path d="M4 2 v18" stroke="#06301F" stroke-width="2.5" stroke-linecap="round"/><path d="M4 3 L18 7 L4 11 Z" fill="#02DF82"/></svg>
-        農民補給站
-      </a>
-      <div class="nav-links">
-        <a href="browse.html" class="current">找補助</a>
-        <a href="chat.html?tab=doc">看懂公文</a>
-        <a href="index.html#guides">白話指南</a>
-        <a href="profile.html">我的資料</a>
-        <a href="dashboard.html">卡點儀表板</a>
-        <a href="index.html#about">關於</a>
-      </div>
-      <div class="nav-spacer"></div>
-      <div class="fs-switch" role="group" aria-label="字級切換">
-        <button data-fs="小">小</button>
-        <button data-fs="中">中</button>
-        <button data-fs="大">大</button>
-      </div>
-      <a href="chat.html" class="nav-cta">說說你的狀況</a>
-    </nav>
-  </div>
+  <div data-site-nav></div>
+  <script src="site-nav.js"></script>
 
   <main>
     <h1>自己找<span class="grad-text">補助</span></h1>

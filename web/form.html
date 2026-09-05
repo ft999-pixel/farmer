@@ -6,28 +6,17 @@
 <title>準備申請｜農民補給站</title>
 <meta name="description" content="用官方申請表預填示範，私密資料只留在這台裝置。">
 <link rel="stylesheet" href="form-prefill.css">
+<link rel="stylesheet" href="site-nav.css">
 </head>
 <body>
 <div class="page">
   <div class="demo-banner">目前為示範資料；正式申請請以承辦單位提供的最新官方表單為準</div>
 
-  <div class="nav-wrap">
-    <nav class="nav-pill" aria-label="主要導覽">
-      <a href="index.html" class="nav-logo" aria-label="農民補給站首頁">
-        <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><path d="M4 2 v18" stroke="#06301F" stroke-width="2.5" stroke-linecap="round"/><path d="M4 3 L18 7 L4 11 Z" fill="#02DF82"/></svg>
-        農民補給站
-      </a>
-      <div class="nav-links">
-        <a href="browse.html">找補助</a>
-        <a href="chat.html">說說狀況</a>
-        <a href="profile.html">我的資料</a>
-      </div>
-      <div class="nav-spacer"></div>
-      <a href="javascript:history.back()" class="back-link">回上一頁</a>
-    </nav>
-  </div>
+  <div data-site-nav></div>
+  <script src="site-nav.js"></script>
 
   <main id="form-app" data-form-app>
+    <a href="javascript:history.back()" class="back-link">回上一頁</a>
     <header class="form-hero">
       <p class="eyebrow">開始申請・Task checklist・本地預填</p>
       <h1>把申請準備好，<span class="grad-text">再去問承辦</span></h1>
