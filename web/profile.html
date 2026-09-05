@@ -80,8 +80,6 @@ input:focus,select:focus,textarea:focus{outline:3px solid var(--green-pale);bord
 .profile-preview{background:var(--green-bg);border-radius:14px;padding:12px 14px;margin-top:14px;
   font-size:15px;line-height:1.8;}
 .profile-preview b{color:var(--ink-soft);}
-.private-note{background:#F7FFFB;border:1px solid var(--line);border-radius:12px;padding:12px 14px;
-  font-size:15px;line-height:1.75;margin:12px 0 16px;}
 .status-match{background:var(--green-tint);}
 .status-need{background:var(--warn-bg);}
 .status-review{background:#EEF0FF;color:#2B347A;}
@@ -107,37 +105,16 @@ input:focus,select:focus,textarea:focus{outline:3px solid var(--green-pale);bord
   <h1>我的資料</h1>
   <p class="lead">填一次，以後不用每次重講。系統會幫你留意有沒有新的補助；有已確認官方表單的項目，再從官方表單準備頁預填與列印。</p>
 
-  <div class="privacy" data-privacy-boundary="MatchingProfile/PrivateFormProfile">
-    <div class="privacy-badges">
-      <span class="privacy-badge matching" data-privacy="matching">🔎 MatchingProfile｜會送去分析</span>
-      <span class="privacy-badge private" data-privacy="private">📱 PrivateFormProfile｜只存在這台裝置</span>
-    </div>
-    <b>找補助和準備官方表單，是兩份不同的資料。</b>
-    <span class="small">
-      作物、鄉鎮、土地狀況等媒合條件，登入後可以同步到會員資料，並送到「找補助」分析。<br>
-      姓名、電話、完整地址、身分證字號、出生日期、銀行資料、地號、簽名，只在官方表單準備頁使用，留在這台瀏覽器的本機儲存，不會送到任何後端，也不會跨裝置同步。<br>
-      這是示範版登入（只用代號）；不想留資料也沒關係，未登入仍可查補助。<b>按最下面的刪除會同時清掉本機私密資料和會員媒合資料。</b>
-    </span>
-  </div>
-
   <div id="msg"></div>
 
   <section id="hero-demo" data-profile-kind="MatchingProfile">
-    <div class="privacy-badges">
-      <h2 style="margin:0">用一句話開始</h2>
-      <span class="privacy-badge matching" data-privacy="matching">會送去分析</span>
-    </div>
-    <p class="hint">
-      直接說你的狀況，先把有用的媒合條件整理出來；姓名、電話等私密資料不會從這個輸入送出。
-      也可以載入英雄範例試跑一次。
-    </p>
+    <h2 style="margin:0 0 6px">用一句話開始</h2>
+    <p class="hint">直接說你的狀況，我們會先幫你把有用的媒合條件整理出來。</p>
     <textarea id="hero-text" rows="3" data-profile-input="MatchingProfile"
       placeholder="例如：我去年才回來屏東種香蕉，大概八分地，有 QR Code，最近想買電動割草機。"></textarea>
     <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap">
       <button class="primary" id="hero-apply">整理並查補助</button>
-      <button id="hero-sample">載入英雄範例</button>
     </div>
-    <div id="hero-preview" class="profile-preview hide" data-profile-preview="MatchingProfile"></div>
   </section>
 
   <section>
@@ -165,12 +142,8 @@ input:focus,select:focus,textarea:focus{outline:3px solid var(--green-pale);bord
 
   <section data-profile-kind="PrivateFormProfile" data-storage="localStorage">
     <div class="privacy-badges">
-      <h2 style="margin:0">申請表私密資料</h2>
+      <h2 style="margin:0">個人資料</h2>
       <span class="privacy-badge private" data-privacy="private">📱 只存在這台裝置</span>
-    </div>
-    <p class="hint">這些資料只會在有對應官方 PDF 的「準備申請」頁套用到官方表單；本頁不會產生或列印自製申請書。輸入時會自動存到瀏覽器 localStorage，刷新後會還原，不會 POST 到會員或比對 API。</p>
-    <div class="private-note" data-private-storage-note>
-      <b>本機儲存：</b> <span data-storage-kind="localStorage">localStorage</span>。換手機或清除瀏覽器資料後不會跟著過去；正式送件前請自己核對紙本內容。
     </div>
     <div class="grid" data-private-form="PrivateFormProfile">
       <div><label for="c-name">姓名</label><input id="c-name" data-private-key="full_name" autocomplete="name"></div>
@@ -183,7 +156,6 @@ input:focus,select:focus,textarea:focus{outline:3px solid var(--green-pale);bord
       <div><label for="c-parcels">完整地號（每行一筆）</label><textarea id="c-parcels" data-private-key="parcel_numbers" rows="2" autocomplete="off"></textarea></div>
       <div><label for="c-signature">簽名備註（選填）</label><textarea id="c-signature" data-private-key="signature" rows="2" autocomplete="off"></textarea></div>
     </div>
-    <p class="hint" style="margin-top:12px">私密資料不會送去分析，也不會由登入功能同步。若推薦項目沒有官方 PDF，系統不會替它產生紙本表單；請向承辦單位確認正式申請方式。</p>
   </section>
 
   <div style="margin-top:18px;display:flex;gap:12px;flex-wrap:wrap">
@@ -518,9 +490,8 @@ function officialFormHref(result){
 
 function resultApplicationAction(result){
   const templateId = resultTemplateId(result);
-  if (!BROWSER_OFFICIAL_TEMPLATE_IDS.has(templateId)) {
-    return '<p class="meta">📄 目前沒有可供本頁預覽的官方 PDF，請向承辦單位確認正式申請方式。</p>';
-  }
+  // 沒有官方 PDF 的項目就不顯示按鈕，也不再多寫一段說明佔版面
+  if (!BROWSER_OFFICIAL_TEMPLATE_IDS.has(templateId)) return '';
   return `<a class="action-link primary" href="${esc(officialFormHref(result))}">準備官方表單</a>`;
 }
 
@@ -761,27 +732,8 @@ function parseHeroText(text){
   return {stable: sanitizeMatchingProfile(stable), event: sanitizeMatchingProfile(event)};
 }
 
-function renderHeroPreview(){
-  const box = $('hero-preview');
-  if (!box) return;
-  const source = canonicalMatchingProfile({...matchingProfile, ...transient});
-  const items = [
-    ['地點', source.location || source.township],
-    ['作物', asList(source.crops || source.crop).join('、')],
-    ['面積', source.land_area_ha != null ? `${source.land_area_ha} 公頃` : ''],
-    ['從農', source.farming_years != null ? `${source.farming_years} 年` : ''],
-    ['資格', asList(source.certifications || source.certification).join('、')],
-    ['需求', source.equipment_intent || source.intent],
-    ['情境', source.disaster_situation || source.event],
-  ].filter(([, value]) => value !== undefined && value !== null && value !== '');
-  if (!items.length) {
-    box.classList.add('hide');
-    box.innerHTML = '';
-    return;
-  }
-  box.innerHTML = `<b>已整理成 MatchingProfile（只會送這些媒合條件）</b><br>${items.map(([key, value]) => `${esc(key)}：${esc(value)}`).join('　｜　')}`;
-  box.classList.remove('hide');
-}
+// 整理結果的預覽區塊已移除；保留空函式讓既有呼叫點不用逐一改。
+function renderHeroPreview(){}
 
 function applyHeroProfile(){
   const text = $('hero-text').value.trim();
@@ -830,10 +782,6 @@ document.querySelectorAll('[data-private-key]').forEach(el => {
 });
 
 $('save').onclick = saveAndMatch;
-$('hero-sample').onclick = () => {
-  $('hero-text').value = HERO_SAMPLE;
-  applyHeroProfile();
-};
 $('hero-apply').onclick = async () => {
   if (applyHeroProfile()) await saveAndMatch();
 };

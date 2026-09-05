@@ -81,6 +81,13 @@ a:hover { color: var(--ink); }
 }
 .nav-cta:hover { background: var(--green-mid); color: var(--ink); }
 
+/* ===== 稻田照片橫幅：獨立區塊，不加遮罩、不壓文字 ===== */
+.field-band { width: 100%; margin: 0; line-height: 0; }
+.field-band img {
+  width: 100%; height: clamp(200px, 30vw, 380px);
+  object-fit: cover; object-position: center 60%; display: block;
+}
+
 /* ===== Hero ===== */
 .hero { position: relative; max-width: 1080px; margin: 0 auto; padding: 72px 24px 48px; text-align: center; }
 @keyframes floaty {
@@ -155,49 +162,67 @@ a:hover { color: var(--ink); }
 }
 .browse-block h2 { color: #FFFFFF; font-weight: 700; font-size: 2rem; margin: 0 0 8px; text-align: center; }
 .browse-block .block-sub { color: var(--green-pale); font-size: 1.125rem; margin: 0 0 40px; text-align: center; }
+/* 分類磚改成卡片：加大、圖示放大、期限直接寫在磚上 */
 .tile-grid {
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px;
   max-width: 1080px; margin: 0 auto;
-  border-top: 1px solid rgba(159,245,207,0.25); border-left: 1px solid rgba(159,245,207,0.25);
 }
+@media (max-width: 900px) { .tile-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .tile {
-  padding: 28px 18px 24px; text-decoration: none; color: #FFFFFF;
-  display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center;
-  border-right: 1px solid rgba(159,245,207,0.25); border-bottom: 1px solid rgba(159,245,207,0.25);
+  padding: 30px 18px 26px; text-decoration: none; color: #FFFFFF;
+  display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center;
+  background: rgba(255,255,255,0.07); border: 2px solid rgba(159,245,207,0.28);
+  border-radius: 16px; min-height: 178px; justify-content: center;
+  transition: background .15s, border-color .15s, transform .15s;
 }
-.tile:hover { background: rgba(2,223,130,0.14); color: #FFFFFF; }
-.tile-name { font-weight: 700; font-size: 1.1875rem; line-height: 1.3; }
-.tile-count { font-size: 1rem; color: var(--green-bright); font-weight: 500; }
+.tile:hover {
+  background: rgba(2,223,130,0.16); border-color: var(--green-bright);
+  color: #FFFFFF; transform: translateY(-3px);
+}
+.tile:focus-visible { outline: 3px solid var(--green-bright); outline-offset: 3px; }
+.tile-icon { display: inline-flex; color: var(--green-bright); }
+.tile-icon svg { width: 52px; height: 52px; }
+.tile-name { font-weight: 700; font-size: 1.25rem; line-height: 1.3; }
+.tile-count { font-size: 1rem; color: var(--green-pale); font-weight: 500; }
+/* 有受理中的補助就用橘色標期限，讓農民一眼看到最急的 */
+.tile-urgent {
+  font-size: 1rem; font-weight: 700; color: var(--ink);
+  background: var(--green-bright); border-radius: 999px; padding: 4px 14px;
+}
+.tile--empty { opacity: .62; }
+@media (prefers-reduced-motion: reduce) { .tile:hover { transform: none; } }
 
 /* ===== 白話指南 ===== */
 .guides { max-width: 880px; margin: 0 auto 72px; padding: 0 24px; }
 .guides h2 { font-weight: 700; font-size: 2rem; margin: 0 0 8px; text-align: center; }
 .guides .block-sub { font-size: 1.125rem; color: var(--ink-soft); margin: 0 0 24px; text-align: center; }
-.guide-list { display: flex; flex-direction: column; border-top: 2px solid var(--green-tint); }
+/* 指南卡片：每篇配一張照片，圖不夠時循環使用。桌機固定三欄同列 */
+.guide-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
+@media (max-width: 860px) { .guide-list { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 560px) { .guide-list { grid-template-columns: 1fr; } }
 .guide-item {
-  display: flex; align-items: baseline; gap: 20px; padding: 24px 8px;
-  text-decoration: none; color: var(--ink); border-bottom: 2px solid var(--green-tint);
+  display: flex; flex-direction: column; gap: 0;
+  text-decoration: none; color: var(--ink);
+  background: #FFFFFF; border: 2px solid var(--green-tint); border-radius: 14px;
+  overflow: hidden; transition: border-color .15s, transform .15s;
 }
-.guide-item:hover { background: var(--green-bg); color: var(--ink); }
-.guide-num { font-weight: 900; font-size: 1.5rem; color: var(--green-bright); }
-.guide-body { flex: 1; display: flex; flex-direction: column; gap: 6px; }
-.guide-title { font-weight: 700; font-size: 1.375rem; line-height: 1.4; }
+.guide-item:hover { border-color: var(--green-mid); transform: translateY(-3px); color: var(--ink); }
+.guide-item:focus-visible { outline: 3px solid var(--green-mid); outline-offset: 3px; }
+.guide-photo { position: relative; }
+.guide-photo img { width: 100%; aspect-ratio: 4/3; object-fit: cover; display: block; }
+.guide-num {
+  position: absolute; left: 14px; bottom: -18px;
+  width: 44px; height: 44px; border-radius: 50%; background: var(--green-bright);
+  color: var(--ink); font-weight: 900; font-size: 1.125rem;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 3px 10px rgba(6,48,31,.18);
+}
+.guide-body { display: flex; flex-direction: column; gap: 8px; padding: 30px 20px 22px; }
+.guide-title { font-weight: 700; font-size: 1.25rem; line-height: 1.45; }
 .guide-meta { font-size: 1rem; color: var(--green-mid); }
-.guide-arrow { font-weight: 900; color: var(--green-mid); font-size: 1.25rem; }
+.guide-arrow { font-weight: 700; color: var(--green-mid); font-size: 1.0625rem; margin-top: 2px; }
+@media (prefers-reduced-motion: reduce) { .guide-item:hover { transform: none; } }
 
-/* ===== 陪你辦好事情的人 ===== */
-.people { max-width: 1080px; margin: 0 auto 72px; padding: 0 24px; text-align: center; }
-.people .slogan-badge {
-  display: inline-block; transform: rotate(-3deg); font-weight: 900; font-size: 1.5rem;
-  padding: 4px 12px; background: linear-gradient(transparent 55%, var(--green-pale) 55%);
-  margin-bottom: 8px; white-space: nowrap;
-}
-.people h2 { font-weight: 700; font-size: 2rem; margin: 0 0 24px; }
-.people-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 28px; text-align: left; }
-.person { display: flex; flex-direction: column; gap: 12px; }
-.person img { width: 100%; aspect-ratio: 4/3; object-fit: cover; border-radius: 6px; display: block; }
-.person-title { font-weight: 700; font-size: 1.1875rem; border-left: 5px solid var(--green-bright); padding-left: 10px; }
-.person-desc { font-size: 1.0625rem; color: var(--ink-soft); padding-left: 15px; margin-top: 4px; }
 
 /* ===== 頁尾 ===== */
 footer { background: var(--ink); color: var(--green-bg); padding: 40px 24px 32px; }
@@ -242,6 +267,11 @@ footer { background: var(--ink); color: var(--green-bg); padding: 40px 24px 32px
     </nav>
   </div>
 
+  <!-- 稻田橫幅：純照片，無遮罩、無文字 -->
+  <div class="field-band">
+    <img src="img/hero-field.webp" alt="台灣農村稻田景色，稻穗成熟、遠方是山與農舍">
+  </div>
+
   <header class="hero">
     <div aria-hidden="true">
       <svg class="pennant" width="46" height="46" viewBox="0 0 46 46" style="left:4%; top:34%; --r:-24deg; --dur:5s;"><path d="M6 4 L40 16 L10 34 Z" fill="#02DF82"/></svg>
@@ -251,7 +281,7 @@ footer { background: var(--ink); color: var(--green-bg); padding: 40px 24px 32px
       <svg class="pennant" width="30" height="30" viewBox="0 0 30 30" style="left:44%; top:2%; --r:10deg; --dur:7s; --delay:0.2s;"><path d="M4 4 L26 11 L7 24 Z" fill="#06301F"/></svg>
     </div>
     <div class="slogan slogan--marker slogan-left">台語嘛通！</div>
-    <div class="slogan slogan--underline slogan-right">甲你鬥相共</div>
+    <div class="slogan slogan--underline slogan-right">做伙來幫忙</div>
     <h1>找補助，<span class="squiggle-wrap"><span class="grad-text">免煩惱</span><svg class="squiggle" viewBox="0 0 120 12" preserveAspectRatio="none" aria-hidden="true"><path d="M2 8 Q 17 2 32 8 T 62 8 T 92 8 T 118 7" fill="none" stroke="#02DF82" stroke-width="4" stroke-linecap="round"/></svg></span>！</h1>
     <p class="hero-sub">說說你的狀況，幫你找出可以申請的補助</p>
     <div class="hero-chat" id="talk"></div>
@@ -263,11 +293,11 @@ footer { background: var(--ink); color: var(--green-bg); padding: 40px 24px 32px
 
   <div class="marquee" aria-hidden="true">
     <div class="marquee-track">
-      <span class="marquee-item"><span class="marquee-text marquee-text--fill">甲你鬥相共</span><svg width="26" height="26" viewBox="0 0 26 26"><path d="M3 3 L23 9 L6 21 Z" fill="#9FF5CF"/></svg></span>
+      <span class="marquee-item"><span class="marquee-text marquee-text--fill">做伙來幫忙</span><svg width="26" height="26" viewBox="0 0 26 26"><path d="M3 3 L23 9 L6 21 Z" fill="#9FF5CF"/></svg></span>
       <span class="marquee-item"><span class="marquee-text marquee-text--stroke">CHEER FOR FARMERS</span><svg width="26" height="26" viewBox="0 0 26 26"><path d="M3 3 L23 9 L6 21 Z" fill="#9FF5CF"/></svg></span>
       <span class="marquee-item"><span class="marquee-text marquee-text--fill">台語嘛通！</span><svg width="26" height="26" viewBox="0 0 26 26"><path d="M3 3 L23 9 L6 21 Z" fill="#9FF5CF"/></svg></span>
       <span class="marquee-item"><span class="marquee-text marquee-text--stroke">CHEER FOR FARMERS</span><svg width="26" height="26" viewBox="0 0 26 26"><path d="M3 3 L23 9 L6 21 Z" fill="#9FF5CF"/></svg></span>
-      <span class="marquee-item"><span class="marquee-text marquee-text--fill">甲你鬥相共</span><svg width="26" height="26" viewBox="0 0 26 26"><path d="M3 3 L23 9 L6 21 Z" fill="#9FF5CF"/></svg></span>
+      <span class="marquee-item"><span class="marquee-text marquee-text--fill">做伙來幫忙</span><svg width="26" height="26" viewBox="0 0 26 26"><path d="M3 3 L23 9 L6 21 Z" fill="#9FF5CF"/></svg></span>
       <span class="marquee-item"><span class="marquee-text marquee-text--stroke">CHEER FOR FARMERS</span><svg width="26" height="26" viewBox="0 0 26 26"><path d="M3 3 L23 9 L6 21 Z" fill="#9FF5CF"/></svg></span>
       <span class="marquee-item"><span class="marquee-text marquee-text--fill">台語嘛通！</span><svg width="26" height="26" viewBox="0 0 26 26"><path d="M3 3 L23 9 L6 21 Z" fill="#9FF5CF"/></svg></span>
       <span class="marquee-item"><span class="marquee-text marquee-text--stroke">CHEER FOR FARMERS</span><svg width="26" height="26" viewBox="0 0 26 26"><path d="M3 3 L23 9 L6 21 Z" fill="#9FF5CF"/></svg></span>
@@ -282,15 +312,6 @@ footer { background: var(--ink); color: var(--green-bg); padding: 40px 24px 32px
     </div>
   </div>
 
-  <section id="browse" class="browse-block reveal">
-    <div class="browse-block-inner">
-      <div class="slogan-corner">慢慢看，不急</div>
-      <h2>自己找補助</h2>
-      <p class="block-sub">按一個最像你狀況的，慢慢看</p>
-      <div class="tile-grid" id="tile-grid"></div>
-    </div>
-  </section>
-
   <section id="guides" class="guides reveal">
     <h2>白話指南</h2>
     <p class="block-sub">用講的也通的白話文，慢慢讀</p>
@@ -298,22 +319,12 @@ footer { background: var(--ink); color: var(--green-bg); padding: 40px 24px 32px
     <div class="guide-list" id="guide-list"></div>
   </section>
 
-  <section id="people" class="people reveal">
-    <div class="slogan-badge">甲你鬥相共</div>
-    <h2>陪你一起把事情辦好的人</h2>
-    <div class="people-grid">
-      <div class="person">
-        <img src="img/people-1.webp" alt="農會承辦人員與農民討論文件">
-        <div><div class="person-title">農會承辦窗口</div><div class="person-desc">收件、審件、告訴你缺什麼文件</div></div>
-      </div>
-      <div class="person">
-        <img src="img/people-2.webp" alt="公所農業課人員到田間勘查">
-        <div><div class="person-title">公所農業課</div><div class="person-desc">災損勘查、土地文件都問得到</div></div>
-      </div>
-      <div class="person">
-        <img src="img/people-3.webp" alt="在地農友在田邊聊天分享經驗">
-        <div><div class="person-title">在地農友</div><div class="person-desc">申請過的人，經驗最實在</div></div>
-      </div>
+  <section id="browse" class="browse-block reveal">
+    <div class="browse-block-inner">
+      <div class="slogan-corner">慢慢看，不急</div>
+      <h2>自己找補助</h2>
+      <p class="block-sub">按一個最像你狀況的，慢慢看</p>
+      <div class="tile-grid" id="tile-grid"></div>
     </div>
   </section>
 
@@ -342,14 +353,29 @@ footer { background: var(--ink); color: var(--green-bg); padding: 40px 24px 32px
   try {
     const list = await (await fetch('/guides')).json();
     if (!list.length) { box.innerHTML = '<p class="block-sub">指南整理中，敬請期待。</p>'; return; }
-    box.innerHTML = list.map((g, i) => `
+    // 三張現場照片循環配給指南，指南增加時不會缺圖
+    const PHOTOS = [
+      {src: 'img/people-1.webp', alt: '農會承辦人員與農民討論文件'},
+      {src: 'img/people-2.webp', alt: '公所農業課人員到田間勘查'},
+      {src: 'img/people-3.webp', alt: '在地農友在田邊聊天分享經驗'},
+    ];
+    box.innerHTML = list.map((g, i) => {
+      const photo = PHOTOS[i % PHOTOS.length];
+      return `
       <a href="guide.html?id=${encodeURIComponent(g.id)}" class="guide-item">
-        <span class="guide-num">${String(i + 1).padStart(2, '0')}</span>
-        <span class="guide-body"><span class="guide-title">${esc(g.title)}</span><span class="guide-meta">${
-          [g.category, g.read_minutes ? `讀完約 ${g.read_minutes} 分鐘` : ''].filter(Boolean).map(esc).join('・')
-        }</span></span>
-        <span class="guide-arrow">→</span>
-      </a>`).join('');
+        <span class="guide-photo">
+          <img src="${photo.src}" alt="${esc(photo.alt)}" loading="lazy">
+          <span class="guide-num">${String(i + 1).padStart(2, '0')}</span>
+        </span>
+        <span class="guide-body">
+          <span class="guide-title">${esc(g.title)}</span>
+          <span class="guide-meta">${
+            [g.category, g.read_minutes ? `讀完約 ${g.read_minutes} 分鐘` : ''].filter(Boolean).map(esc).join('・')
+          }</span>
+          <span class="guide-arrow">看這篇 →</span>
+        </span>
+      </a>`;
+    }).join('');
   } catch (e) {
     box.innerHTML = '<p class="block-sub">指南載入失敗，請稍後再試。</p>';
   }
@@ -379,36 +405,60 @@ AidChat.init(document.getElementById('talk'), {
   }));
 })();
 
-/* ===== 近期截止條：從示範資料算出最近的期限 ===== */
-(function () {
-  const items = AID.programs.map(p => ({ p, d: AID.deadlineInfo(p) }));
+/* ===== 近期截止條：改讀後端 /programs，不用前端寫死的副本 =====
+   先前讀 site-data.js（靜態副本），公告期改了不會反映，會顯示過期的補助。 */
+(async function () {
+  let items;
+  try {
+    const rows = await (await fetch('/programs')).json();
+    items = rows.map(p => ({ p: {name: p.name, window: p.window}, d: AID.deadlineInfo(p) }));
+  } catch (e) {
+    items = AID.programs.map(p => ({ p, d: AID.deadlineInfo(p) }));   // 後端不通時退回靜態資料
+  }
   const active = items.filter(x => x.d.kind === 'active').sort((a, b) => a.d.days - b.d.days);
   const upcoming = items.filter(x => x.d.kind === 'upcoming').sort((a, b) => a.d.open - b.d.open);
   const pick = active[0] || upcoming[0];
   if (!pick) return;
   const strip = document.getElementById('deadline-strip');
-  document.getElementById('deadline-text').textContent =
-    pick.p.name.replace(/（.*?）/g, '') + '　' + (pick.d.kind === 'active' ? '受理中' : '即將開放');
+  const name = pick.p.name.replace(/（.*?）/g, '');
+  document.getElementById('deadline-text').textContent = pick.d.kind === 'active'
+    ? `${name}　${pick.p.window && pick.p.window.close ? pick.p.window.close.slice(5).replace('-', '/') + ' 截止！' : '受理中'}`
+    : `${name}　即將開放`;
   const chip = document.getElementById('deadline-chip');
   chip.textContent = pick.d.label;
   chip.className = pick.d.kind === 'active' ? 'chip-urgent' : 'chip-normal';
   strip.hidden = false;
 })();
 
-/* ===== 分類磚：筆數由示範資料計算 ===== */
-(function () {
+/* ===== 分類磚：筆數與最近期限都改讀後端 /programs ===== */
+(async function () {
   const grid = document.getElementById('tile-grid');
-  const counts = {};
-  AID.programs.forEach(p => { counts[p.uiCategory] = (counts[p.uiCategory] || 0) + 1; });
+  let rows = [];
+  try { rows = await (await fetch('/programs')).json(); } catch (e) {}
+
+  // 每個分類統計：有幾筆、最急的那筆還剩幾天
+  const stat = {};
+  rows.forEach(p => {
+    const cat = (p.display || {}).ui_category;
+    if (!cat) return;
+    const s = stat[cat] || (stat[cat] = {n: 0, days: null});
+    s.n += 1;
+    const d = AID.deadlineInfo(p);
+    if (d.kind === 'active' && (s.days === null || d.days < s.days)) s.days = d.days;
+  });
+
   AID.categories.forEach(cat => {
-    const n = counts[cat.name] || 0;
+    const s = stat[cat.name] || {n: 0, days: null};
     const a = document.createElement('a');
-    a.className = 'tile';
+    a.className = 'tile' + (s.n ? '' : ' tile--empty');
     a.href = 'browse.html?cat=' + encodeURIComponent(cat.name);
+    // 期限是農民最在意的事，有受理中的就直接寫在磚上
+    const note = s.days !== null
+      ? `<span class="tile-urgent">最快 ${s.days} 天後截止</span>`
+      : `<span class="tile-count">${s.n > 0 ? s.n + ' 筆可以看' : '籌備中'}</span>`;
     a.innerHTML =
-      '<span style="display:inline-flex;">' + AID.icon(cat.icon) + '</span>' +
-      '<span class="tile-name">' + cat.name + '</span>' +
-      '<span class="tile-count">' + (n > 0 ? n + ' 筆' : '籌備中') + '</span>';
+      '<span class="tile-icon">' + AID.icon(cat.icon) + '</span>' +
+      '<span class="tile-name">' + cat.name + '</span>' + note;
     grid.appendChild(a);
   });
 })();

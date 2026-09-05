@@ -3,6 +3,12 @@
   "name": "115年省工高效及碳匯農機補助",
   "summary": "115年度省工、農事服務、無人機、引進、碳匯及電動農機補助示範資料。",
   "category": "農機補助",
+  "display": {
+    "ui_category": "蓋設施、買農機",
+    "industry": "農",
+    "region": "全國",
+    "amount_text": "依機種補助 1/3 起"
+  },
   "demo_simplified": true,
   "source_key": "farm_machine_115",
   "authority": {

@@ -3,6 +3,12 @@
   "name": "115年智能防災設施型農業",
   "summary": "智能防災設施型農業申請入口示範資料，保留作物、面積與汰舊換新等判斷提示。",
   "category": "智能防災",
+  "display": {
+    "ui_category": "蓋設施、買農機",
+    "industry": "農",
+    "region": "全國",
+    "amount_text": "智能防災設施補助"
+  },
   "demo_simplified": true,
   "source_key": "smart_disaster_facility_115",
   "authority": {

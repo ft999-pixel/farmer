@@ -3,6 +3,12 @@
   "name": "115年果樹產業生產設施與設備",
   "summary": "果樹產業生產設施、設備及水平棚架／網室申請入口示範資料。",
   "category": "果樹設施",
+  "display": {
+    "ui_category": "蓋設施、買農機",
+    "industry": "農",
+    "region": "全國",
+    "amount_text": "設施與設備補助"
+  },
   "demo_simplified": true,
   "source_key": "fruit_facility_115",
   "authority": {

@@ -3,6 +3,12 @@
   "name": "115年青年農民農業經營準備金",
   "summary": "青年農民第一年經營準備金申請入口示範資料；本計畫採線上申辦。",
   "category": "青年農民",
+  "display": {
+    "ui_category": "我要開始務農",
+    "industry": "農",
+    "region": "全國",
+    "amount_text": "第一年經營準備金"
+  },
   "demo_simplified": true,
   "source_key": "young_farmer_reserve_115",
   "authority": {
