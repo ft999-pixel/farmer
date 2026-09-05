@@ -1,4 +1,5 @@
 data/form.db
+data/form.db-*
 *.log
 __pycache__/
 .venv/

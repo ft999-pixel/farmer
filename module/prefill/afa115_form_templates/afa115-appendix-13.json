@@ -1,0 +1,149 @@
+{
+  "id": "afa115-appendix-13",
+  "name": "附表13｜碳匯農機補助申請書",
+  "subsidy_id": "afa-115-carbon-sink-machinery",
+  "source_pdf_url": "https://www.afa.gov.tw/cht/index.php?act=download&ids=43109",
+  "source_page": 38,
+  "source_page_index": 37,
+  "version": "115.1",
+  "usage": "碳匯農機補助申請",
+  "fields": [
+    {
+      "field_key": "application_date",
+      "label": "申請日期",
+      "type": "text",
+      "required": false,
+      "editable": true,
+      "prefill_source": null,
+      "privacy": "application_local"
+    },
+    {
+      "label": "姓名",
+      "type": "text",
+      "required": true,
+      "prefill_source": "profile.name",
+      "privacy": "local",
+      "field_key": "name",
+      "editable": true
+    },
+    {
+      "label": "電話",
+      "type": "text",
+      "required": false,
+      "prefill_source": "profile.phone",
+      "privacy": "local",
+      "field_key": "phone",
+      "editable": true
+    },
+    {
+      "label": "身分證統一編號",
+      "type": "text",
+      "required": true,
+      "prefill_source": "profile.id_number",
+      "privacy": "local_only",
+      "field_key": "id_number",
+      "editable": true
+    },
+    {
+      "label": "出生年份（民國）",
+      "type": "number",
+      "required": false,
+      "prefill_source": "profile.birth_year_roc",
+      "privacy": "local",
+      "field_key": "birth_year_roc",
+      "editable": true
+    },
+    {
+      "label": "地址",
+      "type": "text",
+      "required": true,
+      "prefill_source": "profile.address",
+      "privacy": "local",
+      "field_key": "address",
+      "editable": true
+    },
+    {
+      "label": "種植作物種類",
+      "type": "text",
+      "required": false,
+      "prefill_source": "profile.crop",
+      "privacy": "local",
+      "field_key": "crop",
+      "editable": true
+    },
+    {
+      "field_key": "qualification",
+      "label": "申請資格",
+      "note": "有機、產銷履歷、CAS、QR Code、友善耕作、青農等",
+      "type": "text",
+      "required": false,
+      "editable": true,
+      "prefill_source": null,
+      "privacy": "application_local"
+    },
+    {
+      "field_key": "machine_type",
+      "label": "農機機種",
+      "required": true,
+      "type": "text",
+      "editable": true,
+      "prefill_source": null,
+      "privacy": "application_local"
+    },
+    {
+      "field_key": "machine_model",
+      "label": "規格或牌型",
+      "required": true,
+      "type": "text",
+      "editable": true,
+      "prefill_source": null,
+      "privacy": "application_local"
+    },
+    {
+      "field_key": "score_codes",
+      "label": "配分項目（代碼）",
+      "type": "text",
+      "required": false,
+      "editable": true,
+      "prefill_source": null,
+      "privacy": "application_local"
+    },
+    {
+      "field_key": "total_score",
+      "label": "總分",
+      "type": "number",
+      "required": false,
+      "editable": true,
+      "prefill_source": null,
+      "privacy": "application_local"
+    },
+    {
+      "field_key": "indigenous_status",
+      "label": "具原住民族身分",
+      "type": "checkbox",
+      "prefill_source": "profile.indigenous_status",
+      "required": false,
+      "editable": true,
+      "privacy": "application_local"
+    },
+    {
+      "field_key": "expected_delivery_date",
+      "label": "預計交貨日期",
+      "type": "text",
+      "required": false,
+      "editable": true,
+      "prefill_source": null,
+      "privacy": "application_local"
+    },
+    {
+      "field_key": "applicant_signature",
+      "label": "申請人簽章",
+      "note": "不預填",
+      "type": "text",
+      "required": false,
+      "editable": true,
+      "prefill_source": null,
+      "privacy": "application_local"
+    }
+  ]
+}

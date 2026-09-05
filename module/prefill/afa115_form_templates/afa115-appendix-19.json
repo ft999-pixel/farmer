@@ -1,0 +1,67 @@
+{
+  "id": "afa115-appendix-19",
+  "name": "附表19｜配合調度暨相關事項切結書",
+  "subsidy_id": "afa-115-dispatch-undertaking",
+  "source_pdf_url": "https://www.afa.gov.tw/cht/index.php?act=download&ids=43109",
+  "source_page": 44,
+  "source_page_index": 43,
+  "version": "115.1",
+  "usage": "接受農業政策調度與查核之切結",
+  "fields": [
+    {
+      "label": "具切結書人",
+      "type": "text",
+      "required": true,
+      "prefill_source": "profile.name",
+      "privacy": "local",
+      "field_key": "name",
+      "editable": true
+    },
+    {
+      "label": "身分證統一編號",
+      "type": "text",
+      "required": true,
+      "prefill_source": "profile.id_number",
+      "privacy": "local_only",
+      "field_key": "id_number",
+      "editable": true
+    },
+    {
+      "field_key": "registered_address",
+      "label": "戶籍地址",
+      "prefill_source": "profile.registered_address",
+      "privacy": "local_only",
+      "type": "text",
+      "required": false,
+      "editable": true
+    },
+    {
+      "label": "聯絡電話",
+      "type": "text",
+      "required": false,
+      "prefill_source": "profile.phone",
+      "privacy": "local",
+      "field_key": "phone",
+      "editable": true
+    },
+    {
+      "field_key": "undertaking_date",
+      "label": "立切結書日期",
+      "type": "text",
+      "required": false,
+      "editable": true,
+      "prefill_source": null,
+      "privacy": "application_local"
+    },
+    {
+      "field_key": "applicant_signature",
+      "label": "簽章",
+      "note": "不預填",
+      "type": "text",
+      "required": false,
+      "editable": true,
+      "prefill_source": null,
+      "privacy": "application_local"
+    }
+  ]
+}

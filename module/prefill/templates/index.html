@@ -33,11 +33,13 @@
       <div class="app-layout">
         <div id="form-panel" class="panel">
           <h3 id="form-title">表單內容</h3>
+          <p class="privacy-banner">表單內容與草稿只儲存在這台裝置的瀏覽器，不會送回伺服器。</p>
           <form id="prefill-form"></form>
           <div id="validation-msg" class="validation-msg"></div>
         </div>
         <div id="pdf-panel" class="panel pdf-panel">
-          <h3>原始表單預覽</h3>
+          <h3 id="pdf-title">原始表單預覽</h3>
+          <div id="pdf-status" class="pdf-status"></div>
           <iframe id="pdf-iframe" src="" title="PDF preview"></iframe>
         </div>
       </div>

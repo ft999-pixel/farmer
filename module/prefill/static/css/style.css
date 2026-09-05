@@ -9,6 +9,7 @@ body { font-family: "Microsoft JhengHei", system-ui, sans-serif; background: #f3
 .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; margin-top: 1rem; }
 .card { background: white; border: 1px solid #e5e7eb; border-radius: 0.75rem; padding: 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
 .card h4 { margin-bottom: 0.5rem; }
+.card-note { color: #4b5563; font-size: 0.9rem; margin-top: 0.35rem; }
 .toolbar { display: flex; gap: 0.5rem; margin-bottom: 1rem; align-items: center; }
 .spacer { flex: 1; }
 .btn { border: none; padding: 0.5rem 1rem; border-radius: 0.5rem; cursor: pointer; font-size: 0.95rem; }
@@ -18,11 +19,24 @@ body { font-family: "Microsoft JhengHei", system-ui, sans-serif; background: #f3
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .app-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
 .panel { background: white; border: 1px solid #e5e7eb; border-radius: 0.75rem; padding: 1rem; }
+.privacy-banner { margin: 0.5rem 0 1rem; color: #166534; font-size: 0.9rem; line-height: 1.4; }
 .pdf-panel iframe { width: 100%; height: 75vh; border: 1px solid #e5e7eb; border-radius: 0.5rem; margin-top: 0.5rem; }
 .form-row { margin-bottom: 0.75rem; }
 .form-row label { display: block; margin-bottom: 0.25rem; font-weight: 500; }
 .form-row input { width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem; font-size: 1rem; }
 .form-row input.required { border-left: 4px solid #dc2626; }
+.checkbox-control { display: flex; align-items: center; gap: 0.5rem; }
+.checkbox-control input { width: auto; }
+.checkbox-control label { display: inline; margin: 0; }
+.radio-group { border: 0; padding: 0; }
+.radio-group legend { font-weight: 500; margin-bottom: 0.35rem; }
+.radio-option { display: inline-flex !important; align-items: center; gap: 0.35rem; margin-right: 1rem; font-weight: 400 !important; }
+.radio-option input { width: auto; }
+.field-note, .privacy-note { display: block; margin-top: 0.25rem; color: #6b7280; line-height: 1.4; }
+.privacy-note { color: #9a3412; }
+.pdf-status { margin-top: 0.5rem; padding: 0.6rem 0.75rem; border-radius: 0.4rem; line-height: 1.4; }
+.pdf-status.warning { background: #fef3c7; color: #78350f; }
+.pdf-status.ok { background: #dcfce7; color: #14532d; }
 .validation-msg { margin-top: 1rem; padding: 0.75rem; border-radius: 0.5rem; }
 .validation-msg.ok { background: #dcfce7; color: #14532d; }
 .validation-msg.error { background: #fee2e2; color: #450a0a; }
@@ -30,3 +44,7 @@ body { font-family: "Microsoft JhengHei", system-ui, sans-serif; background: #f3
 .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; }
 .modal-content { background: white; border-radius: 0.75rem; padding: 1.25rem; max-width: 480px; width: 90%; }
 .modal-actions { margin-top: 1rem; display: flex; justify-content: flex-end; gap: 0.5rem; }
+@media (max-width: 900px) {
+  .app-layout { grid-template-columns: 1fr; }
+  .pdf-panel iframe { height: 60vh; }
+}
