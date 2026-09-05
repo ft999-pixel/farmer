@@ -5,22 +5,31 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>卡點儀表板｜農民補給站</title>
 <style>
+/* 機關端儀表板採深色主題：長時間看數據不刺眼，也和農民端的淺色明確區分。
+   命名維持原本語意（--ink 仍是「主要文字色」），只是在深底下反轉成淺色，
+   這樣下面的樣式規則不用逐條改寫。 */
 :root{
   --green-bright:#02DF82; --green-mid:#01B96B; --green-pale:#9FF5CF;
-  --green-bg:#F0FDF6; --green-tint:#D9FBEC;
-  --ink:#06301F; --ink-soft:#0A4A32; --orange:#D85A30;
-  --line:#CBEEDC;
+  --page-bg:#04241A;          /* 頁面底：深墨綠 */
+  --surface:#0A3A29;          /* 卡片底 */
+  --surface-2:#0E4732;        /* 次層（表格列、預覽區） */
+  --green-bg:#0A3A29;
+  --green-tint:#12523A;       /* 淺色區塊在深底的對應色 */
+  --ink:#EAFBF3;              /* 主要文字（淺） */
+  --ink-soft:#9FD9C2;         /* 次要文字 */
+  --orange:#FF8A5C;           /* 深底上要更亮才看得清楚 */
+  --line:#1C6144;             /* 邊框 */
 }
 @font-face{font-family:'GenSen';src:url('fonts/GenSenRounded2TW-R.woff2') format('woff2');font-weight:400;font-display:swap;}
 @font-face{font-family:'GenSen';src:url('fonts/GenSenRounded2TW-M.woff2') format('woff2');font-weight:500;font-display:swap;}
 @font-face{font-family:'GenSen';src:url('fonts/GenSenRounded2TW-H.woff2') format('woff2');font-weight:700;font-display:swap;}
 *{box-sizing:border-box;}
-body{margin:0;background:var(--green-bg);color:var(--ink);
+body{margin:0;background:var(--page-bg);color:var(--ink);
   font-family:'GenSen','Yuanti TC','Microsoft JhengHei',sans-serif;}
 .wrap{max-width:1080px;margin:0 auto;padding:20px 20px 60px;}
 /* 導覽列：與 index／browse／chat 同一套（同站分頁，不是外掛頁面） */
 .nav-outer{max-width:1080px;margin:0 auto;padding:14px 20px 0;}
-.nav-pill{display:flex;align-items:center;gap:18px;background:#fff;border:1px solid var(--line);
+.nav-pill{display:flex;align-items:center;gap:18px;background:var(--surface);border:1px solid var(--line);
   border-radius:999px;padding:10px 18px;flex-wrap:wrap;}
 .nav-logo{display:flex;align-items:center;gap:8px;text-decoration:none;color:var(--ink);font-weight:700;}
 .nav-links{display:flex;gap:18px;flex-wrap:wrap;font-size:1.0625rem;font-weight:500;}
@@ -31,13 +40,13 @@ header h1{font-size:26px;font-weight:700;margin:0 0 6px;}
 header p{margin:0;color:var(--ink-soft);font-size:14px;line-height:1.7;}
 .toolbar{display:flex;gap:8px;align-items:center;margin:18px 0 4px;flex-wrap:wrap;}
 .toolbar button{font-family:inherit;font-size:14px;font-weight:500;padding:7px 14px;
-  border:1.5px solid var(--line);border-radius:999px;background:#fff;color:var(--ink-soft);cursor:pointer;}
+  border:1.5px solid var(--line);border-radius:999px;background:var(--surface);color:var(--ink);cursor:pointer;}
 .toolbar button[aria-pressed="true"]{background:var(--green-bright);border-color:var(--green-bright);color:var(--ink);font-weight:700;}
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:16px 0 8px;}
-.kpi{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 16px;}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px;}
 .kpi b{display:block;font-size:28px;font-weight:700;line-height:1.2;}
 .kpi span{font-size:13px;color:var(--ink-soft);}
-section{background:#fff;border:1px solid var(--line);border-radius:18px;padding:20px 22px;margin-top:18px;}
+section{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:20px 22px;margin-top:18px;}
 section h2{font-size:17px;font-weight:700;margin:0 0 2px;}
 section .hint{font-size:13px;color:var(--ink-soft);margin:0 0 16px;line-height:1.6;}
 /* 圖一：橫向長條 */
@@ -85,7 +94,7 @@ a.back{color:var(--ink-soft);font-size:14px;text-decoration:none;}
 <div class="nav-outer">
   <nav class="nav-pill">
     <a href="index.html" class="nav-logo" aria-label="農民補給站首頁">
-      <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><path d="M4 2 v18" stroke="#06301F" stroke-width="2.5" stroke-linecap="round"/><path d="M4 3 L18 7 L4 11 Z" fill="#02DF82"/></svg>
+      <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><path d="M4 2 v18" stroke="#EAFBF3" stroke-width="2.5" stroke-linecap="round"/><path d="M4 3 L18 7 L4 11 Z" fill="#02DF82"/></svg>
       農民補給站
     </a>
     <div class="nav-links">
@@ -147,7 +156,8 @@ a.back{color:var(--ink-soft);font-size:14px;text-decoration:none;}
 
 <script>
 // 前 4 色刻意拉開色相（預設顯示前 4 名），後面才回到綠色系
-const PALETTE = ['#01B96B','#D85A30','#2E86C1','#F2B705','#0A4A32','#B47CD8','#5C8A72','#02DF82'];
+// 深色底：整組換成高亮度色，原本的深墨綠在深底會隱形
+const PALETTE = ['#02DF82','#FF8A5C','#5AB6F5','#FFD24D','#C79BF0','#7FE5C4','#FF9EC4','#9FF5CF'];
 const $ = id => document.getElementById(id);
 let weeks = 8;
 
@@ -165,13 +175,14 @@ function renderKpi(s){
     <div class="kpi"><b>${localPct}</b><span>卡點發生在地方公所</span></div>`;
 }
 
-const C_DOC = '#01B96B', C_STUCK = '#F2B705';   // 來源固定兩色，跨列可比
-const C_CENTRAL = '#0A4A32', C_LOCAL = '#F2B705';
+const C_DOC = '#02DF82', C_STUCK = '#FFD24D';   // 來源固定兩色，跨列可比
+const C_CENTRAL = '#5AB6F5', C_LOCAL = '#FFD24D';
 
-// 熱力圖：五階跨色相（淺黃→橙→紅），比單一綠色透明度好分辨得多
+// 熱力圖：五階跨色相（深綠→青→黃→橙→紅）。
+// 深色底不能沿用淺色主題的「淺黃起頭」，最低階必須接近底色才看得出強弱。
 const HEAT = [
-  ['#FFF6D6', '#06301F'], ['#FFE08A', '#06301F'], ['#FFB74D', '#06301F'],
-  ['#F97B3D', '#fff'], ['#D8341F', '#fff'],
+  ['#0F4B36', '#9FD9C2'], ['#177F5A', '#EAFBF3'], ['#4FC98F', '#06301F'],
+  ['#FFD24D', '#06301F'], ['#FF7A45', '#2A0F06'],
 ];
 function heatColor(ratio){
   return HEAT[Math.min(HEAT.length - 1, Math.floor(ratio * HEAT.length - 1e-9))];
@@ -214,7 +225,7 @@ function renderCategory(s){
     const [x2, y2] = pt(RI, end), [x3, y3] = pt(RI, start);
     const d = `M${x0} ${y0}A${R} ${R} 0 ${big} 1 ${x1} ${y1}L${x2} ${y2}A${RI} ${RI} 0 ${big} 0 ${x3} ${y3}Z`;
     start = end;
-    return `<path d="${d}" fill="${colorOf(i)}" stroke="#fff" stroke-width="2"><title>${r.category} ${r.count} 筆</title></path>`;
+    return `<path d="${d}" fill="${colorOf(i)}" stroke="var(--surface)" stroke-width="2"><title>${r.category} ${r.count} 筆</title></path>`;
   }).join('');
   const rowsHtml = rows.map((r, i) => `
     <tr>
@@ -225,8 +236,8 @@ function renderCategory(s){
     </tr>`).join('');
   box.innerHTML = `<div class="donut-wrap">
       <svg viewBox="0 0 220 220" class="donut">${arcs}
-        <text x="${C}" y="${C - 4}" text-anchor="middle" font-size="30" font-weight="700" fill="#06301F">${total}</text>
-        <text x="${C}" y="${C + 18}" text-anchor="middle" font-size="13" fill="#0A4A32">筆卡點</text>
+        <text x="${C}" y="${C - 4}" text-anchor="middle" font-size="30" font-weight="700" fill="#EAFBF3">${total}</text>
+        <text x="${C}" y="${C + 18}" text-anchor="middle" font-size="13" fill="#9FD9C2">筆卡點</text>
       </svg>
       <table class="cat-table">${rowsHtml}</table>
     </div>`;
@@ -245,19 +256,19 @@ function renderLevel(s){
   const x = v => L + v / max * (W - L - Rp);
   const grid = [0, .25, .5, .75, 1].map(f => {
     const v = Math.round(max * f);
-    return `<line x1="${x(v)}" y1="6" x2="${x(v)}" y2="${rows.length * RH}" stroke="#E4F6EC"/>
-            <text x="${x(v)}" y="${H - 8}" text-anchor="middle" font-size="11" fill="#0A4A32">${v}</text>`;
+    return `<line x1="${x(v)}" y1="6" x2="${x(v)}" y2="${rows.length * RH}" stroke="rgba(159,217,194,.22)"/>
+            <text x="${x(v)}" y="${H - 8}" text-anchor="middle" font-size="11" fill="#9FD9C2">${v}</text>`;
   }).join('');
   const body = rows.map((r, i) => {
     const y = i * RH + RH / 2;
     const a = r['中央'], b = r['縣市'];
     const [lo, hi] = a <= b ? [a, b] : [b, a];
     const lean = b > a ? '地方' : (a > b ? '中央' : '');
-    return `<text x="${L - 12}" y="${y + 4}" text-anchor="end" font-size="13.5" font-weight="500" fill="#06301F">${r.reason}</text>
-      <line x1="${x(lo)}" y1="${y}" x2="${x(hi)}" y2="${y}" stroke="#BFDCCC" stroke-width="3" stroke-linecap="round"/>
+    return `<text x="${L - 12}" y="${y + 4}" text-anchor="end" font-size="13.5" font-weight="500" fill="#EAFBF3">${r.reason}</text>
+      <line x1="${x(lo)}" y1="${y}" x2="${x(hi)}" y2="${y}" stroke="rgba(159,217,194,.45)" stroke-width="3" stroke-linecap="round"/>
       <circle cx="${x(a)}" cy="${y}" r="7" fill="${C_CENTRAL}"><title>中央 ${a} 筆</title></circle>
       <circle cx="${x(b)}" cy="${y}" r="7" fill="${C_LOCAL}"><title>縣市 ${b} 筆</title></circle>
-      <text x="${x(hi) + 14}" y="${y + 4}" font-size="12" font-weight="700" fill="#0A4A32">${lean ? lean + ' +' + (hi - lo) : '持平'}</text>`;
+      <text x="${x(hi) + 14}" y="${y + 4}" font-size="12" font-weight="700" fill="#9FD9C2">${lean ? lean + ' +' + (hi - lo) : '持平'}</text>`;
   }).join('');
   box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto">${grid}${body}</svg>
     <div class="legend" style="margin-top:6px">
@@ -276,7 +287,7 @@ function renderHeat(s){
   }
   const max = Math.max(1, ...m.cells.flat());
   const cell = v => {
-    if (!v) return `<td style="background:#F4F8F6;color:#C2D3CA">·</td>`;
+    if (!v) return `<td style="background:rgba(255,255,255,.05);color:rgba(159,217,194,.5)">·</td>`;
     const [bg, fg] = heatColor(v / max);
     return `<td style="background:${bg};color:${fg}">${v}</td>`;
   };
