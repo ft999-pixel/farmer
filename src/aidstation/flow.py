@@ -200,6 +200,13 @@ class Flow:
         else:
             extracted = self.extractor.extract(text)
             session.facts.update(extracted)
+            # 抽取器的地點是縣市層級，認不出「玉井」這種鄉鎮名。
+            # 這裡補一層：直接在原句裡找公告涵蓋的鄉鎮，省下反問一題。
+            if "township" not in session.facts:
+                found = self._township_in_text(text)
+                if found:
+                    session.facts["township"] = found
+                    session.asked.add("township")
         reply = self._advance(session)
         if preface:
             reply.text = preface + "\n\n" + reply.text
@@ -268,6 +275,19 @@ class Flow:
         session.pending_question = None
         if value == "不確定":
             return None  # 不確定就先跳過，之後仍以「可能符合」呈現該補助
+        if field_name == "township" and isinstance(value, str):
+            matched, county_only = self._match_township(value)
+            if matched:
+                value = matched
+            elif county_only:
+                # 只答到縣市：維持未知（＝「可能符合」），不要判成不符合。
+                # 農民只是講得籠統，不代表他不在救助地區內。
+                towns = sorted(self._known_townships())
+                hint = ("、".join(towns[:5]) + " 等") if towns else ""
+                return (f"「{value.strip()}」是縣市，救助公告是按鄉鎮區公告的。\n"
+                        f"方便的話再跟我說是哪一個區（例如 {hint}），我可以幫你對得更準；\n"
+                        "先不確定也沒關係，下面會把可能有關的都列出來。")
+            # 認不出來就照實寫入，讓限定地區的補助正確排除
         if field_name == "crop" and isinstance(value, str):
             matched = self._match_crop(value)
             if matched is None:
@@ -331,6 +351,73 @@ class Flow:
             # MatchingProfile before this worker receives a new fields.json.
             session.facts[field_name] = value
         return None
+
+    # 縣市層級的答案（台南、臺南市）比補助條件的鄉鎮層級粗，
+    # 不能當成「不符合」，否則只是講得籠統的人會被直接排除。
+    # 用明確清單而不是靠「市」結尾判斷——員林市、頭份市是縣轄市，屬鄉鎮層級。
+    _COUNTIES = (
+        "台北市", "新北市", "桃園市", "台中市", "台南市", "高雄市",
+        "基隆市", "新竹市", "嘉義市",
+        "新竹縣", "苗栗縣", "彰化縣", "南投縣", "雲林縣", "嘉義縣",
+        "屏東縣", "宜蘭縣", "花蓮縣", "台東縣", "澎湖縣", "金門縣", "連江縣",
+    )
+
+    def _known_townships(self) -> set[str]:
+        """從所有補助的條件樹收集出現過的鄉鎮名，作為比對字典。"""
+        found: set[str] = set()
+
+        def walk(node):
+            if not isinstance(node, dict):
+                return
+            for group in ("all", "any"):
+                for child in node.get(group, []) or []:
+                    walk(child)
+            if node.get("field") == "township":
+                value = node.get("value")
+                found.update(value if isinstance(value, list) else [value])
+
+        for program in self.legacy_programs:
+            walk(program.get("eligibility") or {})
+        return {v for v in found if isinstance(v, str)}
+
+    def _township_in_text(self, text: str) -> str | None:
+        """從一整句話裡找出公告涵蓋的鄉鎮。
+
+        「我在台南玉井的芒果被颱風吹壞了」→ 玉井區。
+        比對去掉後綴的字根，所以寫「玉井」或「玉井區」都認得。
+        """
+        t = (text or "").replace("臺", "台")
+        best = None
+        for town in self._known_townships():
+            stem = town.replace("臺", "台").rstrip("區鄉鎮市")
+            if stem and stem in t:
+                # 取最長的字根，避免短名誤中（例如「南化」不該被「南」勾到）
+                if best is None or len(stem) > len(best[0]):
+                    best = (stem, town)
+        return best[1] if best else None
+
+    def _match_township(self, text: str) -> tuple[str | None, bool]:
+        """回傳 (對應到的鄉鎮, 是否為縣市層級)。
+
+        「玉井」→「玉井區」；「台南」→ (None, True) 代表還要再問是哪一區。
+        台／臺互通。
+        """
+        t = (text or "").strip().replace("臺", "台")
+        if not t:
+            return None, False
+        known = self._known_townships()
+        norm = {v.replace("臺", "台"): v for v in known}
+        if t in norm:
+            return norm[t], False
+        # 少寫了「區／鄉／鎮」也要認得
+        for plain, canonical in norm.items():
+            if plain.rstrip("區鄉鎮市") == t.rstrip("區鄉鎮市"):
+                return canonical, False
+        # 只講到縣市層級：不是不符合，是還不夠細，要再問是哪一區
+        bare = t.rstrip("縣市")
+        if any(t == c or bare == c.rstrip("縣市") for c in self._COUNTIES):
+            return None, True
+        return None, False
 
     def _match_crop(self, text: str) -> str | None:
         """把使用者打的作物名對回資料庫：正式名、台語別名、部分包含都認得。"""

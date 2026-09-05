@@ -134,7 +134,6 @@ a.back{color:var(--ink-soft);font-size:14px;text-decoration:none;}
     <h2>全國農業天然災害救助趨勢</h2>
     <span class="tag-src official">官方統計</span>
   </div>
-  <p class="hint" id="hint-yearly">民國 97–106 年，全國核定的救助農戶數與金額。峰值對應當年度重大災害。</p>
   <div id="chart-yearly"></div>
 </section>
 
@@ -143,7 +142,6 @@ a.back{color:var(--ink-soft);font-size:14px;text-decoration:none;}
     <h2>近五年各類災害救助戶數占比</h2>
     <span class="tag-src demo">類型為推估</span>
   </div>
-  <p class="hint" id="hint-disaster">每年總戶數為官方統計，各災害類型的分配為示範推估，不是官方數字。</p>
   <div id="chart-disaster"></div>
 </section>
 
@@ -226,7 +224,6 @@ function renderYearly(rows){
     <div class="chart-legend">
       <span><i style="background:${C_HOUSE}"></i>救助農戶數</span>
       <span><i style="background:${C_AMOUNT}"></i>核定救助金額</span>
-      <span style="color:var(--ink-soft)">兩者量級不同，各自縮放後疊圖，看的是趨勢不是絕對值</span>
     </div>`;
 }
 
@@ -293,10 +290,7 @@ function renderDisaster(data){
         </tr>`).join('')}
         <tr><td><b>五年合計</b></td><td class="n"><b>${sum.toLocaleString()}</b></td><td class="pct">戶</td></tr>
       </table>
-    </div>
-    <p class="hint" style="margin:14px 0 0">
-      每一瓣角度相同，長度依數值開平方縮放，因此<b>面積</b>與戶數成正比。
-    </p>`;
+    </div>`;
 }
 
 function renderKpi(s){
@@ -449,9 +443,6 @@ async function loadDisasterStats(){
     const d = await (await fetch('/disaster-stats')).json();
     renderYearly(d.yearly.rows);
     renderDisaster(d.by_disaster);
-    $('hint-yearly').textContent =
-      `民國 97–106 年，全國核定的救助農戶數與金額。資料來源：${d.yearly.source}`;
-    $('hint-disaster').textContent = d.by_disaster.source;
   } catch (e) {
     $('chart-yearly').innerHTML = '<p class="empty">載入不到全國統計資料。</p>';
     $('chart-disaster').innerHTML = '';
