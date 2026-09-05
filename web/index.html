@@ -251,7 +251,7 @@ footer { background: var(--ink); color: var(--green-bg); padding: 40px 24px 32px
 .dash-more:hover{text-decoration:underline;}
 
 .dash-carousel{position:relative;}
-.dash-track{display:flex;gap:16px;overflow-x:auto;scroll-snap-type:x mandatory;
+.dash-track{display:flex;align-items:flex-start;gap:16px;overflow-x:auto;scroll-snap-type:x mandatory;
   padding:2px 26px 12px;scroll-padding-left:26px;
   scrollbar-width:none;-ms-overflow-style:none;}
 .dash-track::-webkit-scrollbar{display:none;}
@@ -606,6 +606,10 @@ AidChat.init(document.getElementById('talk'), {
   function sync() {
     const i = current();
     [...dots.children].forEach((d, n) => d.setAttribute('aria-selected', n === i));
+    // 每張圖高矮差很多（折線圖 121px、甜甜圈 465px）。若讓 flex 自動對齊，
+    // 每一張都會被最高的那張撐開，矮的圖下面就空一大片。
+    // 改成軌道高度跟著目前這張走。
+    track.style.height = slides[i].offsetHeight + 'px';
     // 用捲動範圍判斷頭尾，避免最後一張沒對齊時按鈕還亮著
     prev.disabled = track.scrollLeft < 4;
     next.disabled = atEnd();
