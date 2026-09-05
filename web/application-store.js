@@ -15,6 +15,7 @@
   const STORAGE_KEY = 'aidstation_applications_v1';
   const VERSION = 1;
   const STATUS_TYPES = Object.freeze(['completion', 'submission', 'form_submission']);
+  const DEFAULT_TASK_DESCRIPTION = '請依補助說明處理此項。';
 
   function storage() {
     try { return root && root.localStorage ? root.localStorage : null; }
@@ -36,9 +37,9 @@
     if (!store) return {version: VERSION, applications: []};
     try {
       const parsed = JSON.parse(store.getItem(STORAGE_KEY) || '{}');
-      if (Array.isArray(parsed)) return {version: VERSION, applications: parsed};
+      if (Array.isArray(parsed)) return {version: VERSION, applications: parsed.map(normaliseApplication)};
       if (isObject(parsed) && Array.isArray(parsed.applications)) {
-        return {version: parsed.version || VERSION, applications: parsed.applications};
+        return {version: parsed.version || VERSION, applications: parsed.applications.map(normaliseApplication)};
       }
     } catch (e) {}
     return {version: VERSION, applications: []};
@@ -80,7 +81,11 @@
     const source = isObject(task) ? task : {};
     const id = text(source.id || 'task-' + (index + 1));
     const title = text(source.title || source.name || '申請項目 ' + (index + 1));
-    const description = text(source.description).trim() || `完成「${title}」後，再繼續下一步。`;
+    const rawDescription = text(source.description).trim();
+    const isGeneratedDescription = (rawDescription.includes('再繼續') && rawDescription.includes('下一步')) ||
+      (rawDescription.includes('依補助說明') && rawDescription.includes('這個步驟'));
+    const description = !rawDescription || isGeneratedDescription
+      ? DEFAULT_TASK_DESCRIPTION : rawDescription;
     const depends = Array.isArray(source.depends_on) ? source.depends_on.map(text) : [];
     return {
       id,
@@ -92,6 +97,15 @@
       action_label: source.action_label == null ? '' : text(source.action_label),
       action_url: source.action_url == null ? '' : text(source.action_url),
     };
+  }
+
+  function normaliseApplication(application) {
+    if (!isObject(application)) return application;
+    const result = Object.assign({}, application);
+    if (Array.isArray(result.items)) {
+      result.items = result.items.map(normaliseTask);
+    }
+    return result;
   }
 
   function taskList(context) {
@@ -108,7 +122,7 @@
       tasks = program.plain.steps.map((title, index) => ({
         id: 'plain-step-' + (index + 1),
         title: typeof title === 'string' ? title.replace(/\*\*/g, '') : '申請步驟 ' + (index + 1),
-        description: '依補助說明完成這個步驟，細節請向承辦單位確認。',
+        description: DEFAULT_TASK_DESCRIPTION,
         status_type: 'completion',
         depends_on: index ? ['plain-step-' + index] : [],
       }));

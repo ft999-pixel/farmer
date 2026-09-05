@@ -149,12 +149,13 @@ def _normalise_tasks(raw: Any, prefix: str) -> list[dict[str, Any]]:
         return []
 
     tasks: list[dict[str, Any]] = []
+    default_description = "請依補助說明處理此項。"
     for index, item in enumerate(raw):
         if isinstance(item, str):
             tasks.append({
                 "id": f"{prefix}-task-{index + 1}",
                 "title": item,
-                "description": f"完成「{item}」後，再繼續下一步。",
+                "description": default_description,
                 "status_type": "completion",
             })
             continue
@@ -165,7 +166,7 @@ def _normalise_tasks(raw: Any, prefix: str) -> list[dict[str, Any]]:
         if not task.get("title"):
             task["title"] = task.get("name") or task.get("label") or f"申請步驟 {index + 1}"
         if not task.get("description"):
-            task["description"] = f"完成「{task['title']}」後，再繼續下一步。"
+            task["description"] = default_description
         if not task.get("status_type"):
             task["status_type"] = "completion"
         tasks.append(task)
