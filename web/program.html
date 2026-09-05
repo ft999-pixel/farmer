@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>補助詳情｜農民補給站</title>
+<link rel="stylesheet" href="site-nav.css">
 <style>
 :root{
   --green-bright:#02DF82; --green-mid:#01B96B; --green-pale:#9FF5CF;
@@ -66,25 +67,10 @@ strong{background:linear-gradient(transparent 62%, var(--green-pale) 62%);}
   font-size:1rem;line-height:1.8;color:#6B4A00;}
 .empty{text-align:center;color:var(--ink-soft);padding:50px 0;font-size:1.0625rem;}
 </style>
-<script src="site-nav.js" defer></script>
 </head>
 <body>
-<div class="nav-outer">
-  <nav class="nav-pill">
-    <a href="index.html" class="nav-logo" aria-label="農民補給站首頁">
-      <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><path d="M4 2 v18" stroke="#06301F" stroke-width="2.5" stroke-linecap="round"/><path d="M4 3 L18 7 L4 11 Z" fill="#02DF82"/></svg>
-      農民補給站
-    </a>
-    <div class="nav-links">
-      <a href="browse.html" class="current">找補助</a>
-      <a href="chat.html?tab=doc">看懂公文</a>
-      <a href="index.html#guides">白話指南</a>
-      <a href="profile.html">我的資料</a>
-      <a href="dashboard.html">卡點儀表板</a>
-      <a href="login.html">登入</a>
-    </div>
-  </nav>
-</div>
+<div data-site-nav></div>
+<script src="site-nav.js"></script>
 
 <div class="wrap">
   <a class="back" href="browse.html">← 回補助列表</a>

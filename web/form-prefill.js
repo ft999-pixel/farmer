@@ -102,37 +102,37 @@
   const SHARED_PRIVATE_FIELDS = [
     {
       field_key: 'applicant_name', label: '姓名', type: 'text',
-      pos_x: 140, pos_y: 593, width: 120, height: 16,
+      pos_x: 171, pos_y: 594, width: 137, height: 14,
       required: true, editable: true, prefill_source: 'private.full_name',
       storage_scope: 'private', autocomplete: 'name'
     },
     {
       field_key: 'phone', label: '電話', type: 'text',
-      pos_x: 375, pos_y: 593, width: 145, height: 16,
+      pos_x: 410, pos_y: 594, width: 110, height: 14,
       required: true, editable: true, prefill_source: 'private.phone',
       storage_scope: 'private', autocomplete: 'tel'
     },
     {
       field_key: 'national_id', label: '身分證統一編號', type: 'text',
-      pos_x: 165, pos_y: 572, width: 120, height: 16,
+      pos_x: 171, pos_y: 574, width: 137, height: 13,
       required: true, editable: true, prefill_source: 'private.national_id',
       storage_scope: 'private', autocomplete: 'off'
     },
     {
       field_key: 'birth_year', label: '出生年份', type: 'text',
-      pos_x: 389, pos_y: 572, width: 74, height: 16,
+      pos_x: 445, pos_y: 574, width: 46, height: 13,
       required: true, editable: true, prefill_source: 'private.birth_year',
       storage_scope: 'private', inputmode: 'numeric'
     },
     {
       field_key: 'address', label: '地址', type: 'text',
-      pos_x: 140, pos_y: 552, width: 245, height: 16,
+      pos_x: 171, pos_y: 553, width: 230, height: 14,
       required: true, editable: true, prefill_source: 'private.full_address',
       storage_scope: 'private', autocomplete: 'street-address'
     },
     {
       field_key: 'crop', label: '種植作物種類', type: 'text',
-      pos_x: 470, pos_y: 552, width: 70, height: 16,
+      pos_x: 473, pos_y: 553, width: 48, height: 14,
       required: false, editable: true, prefill_source: 'matching.crops',
       storage_scope: 'matching'
     }
@@ -182,11 +182,11 @@
         { id: 'print-and-visit', title: '預覽、列印並洽承辦', description: '列印官方附表9，帶著文件到推薦卡上的農會、公所或承辦單位確認。', depends_on: ['complete-local-form'] }
       ],
       fields: SHARED_PRIVATE_FIELDS.concat([
-        field('machine_type', '農機機種', 'text', 232, 415, 145, 18, 'matching.machine_type', true),
-        field('machine_model', '規格或牌型', 'text', 443, 415, 100, 18, 'matching.machine_model', true),
-        field('score_items', '配分項目', 'text', 145, 381, 130, 16, 'matching.score_items', false),
-        field('total_score', '總分', 'number', 320, 381, 42, 16, 'matching.total_score', false),
-        field('expected_delivery_date', '預計交貨日期', 'text', 165, 272, 130, 16, 'matching.expected_delivery_date', false),
+        field('machine_type', '農機機種', 'text', 235, 449, 165, 18, 'matching.machine_type', true),
+        field('machine_model', '規格或牌型', 'text', 445, 449, 76, 18, 'matching.machine_model', true),
+        field('score_items', '配分項目', 'text', 171, 362, 137, 23, 'matching.score_items', false),
+        field('total_score', '總分', 'number', 346, 362, 54, 23, 'matching.total_score', false),
+        field('expected_delivery_date', '預計交貨日期', 'text', 171, 274, 124, 13, 'matching.expected_delivery_date', false),
         helperQualification('這是旁邊的整理欄，不是官方附表9欄位，不會畫到政府表單。')
       ])
     },
@@ -209,10 +209,10 @@
         { id: 'print-and-visit', title: '預覽、列印並洽承辦', description: '列印官方附表16，帶著文件到推薦卡上的農會、公所或承辦單位確認。', depends_on: ['complete-local-form'] }
       ],
       fields: SHARED_PRIVATE_FIELDS.concat([
-        field('machine_type', '農機機種', 'text', 232, 415, 145, 18, 'matching.machine_type', true),
-        field('machine_model', '規格或牌型', 'text', 443, 415, 100, 18, 'matching.machine_model', true),
-        field('old_machine_cert_no', '預計報廢農機證號', 'text', 150, 439, 120, 16, 'matching.old_machine_cert_no', true),
-        field('expected_delivery_date', '預計交貨日期', 'text', 165, 295, 130, 16, 'matching.expected_delivery_date', false),
+        field('machine_type', '農機機種', 'text', 235, 453, 165, 18, 'matching.machine_type', true),
+        field('machine_model', '規格或牌型', 'text', 445, 453, 76, 18, 'matching.machine_model', true),
+        field('old_machine_cert_no', '預計報廢農機證號', 'text', 90, 398, 99, 15, 'matching.old_machine_cert_no', true),
+        field('expected_delivery_date', '預計交貨日期', 'text', 171, 297, 124, 13, 'matching.expected_delivery_date', false),
         helperQualification('這是旁邊的整理欄，不是官方附表16欄位，不會畫到政府表單。')
       ])
     }
@@ -225,6 +225,39 @@
     'moa-occupational-injury',
     'moa-retirement-savings'
   ]);
+
+  // The browser keeps the local copy for privacy metadata and offline use,
+  // but the checked-in manifest is the source of truth for PDF coordinates.
+  // Merge the public mapping at runtime so a calibration change cannot leave
+  // this fallback copy silently rendering stale positions.
+  function mergeTemplateMapping(fallback, remote) {
+    if (!fallback || !remote || !Array.isArray(remote.fields)) return fallback;
+    const remoteByKey = new Map(remote.fields.map(field => [field.field_key, field]));
+    const mergedFields = (fallback.fields || []).map(field => Object.assign(
+      {}, field, remoteByKey.get(field.field_key) || {}
+    ));
+    const knownKeys = new Set(mergedFields.map(field => field.field_key));
+    remote.fields.forEach(function (field) {
+      if (!knownKeys.has(field.field_key)) mergedFields.push(Object.assign({}, field));
+    });
+    return Object.assign({}, fallback, remote, {fields: mergedFields});
+  }
+
+  async function resolveTemplate(params) {
+    const fallback = selectTemplate(params);
+    if (!fallback || typeof root.fetch !== 'function') return fallback;
+    try {
+      const response = await root.fetch(
+        '/official-forms/templates/' + encodeURIComponent(fallback.id),
+        {headers: {Accept: 'application/json'}}
+      );
+      if (!response.ok) return fallback;
+      return mergeTemplateMapping(fallback, await response.json());
+    } catch (error) {
+      // A static/offline demo still works with the checked-in fallback.
+      return fallback;
+    }
+  }
 
   function getStorage() {
     try { return root.localStorage; } catch (e) { return null; }
@@ -623,11 +656,11 @@
     if (node) node.textContent = value || '—';
   }
 
-  function init() {
+  async function init() {
     const app = doc.querySelector('[data-form-app]');
     if (!app) return;
     const params = new URLSearchParams(root.location.search);
-    const template = selectTemplate(params);
+    const template = await resolveTemplate(params);
     const profiles = loadProfiles();
     const draft = loadDraft(template, params);
     const values = composeFormValues(template, profiles, draft);
@@ -770,6 +803,8 @@
     GENERIC_PROGRAM_IDS: GENERIC_PROGRAM_IDS,
     loadProfiles: loadProfiles,
     selectTemplate: selectTemplate,
+    mergeTemplateMapping: mergeTemplateMapping,
+    resolveTemplate: resolveTemplate,
     composeFormValues: composeFormValues,
     displayValue: displayValue
   };
