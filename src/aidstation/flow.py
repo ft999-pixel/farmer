@@ -200,6 +200,13 @@ class Flow:
         else:
             extracted = self.extractor.extract(text)
             session.facts.update(extracted)
+            # 抽取器的地點是縣市層級，認不出「玉井」這種鄉鎮名。
+            # 這裡補一層：直接在原句裡找公告涵蓋的鄉鎮，省下反問一題。
+            if "township" not in session.facts:
+                found = self._township_in_text(text)
+                if found:
+                    session.facts["township"] = found
+                    session.asked.add("township")
         reply = self._advance(session)
         if preface:
             reply.text = preface + "\n\n" + reply.text
@@ -372,6 +379,22 @@ class Flow:
         for program in self.legacy_programs:
             walk(program.get("eligibility") or {})
         return {v for v in found if isinstance(v, str)}
+
+    def _township_in_text(self, text: str) -> str | None:
+        """從一整句話裡找出公告涵蓋的鄉鎮。
+
+        「我在台南玉井的芒果被颱風吹壞了」→ 玉井區。
+        比對去掉後綴的字根，所以寫「玉井」或「玉井區」都認得。
+        """
+        t = (text or "").replace("臺", "台")
+        best = None
+        for town in self._known_townships():
+            stem = town.replace("臺", "台").rstrip("區鄉鎮市")
+            if stem and stem in t:
+                # 取最長的字根，避免短名誤中（例如「南化」不該被「南」勾到）
+                if best is None or len(stem) > len(best[0]):
+                    best = (stem, town)
+        return best[1] if best else None
 
     def _match_township(self, text: str) -> tuple[str | None, bool]:
         """回傳 (對應到的鄉鎮, 是否為縣市層級)。

@@ -90,3 +90,39 @@ def test_縣市層級會提示補充是哪一區(flow):
     reply = flow.handle_text(s, "台南")
     assert "哪一個區" in reply.text
     assert "玉井區" in reply.text      # 要告訴他有哪些選項
+
+
+# ---- 從整句話裡認出鄉鎮 --------------------------------------------------
+
+@pytest.mark.parametrize("text,expected", [
+    ("我在台南玉井的芒果都被颱風吹壞了", "玉井區"),
+    ("我在楠西種芒果", "楠西區"),
+    ("南化區的芒果掉了", "南化區"),
+])
+def test_第一句就認得出鄉鎮(flow, text, expected):
+    assert flow._township_in_text(text) == expected
+
+
+@pytest.mark.parametrize("text", ["我在台南種芒果", "我在彰化種水稻", "芒果被吹壞了"])
+def test_句子裡沒有鄉鎮就不要亂猜(flow, text):
+    assert flow._township_in_text(text) is None
+
+
+def test_講了鄉鎮就不該再問一次(flow):
+    """使用者已經說「台南玉井」，還反問「你的田在哪個鄉鎮」是重複勞動。"""
+    s = Session()
+    reply = flow.handle_text(s, "我在台南玉井的芒果都被颱風吹壞了")
+    assert s.facts.get("township") == "玉井區"
+    assert "哪個鄉鎮" not in reply.text
+
+
+def test_句子裡講了鄉鎮就能直接推薦(flow):
+    s = Session()
+    flow.handle_text(s, "我在台南玉井的芒果都被颱風吹壞了")
+    for answer in ["超過一半", "我的", "有", "有", "58"]:
+        reply = flow.handle_text(s, answer)
+        tiers = (reply.payload or {}).get("tiers")
+        if tiers:
+            assert _tier_of(tiers, DISASTER) == "priority"
+            return
+    pytest.fail("五題內沒有給出結果")
