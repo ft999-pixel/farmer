@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify, redirect, send_file
+from flask import Flask, render_template, request, jsonify, send_file
 from flask_cors import CORS
 from pathlib import Path
 import sqlite3, json, os, uuid, datetime
@@ -78,7 +78,11 @@ def _seed_afa115_templates(c, templates):
         configured_pdf = template.get('pdf_path')
         pdf_path = Path(configured_pdf) if configured_pdf else upload_dir / f'{template_id}.pdf'
         if not pdf_path.is_absolute():
-            pdf_path = APP_DIR / pdf_path
+            pdf_path = upload_dir / pdf_path
+        default_field_page = template.get(
+            'pdf_page',
+            1 if configured_pdf else template.get('source_page') or 1,
+        )
 
         c.execute('''
             INSERT INTO templates (id, name, subsidy_id, current_version)
@@ -151,7 +155,7 @@ def _seed_afa115_templates(c, templates):
                 field['field_key'],
                 field['label'],
                 field.get('type', 'text'),
-                field.get('page') or template.get('source_page') or 1,
+                field.get('page') or default_field_page,
                 _number_or_default(field.get('pos_x'), 50),
                 _number_or_default(field.get('pos_y'), 50),
                 _number_or_default(field.get('width'), 200),
@@ -339,9 +343,7 @@ def get_pdf(vid):
         pdf = _resolve_stored_pdf(row['pdf_path'])
         if pdf:
             return send_file(pdf, as_attachment=False, mimetype='application/pdf')
-        if row['source_pdf_url']:
-            return redirect(row['source_pdf_url'])
-        return jsonify({'error': 'PDF 尚未上傳'}), 404
+        return jsonify({'error': '本機 PDF 尚未匯入'}), 404
 
 @app.post('/api/applications')
 def create_application():

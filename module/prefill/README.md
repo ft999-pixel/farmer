@@ -18,14 +18,18 @@ venv\Scripts\python app.py
 3. 確認預填欄位，補齊剩餘內容
 4. 點預覽 / 下載 PDF
 
-目前 AFA 115 資料夾提供的是欄位語意與官方 PDF 頁碼。若尚未放入對應的本機 PDF 或校準座標，畫面會顯示官方原始 PDF（若來源可連線），預覽／下載填妥 PDF 會保持停用；這樣不會把內容疊到錯誤位置。
+目前 AFA 115 模板使用 `data/uploads/` 內的本機 PDF。原始 50 頁文件保留為
+`afa115-source-1150717.pdf`，附表 6、9、13、18、19 已各自拆成單頁 PDF，並由模板的
+`pdf_path` 指向。`source_pdf_url` 僅作來源紀錄，服務不會為預覽或下載連線到遠端來源。
+
+若尚未放入對應的本機 PDF 或校準座標，預覽／下載填妥 PDF 會保持停用；這樣不會把內容疊到錯誤位置。
 
 ## API
 POST /api/templates 建立模板
 GET /api/templates 列表
 GET /api/templates/<id>/versions 版本
 GET /api/template-versions/<id>/fields 欄位定義
-GET /api/template-versions/<id>/pdf 原始 PDF
+GET /api/template-versions/<id>/pdf 本機原始 PDF
 POST /api/applications 建立申請
 PATCH /api/applications/<id> 更新
 POST /api/profiles 寫入本機 profile

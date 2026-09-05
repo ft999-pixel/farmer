@@ -3,8 +3,10 @@
   "name": "附表19｜配合調度暨相關事項切結書",
   "subsidy_id": "afa-115-dispatch-undertaking",
   "source_pdf_url": "https://www.afa.gov.tw/cht/index.php?act=download&ids=43109",
-  "source_page": 44,
-  "source_page_index": 43,
+  "pdf_path": "afa115-appendix-19.pdf",
+  "pdf_page": 1,
+  "source_page": 46,
+  "source_page_index": 45,
   "version": "115.1",
   "usage": "接受農業政策調度與查核之切結",
   "fields": [

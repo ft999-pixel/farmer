@@ -82,7 +82,7 @@ const App = (() => {
       status.textContent = '';
       status.className = 'pdf-status';
     } else if (!currentVersion.pdf_available) {
-      status.textContent = '這份模板目前只有官方原始 PDF；本機 PDF 尚未匯入，因此暫時不能產生疊字檔。';
+      status.textContent = '這份模板的本機 PDF 尚未匯入，因此暫時不能預覽或產生疊字檔。';
       status.className = 'pdf-status warning';
     } else if (!coordinatesReady()) {
       status.textContent = 'PDF 已匯入，但欄位座標尚未校準；完成校準後才能預覽或下載。';
@@ -342,8 +342,6 @@ const App = (() => {
     }
     if (currentVersion.pdf_available) {
       iframe.src = currentVersion.pdf_url || `/api/template-versions/${currentVersion.id}/pdf`;
-    } else if (currentVersion.source_pdf_url) {
-      iframe.src = `${currentVersion.source_pdf_url}#page=${currentVersion.source_page || 1}`;
     } else {
       iframe.src = '';
     }

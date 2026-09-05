@@ -42,7 +42,9 @@ def test_afa115_catalog_is_seeded_and_exposed(prefill_app):
         assert version['version'] == expected['version']
         assert version['source_page'] == expected['source_page']
         assert version['source_pdf_url'] == expected['source_pdf_url']
+        assert version['pdf_path'] == str(Path(prefill_app.UPLOAD) / expected['pdf_path'])
         assert version['pdf_available'] is False
+        assert {field['page'] for field in fields} == {expected['pdf_page']}
         assert [field['field_key'] for field in fields] == [
             field['field_key'] for field in expected['fields']
         ]
@@ -63,3 +65,13 @@ def test_local_pdf_is_preferred_over_source_url(prefill_app):
     response = client.get(f"/api/template-versions/{template['id']}/pdf")
     assert response.status_code == 200
     assert response.data == b'%PDF-test'
+
+
+def test_pdf_endpoint_does_not_fall_back_to_remote_source(prefill_app):
+    client = prefill_app.app.test_client()
+    version = client.get('/api/templates/afa115-appendix-06/versions').get_json()[0]
+
+    response = client.get(f"/api/template-versions/{version['id']}/pdf")
+
+    assert response.status_code == 404
+    assert response.get_json() == {'error': '本機 PDF 尚未匯入'}

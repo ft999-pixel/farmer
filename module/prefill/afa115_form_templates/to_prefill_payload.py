@@ -33,9 +33,12 @@ for t in data["templates"]:
             "note": f.get("note"),
             "privacy": f.get("privacy", "application_local"),
             "options": f.get("options", f.get("choices", [])),
-            # Keep the official page by default; switch to page=1 when using
-            # a cropped one-page PDF, then fill in the calibrated coordinates.
-            "page": f.get("page") or t.get("source_page") or 1,
+            # The checked-in local PDF is a cropped one-page file. Keep the
+            # original page in source_page for provenance, but target page 1
+            # when the local file is used.
+            "page": f.get("page") or t.get("pdf_page") or (
+                1 if t.get("pdf_path") else t.get("source_page") or 1
+            ),
             "pos_x": None,
             "pos_y": None,
             "width": None,

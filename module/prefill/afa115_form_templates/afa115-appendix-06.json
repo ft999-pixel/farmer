@@ -3,8 +3,10 @@
   "name": "附表6｜農事服務機械補助申請書",
   "subsidy_id": "afa-115-farm-service-machinery",
   "source_pdf_url": "https://www.afa.gov.tw/cht/index.php?act=download&ids=43109",
-  "source_page": 31,
-  "source_page_index": 30,
+  "pdf_path": "afa115-appendix-06.pdf",
+  "pdf_page": 1,
+  "source_page": 33,
+  "source_page_index": 32,
   "version": "115.1",
   "usage": "農事服務機械補助申請",
   "fields": [
