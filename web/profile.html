@@ -95,8 +95,10 @@ input:focus,select:focus,textarea:focus{outline:3px solid var(--green-pale);bord
     <div class="nav-links">
       <a href="browse.html">找補助</a>
       <a href="chat.html?tab=doc">看懂公文</a>
+      <a href="index.html#guides">白話指南</a>
       <a href="profile.html" class="current">我的資料</a>
-      <a href="index.html#about">關於</a>
+      <a href="dashboard.html">卡點儀表板</a>
+      <a href="login.html">登入</a>
     </div>
   </nav>
 </div>
@@ -117,11 +119,9 @@ input:focus,select:focus,textarea:focus{outline:3px solid var(--green-pale);bord
     </div>
   </section>
 
+  <!-- 登入介面已獨立成 login.html；這裡只顯示狀態與入口 -->
   <section>
-    <h2>登入</h2>
-    <p class="hint">
-      取一個好記的代號就能用，不用密碼、不用電子信箱。登入只同步媒合條件；這台裝置上的私密資料不會跟著同步。
-    </p>
+    <h2>登入狀態</h2>
     <div id="login-box"></div>
   </section>
 
@@ -325,33 +325,12 @@ function renderLogin(){
       location.reload();
     };
   } else {
-    box.innerHTML = `<div class="grid">
-        <div><label for="code">你的代號</label><input id="code" placeholder="例如：阿明伯" autocomplete="username"></div>
-      </div>
-      <div style="margin-top:14px"><button class="primary" id="do-login">進去</button></div>
-      <p class="hint" style="margin-top:12px">
-        第一次輸入會幫你建一個新的；之後輸入同一個代號就會找回你的資料。<br>
-        ⚠️ 示範版沒有密碼，別人猜到你的代號就看得到你填的東西，先別填真實個資。
-      </p>`;
-    $('do-login').onclick = doLogin;
-    $('code').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
-  }
-}
-
-async function doLogin(){
-  const code = $('code').value.trim();
-  if (!code) { msg('請先輸入代號。', 'warn'); return; }
-  try {
-    const m = await api('/members/login', {method: 'POST', headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({code})});
-    memberCode = m.code || code;
-    matchingProfile = canonicalMatchingProfile(m.profile || m.facts || {});
-    saveMatchingLocally();
-    loggedIn = true;
-    msg(m.created ? `已經幫你建好「${esc(code)}」，填完記得按存起來。` : `歡迎回來，${esc(code)}。`, 'ok');
-    await afterLogin();
-  } catch (e) {
-    msg(esc((e.detail && (e.detail.message || e.detail)) || '登入失敗'), 'warn');
+    // 登入表單集中在 login.html，這裡只給入口，避免兩處各有一份要維護
+    box.innerHTML = `<p class="hint" style="margin:0 0 14px">
+        還沒登入。登入後填過的資料會留著，下次不用重講。不登入也可以繼續用，
+        只是這次填的東西關掉就沒了。
+      </p>
+      <a class="action-link primary" href="login.html">前往登入</a>`;
   }
 }
 

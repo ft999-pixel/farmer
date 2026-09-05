@@ -27,6 +27,7 @@ from .document import ImageReadError, build_plain_card, get_translator, read_ima
 from .matching import MatchingInputError, match_profile
 from .fields import load_fields
 from .knowledge import load_programs
+from .line_login import router as line_login_router
 from .line_webhook import router as line_router
 from .members import router as members_router
 from .official_forms import router as official_forms_router
@@ -37,6 +38,7 @@ app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], all
 app.include_router(line_router)
 app.include_router(admin_router)
 app.include_router(members_router)
+app.include_router(line_login_router)
 app.include_router(official_forms_router)
 
 FIELDS = load_fields()
