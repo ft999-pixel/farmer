@@ -22,11 +22,13 @@ from pydantic import BaseModel
 
 from . import __version__, blockers, guides
 from .admin import router as admin_router
+from .auth import router as auth_router
 from .deadline import deadline_from_received, load_holidays
 from .document import ImageReadError, build_plain_card, get_translator, read_image
 from .matching import MatchingInputError, match_profile
 from .fields import load_fields
 from .knowledge import load_programs
+from .line_login import router as line_login_router
 from .line_webhook import router as line_router
 from .members import router as members_router
 from .official_forms import router as official_forms_router
@@ -37,6 +39,8 @@ app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], all
 app.include_router(line_router)
 app.include_router(admin_router)
 app.include_router(members_router)
+app.include_router(line_login_router)
+app.include_router(auth_router)
 app.include_router(official_forms_router)
 
 FIELDS = load_fields()
@@ -95,6 +99,20 @@ def app_no_slash():
 
 from fastapi.staticfiles import StaticFiles  # noqa: E402
 from pathlib import Path as _WebPath  # noqa: E402
+
+
+@app.middleware("http")
+async def _no_cache_web_assets(request, call_next):
+    """網頁與前端資源不給瀏覽器快取。
+
+    開發時最常見的假象是「改了沒生效」——實際上是瀏覽器拿舊檔。
+    這些檔案很小，不快取的成本遠低於每次都要提醒使用者強制重新整理。
+    """
+    response = await call_next(request)
+    path = request.url.path
+    if path.startswith("/app/") and path.endswith((".html", ".js", ".css")):
+        response.headers["Cache-Control"] = "no-cache, must-revalidate"
+    return response
 app.mount("/app", StaticFiles(directory=_WebPath(__file__).resolve().parents[2] / "web",
                               html=True), name="web")
 
@@ -154,6 +172,20 @@ def read_guide(guide_id: str) -> dict:
     if guide is None:
         raise HTTPException(404, "找不到這篇指南")
     return {**guide, "html": guides.render_markdown(guide.get("body", ""))}
+
+
+@app.get("/disaster-stats")
+def get_disaster_stats() -> dict:
+    """全國農業天然災害救助統計，供儀表板的長期趨勢圖使用。
+
+    年度總計為官方統計；各災害類型的分配為示範推估。
+    兩者的 source_kind 不同，前端據此標示，不把推估當成官方數字呈現。
+    """
+    import json as _json
+    path = _WebPath(__file__).resolve().parents[2] / "data" / "disaster_stats.json"
+    if not path.exists():
+        raise HTTPException(404, "尚無災害統計資料")
+    return _json.loads(path.read_text(encoding="utf-8"))
 
 
 @app.get("/fields")

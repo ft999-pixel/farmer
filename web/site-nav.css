@@ -85,6 +85,11 @@
   white-space: nowrap;
 }
 
+.site-nav__links [hidden],
+.site-nav__logout.hide {
+  display: none !important;
+}
+
 .site-nav__link {
   position: relative;
 }

@@ -19,6 +19,9 @@ __pycache__/
 # 會員資料庫（裡面是真人資料，絕對不進版本庫）
 data/members.db
 
+# 帳號表（含密碼雜湊，絕對不進版本庫）
+data/accounts.db
+
 # 後台執行期產物：舊檔備份與稽核紀錄（各環境自己的，不進版本庫）
 data/backups/
 data/admin_audit.jsonl

@@ -6,22 +6,31 @@
 <title>卡點儀表板｜農民補給站</title>
 <link rel="stylesheet" href="site-nav.css">
 <style>
+/* 機關端儀表板採深色主題：長時間看數據不刺眼，也和農民端的淺色明確區分。
+   命名維持原本語意（--ink 仍是「主要文字色」），只是在深底下反轉成淺色，
+   這樣下面的樣式規則不用逐條改寫。 */
 :root{
   --green-bright:#02DF82; --green-mid:#01B96B; --green-pale:#9FF5CF;
-  --green-bg:#F0FDF6; --green-tint:#D9FBEC;
-  --ink:#06301F; --ink-soft:#0A4A32; --orange:#D85A30;
-  --line:#CBEEDC;
+  --page-bg:#04241A;          /* 頁面底：深墨綠 */
+  --surface:#0A3A29;          /* 卡片底 */
+  --surface-2:#0E4732;        /* 次層（表格列、預覽區） */
+  --green-bg:#0A3A29;
+  --green-tint:#12523A;       /* 淺色區塊在深底的對應色 */
+  --ink:#EAFBF3;              /* 主要文字（淺） */
+  --ink-soft:#9FD9C2;         /* 次要文字 */
+  --orange:#FF8A5C;           /* 深底上要更亮才看得清楚 */
+  --line:#1C6144;             /* 邊框 */
 }
 @font-face{font-family:'GenSen';src:url('fonts/GenSenRounded2TW-R.woff2') format('woff2');font-weight:400;font-display:swap;}
 @font-face{font-family:'GenSen';src:url('fonts/GenSenRounded2TW-M.woff2') format('woff2');font-weight:500;font-display:swap;}
 @font-face{font-family:'GenSen';src:url('fonts/GenSenRounded2TW-H.woff2') format('woff2');font-weight:700;font-display:swap;}
 *{box-sizing:border-box;}
-body{margin:0;background:var(--green-bg);color:var(--ink);
+body{margin:0;background:var(--page-bg);color:var(--ink);
   font-family:'GenSen','Yuanti TC','Microsoft JhengHei',sans-serif;}
 .wrap{max-width:1080px;margin:0 auto;padding:20px 20px 60px;}
 /* 導覽列：與 index／browse／chat 同一套（同站分頁，不是外掛頁面） */
 .nav-outer{max-width:1080px;margin:0 auto;padding:14px 20px 0;}
-.nav-pill{display:flex;align-items:center;gap:18px;background:#fff;border:1px solid var(--line);
+.nav-pill{display:flex;align-items:center;gap:18px;background:var(--surface);border:1px solid var(--line);
   border-radius:999px;padding:10px 18px;flex-wrap:wrap;}
 .nav-logo{display:flex;align-items:center;gap:8px;text-decoration:none;color:var(--ink);font-weight:700;}
 .nav-links{display:flex;gap:18px;flex-wrap:wrap;font-size:1.0625rem;font-weight:500;}
@@ -32,13 +41,13 @@ header h1{font-size:26px;font-weight:700;margin:0 0 6px;}
 header p{margin:0;color:var(--ink-soft);font-size:14px;line-height:1.7;}
 .toolbar{display:flex;gap:8px;align-items:center;margin:18px 0 4px;flex-wrap:wrap;}
 .toolbar button{font-family:inherit;font-size:14px;font-weight:500;padding:7px 14px;
-  border:1.5px solid var(--line);border-radius:999px;background:#fff;color:var(--ink-soft);cursor:pointer;}
+  border:1.5px solid var(--line);border-radius:999px;background:var(--surface);color:var(--ink);cursor:pointer;}
 .toolbar button[aria-pressed="true"]{background:var(--green-bright);border-color:var(--green-bright);color:var(--ink);font-weight:700;}
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:16px 0 8px;}
-.kpi{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 16px;}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px;}
 .kpi b{display:block;font-size:28px;font-weight:700;line-height:1.2;}
 .kpi span{font-size:13px;color:var(--ink-soft);}
-section{background:#fff;border:1px solid var(--line);border-radius:18px;padding:20px 22px;margin-top:18px;}
+section{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:20px 22px;margin-top:18px;}
 section h2{font-size:17px;font-weight:700;margin:0 0 2px;}
 section .hint{font-size:13px;color:var(--ink-soft);margin:0 0 16px;line-height:1.6;}
 /* 圖一：橫向長條 */
@@ -78,6 +87,24 @@ table.heat th.col{font-size:12px;line-height:1.25;vertical-align:bottom;width:62
 table.heat th.row{text-align:right;white-space:nowrap;}
 table.heat td{text-align:center;padding:10px 4px;border-radius:7px;font-weight:700;}
 .empty{color:var(--ink-soft);font-size:14px;padding:20px 0;text-align:center;}
+/* 區塊標題旁的資料來源標籤：官方統計與示範推估必須一眼分得出來 */
+.sec-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:2px;}
+.sec-head h2{margin:0;}
+.tag-src{font-size:11.5px;font-weight:700;border-radius:999px;padding:3px 10px;white-space:nowrap;}
+.tag-src.official{background:var(--green-bright);color:#06301F;}
+.tag-src.demo{background:#FFD24D;color:#3A2A00;}
+/* 折線圖的滑過提示 */
+.spark-dot{cursor:pointer;}
+/* 玫瑰圖 */
+.rose-wrap{display:flex;align-items:center;gap:30px;flex-wrap:wrap;}
+.rose{width:340px;height:340px;flex:none;}
+.rose path{cursor:pointer;transition:opacity .15s;}
+.rose:hover path{opacity:.55;}
+.rose path:hover{opacity:1;}
+@media (max-width:620px){ .rose{width:280px;height:280px;margin:0 auto;} }
+.chart-legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:10px;font-size:13px;align-items:center;}
+.chart-legend span{display:flex;align-items:center;gap:6px;}
+.chart-legend i{width:14px;height:14px;border-radius:4px;display:block;}
 footer{margin-top:26px;font-size:12px;color:var(--ink-soft);line-height:1.8;}
 a.back{color:var(--ink-soft);font-size:14px;text-decoration:none;}
 </style>
@@ -101,6 +128,24 @@ a.back{color:var(--ink-soft);font-size:14px;text-decoration:none;}
 </div>
 
 <div class="cards" id="kpi"></div>
+
+<section>
+  <div class="sec-head">
+    <h2>全國農業天然災害救助趨勢</h2>
+    <span class="tag-src official">官方統計</span>
+  </div>
+  <p class="hint" id="hint-yearly">民國 97–106 年，全國核定的救助農戶數與金額。峰值對應當年度重大災害。</p>
+  <div id="chart-yearly"></div>
+</section>
+
+<section>
+  <div class="sec-head">
+    <h2>近五年各類災害救助戶數占比</h2>
+    <span class="tag-src demo">類型為推估</span>
+  </div>
+  <p class="hint" id="hint-disaster">每年總戶數為官方統計，各災害類型的分配為示範推估，不是官方數字。</p>
+  <div id="chart-disaster"></div>
+</section>
 
 <section>
   <h2>① 卡點原因排行</h2>
@@ -134,11 +179,125 @@ a.back{color:var(--ink-soft);font-size:14px;text-decoration:none;}
 
 <script>
 // 前 4 色刻意拉開色相（預設顯示前 4 名），後面才回到綠色系
-const PALETTE = ['#01B96B','#D85A30','#2E86C1','#F2B705','#0A4A32','#B47CD8','#5C8A72','#02DF82'];
+// 深色底：整組換成高亮度色，原本的深墨綠在深底會隱形
+const PALETTE = ['#02DF82','#FF8A5C','#5AB6F5','#FFD24D','#C79BF0','#7FE5C4','#FF9EC4','#9FF5CF'];
 const $ = id => document.getElementById(id);
 let weeks = 8;
 
 function colorOf(i){ return PALETTE[i % PALETTE.length]; }
+const esc = s => String(s ?? '').replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
+
+// ---- 全國災害救助趨勢（官方統計）--------------------------------------
+const C_HOUSE = '#02DF82', C_AMOUNT = '#5AB6F5';
+
+function renderYearly(rows){
+  const box = $('chart-yearly');
+  if (!rows || !rows.length) { box.innerHTML = '<p class="empty">沒有資料。</p>'; return; }
+  const W = 900, H = 300, P = {t: 18, r: 16, b: 40, l: 62};
+  const maxH = Math.max(...rows.map(r => r.households));
+  const maxA = Math.max(...rows.map(r => r.amount));
+  const x = i => P.l + i * (W - P.l - P.r) / Math.max(1, rows.length - 1);
+  // 兩條線量級不同，各自正規化後疊在同一張圖，只看趨勢不比絕對值
+  const y = (v, max) => P.t + (1 - v / max) * (H - P.t - P.b);
+
+  const grid = [0, .25, .5, .75, 1].map(f => {
+    const v = Math.round(maxH * f);
+    return `<line x1="${P.l}" y1="${y(v, maxH)}" x2="${W - P.r}" y2="${y(v, maxH)}" stroke="rgba(159,217,194,.16)"/>
+      <text x="${P.l - 10}" y="${y(v, maxH) + 4}" text-anchor="end" font-size="11" fill="#9FD9C2">${(v / 1000).toFixed(0)}k</text>`;
+  }).join('');
+  const ticks = rows.map((r, i) =>
+    `<text x="${x(i)}" y="${H - 14}" text-anchor="middle" font-size="11" fill="#9FD9C2">${r.year}</text>`).join('');
+
+  const line = (key, max, color) => {
+    const pts = rows.map((r, i) => `${x(i)},${y(r[key], max)}`).join(' ');
+    const area = `${P.l},${H - P.b} ${pts} ${x(rows.length - 1)},${H - P.b}`;
+    const dots = rows.map((r, i) =>
+      `<circle class="spark-dot" cx="${x(i)}" cy="${y(r[key], max)}" r="4.5" fill="${color}">
+        <title>${r.year}（民國 ${r.year_roc}）：${r[key].toLocaleString()} ${key === 'households' ? '戶' : '萬元'}</title>
+      </circle>`).join('');
+    return `<polygon points="${area}" fill="${color}" opacity=".10"/>
+      <polyline points="${pts}" fill="none" stroke="${color}" stroke-width="2.5"
+        stroke-linejoin="round" stroke-linecap="round"/>${dots}`;
+  };
+
+  box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto">
+      ${grid}${ticks}${line('amount', maxA, C_AMOUNT)}${line('households', maxH, C_HOUSE)}
+    </svg>
+    <div class="chart-legend">
+      <span><i style="background:${C_HOUSE}"></i>救助農戶數</span>
+      <span><i style="background:${C_AMOUNT}"></i>核定救助金額</span>
+      <span style="color:var(--ink-soft)">兩者量級不同，各自縮放後疊圖，看的是趨勢不是絕對值</span>
+    </div>`;
+}
+
+// ---- 近五年各類災害（南丁格爾玫瑰圖，類型為推估）------------------------
+// 每一瓣角度相同，半徑用「數值開平方」，這樣**面積**才與數值成正比。
+// 若半徑直接等比於數值，面積會變成平方關係，視覺上會誇大差距。
+function renderDisaster(data){
+  const box = $('chart-disaster');
+  const rows = data.rows || [], types = data.types || [];
+  if (!rows.length) { box.innerHTML = '<p class="empty">沒有資料。</p>'; return; }
+
+  // 五年合計，每一類一瓣
+  const totals = types.map(t => ({t, v: rows.reduce((n, r) => n + (r[t] || 0), 0)}))
+                      .sort((a, b) => b.v - a.v);
+  const sum = totals.reduce((n, d) => n + d.v, 0);
+  const maxV = totals[0].v;
+
+  // R 留出邊界空間給短花瓣的外標，否則文字會被畫布裁掉
+  const S = 420, C = S / 2, R = 148, GAP = 0.022;   // GAP：花瓣之間留縫
+  const step = Math.PI * 2 / totals.length;
+  const pt = (r, a) => [C + r * Math.cos(a - Math.PI / 2), C + r * Math.sin(a - Math.PI / 2)];
+
+  const petals = totals.map((d, i) => {
+    const r = R * Math.sqrt(d.v / maxV);
+    const a0 = i * step + GAP, a1 = (i + 1) * step - GAP;
+    const [x0, y0] = pt(r, a0), [x1, y1] = pt(r, a1);
+    const big = (a1 - a0) > Math.PI ? 1 : 0;
+    const path = `M${C} ${C}L${x0} ${y0}A${r} ${r} 0 ${big} 1 ${x1} ${y1}Z`;
+    const pct = (d.v / sum * 100).toFixed(1);
+    const mid = (a0 + a1) / 2;
+    // 短花瓣放不下字，改標在瓣外並拉一條細線指過去，避免小瓣的數字互相重疊
+    const inside = r > 92;
+    const [lx, ly] = pt(inside ? r * 0.6 : r + 26, mid);
+    const leader = inside ? '' :
+      (() => { const [sx, sy] = pt(r + 4, mid), [ex, ey] = pt(r + 16, mid);
+        return `<line x1="${sx}" y1="${sy}" x2="${ex}" y2="${ey}" stroke="${colorOf(i)}" stroke-width="1.5"/>`; })();
+    return `<path d="${path}" fill="url(#pet${i})" stroke="var(--surface)" stroke-width="2">
+        <title>${esc(d.t)}：${d.v.toLocaleString()} 戶（${pct}%）</title>
+      </path>${leader}
+      <text x="${lx}" y="${ly}" text-anchor="middle" font-size="${inside ? 15 : 12.5}" font-weight="700"
+        fill="${inside ? '#06301F' : colorOf(i)}" pointer-events="none"
+        dominant-baseline="middle">${pct}%</text>`;
+  }).join('');
+
+  const defs = totals.map((d, i) => {
+    const c = colorOf(i);
+    return `<radialGradient id="pet${i}" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" stop-color="${c}" stop-opacity=".55"/>
+      <stop offset="100%" stop-color="${c}" stop-opacity="1"/>
+    </radialGradient>`;
+  }).join('');
+
+  // 圈出最大半徑當比例尺，讓人知道花瓣長度不是隨便畫的
+  const rings = [0.5, 1].map(f =>
+    `<circle cx="${C}" cy="${C}" r="${R * f}" fill="none" stroke="rgba(159,217,194,.14)"/>`).join('');
+
+  box.innerHTML = `<div class="rose-wrap">
+      <svg viewBox="0 0 ${S} ${S}" class="rose"><defs>${defs}</defs>${rings}${petals}</svg>
+      <table class="cat-table">${totals.map((d, i) => `
+        <tr>
+          <td><i class="dot" style="background:${colorOf(i)}"></i>${esc(d.t)}</td>
+          <td class="n">${d.v.toLocaleString()}</td>
+          <td class="pct">${(d.v / sum * 100).toFixed(1)}%</td>
+        </tr>`).join('')}
+        <tr><td><b>五年合計</b></td><td class="n"><b>${sum.toLocaleString()}</b></td><td class="pct">戶</td></tr>
+      </table>
+    </div>
+    <p class="hint" style="margin:14px 0 0">
+      每一瓣角度相同，長度依數值開平方縮放，因此<b>面積</b>與戶數成正比。
+    </p>`;
+}
 
 function renderKpi(s){
   const top = s.ranking[0];
@@ -152,13 +311,14 @@ function renderKpi(s){
     <div class="kpi"><b>${localPct}</b><span>卡點發生在地方公所</span></div>`;
 }
 
-const C_DOC = '#01B96B', C_STUCK = '#F2B705';   // 來源固定兩色，跨列可比
-const C_CENTRAL = '#0A4A32', C_LOCAL = '#F2B705';
+const C_DOC = '#02DF82', C_STUCK = '#FFD24D';   // 來源固定兩色，跨列可比
+const C_CENTRAL = '#5AB6F5', C_LOCAL = '#FFD24D';
 
-// 熱力圖：五階跨色相（淺黃→橙→紅），比單一綠色透明度好分辨得多
+// 熱力圖：五階跨色相（深綠→青→黃→橙→紅）。
+// 深色底不能沿用淺色主題的「淺黃起頭」，最低階必須接近底色才看得出強弱。
 const HEAT = [
-  ['#FFF6D6', '#06301F'], ['#FFE08A', '#06301F'], ['#FFB74D', '#06301F'],
-  ['#F97B3D', '#fff'], ['#D8341F', '#fff'],
+  ['#0F4B36', '#9FD9C2'], ['#177F5A', '#EAFBF3'], ['#4FC98F', '#06301F'],
+  ['#FFD24D', '#06301F'], ['#FF7A45', '#2A0F06'],
 ];
 function heatColor(ratio){
   return HEAT[Math.min(HEAT.length - 1, Math.floor(ratio * HEAT.length - 1e-9))];
@@ -201,7 +361,7 @@ function renderCategory(s){
     const [x2, y2] = pt(RI, end), [x3, y3] = pt(RI, start);
     const d = `M${x0} ${y0}A${R} ${R} 0 ${big} 1 ${x1} ${y1}L${x2} ${y2}A${RI} ${RI} 0 ${big} 0 ${x3} ${y3}Z`;
     start = end;
-    return `<path d="${d}" fill="${colorOf(i)}" stroke="#fff" stroke-width="2"><title>${r.category} ${r.count} 筆</title></path>`;
+    return `<path d="${d}" fill="${colorOf(i)}" stroke="var(--surface)" stroke-width="2"><title>${r.category} ${r.count} 筆</title></path>`;
   }).join('');
   const rowsHtml = rows.map((r, i) => `
     <tr>
@@ -212,8 +372,8 @@ function renderCategory(s){
     </tr>`).join('');
   box.innerHTML = `<div class="donut-wrap">
       <svg viewBox="0 0 220 220" class="donut">${arcs}
-        <text x="${C}" y="${C - 4}" text-anchor="middle" font-size="30" font-weight="700" fill="#06301F">${total}</text>
-        <text x="${C}" y="${C + 18}" text-anchor="middle" font-size="13" fill="#0A4A32">筆卡點</text>
+        <text x="${C}" y="${C - 4}" text-anchor="middle" font-size="30" font-weight="700" fill="#EAFBF3">${total}</text>
+        <text x="${C}" y="${C + 18}" text-anchor="middle" font-size="13" fill="#9FD9C2">筆卡點</text>
       </svg>
       <table class="cat-table">${rowsHtml}</table>
     </div>`;
@@ -232,19 +392,19 @@ function renderLevel(s){
   const x = v => L + v / max * (W - L - Rp);
   const grid = [0, .25, .5, .75, 1].map(f => {
     const v = Math.round(max * f);
-    return `<line x1="${x(v)}" y1="6" x2="${x(v)}" y2="${rows.length * RH}" stroke="#E4F6EC"/>
-            <text x="${x(v)}" y="${H - 8}" text-anchor="middle" font-size="11" fill="#0A4A32">${v}</text>`;
+    return `<line x1="${x(v)}" y1="6" x2="${x(v)}" y2="${rows.length * RH}" stroke="rgba(159,217,194,.22)"/>
+            <text x="${x(v)}" y="${H - 8}" text-anchor="middle" font-size="11" fill="#9FD9C2">${v}</text>`;
   }).join('');
   const body = rows.map((r, i) => {
     const y = i * RH + RH / 2;
     const a = r['中央'], b = r['縣市'];
     const [lo, hi] = a <= b ? [a, b] : [b, a];
     const lean = b > a ? '地方' : (a > b ? '中央' : '');
-    return `<text x="${L - 12}" y="${y + 4}" text-anchor="end" font-size="13.5" font-weight="500" fill="#06301F">${r.reason}</text>
-      <line x1="${x(lo)}" y1="${y}" x2="${x(hi)}" y2="${y}" stroke="#BFDCCC" stroke-width="3" stroke-linecap="round"/>
+    return `<text x="${L - 12}" y="${y + 4}" text-anchor="end" font-size="13.5" font-weight="500" fill="#EAFBF3">${r.reason}</text>
+      <line x1="${x(lo)}" y1="${y}" x2="${x(hi)}" y2="${y}" stroke="rgba(159,217,194,.45)" stroke-width="3" stroke-linecap="round"/>
       <circle cx="${x(a)}" cy="${y}" r="7" fill="${C_CENTRAL}"><title>中央 ${a} 筆</title></circle>
       <circle cx="${x(b)}" cy="${y}" r="7" fill="${C_LOCAL}"><title>縣市 ${b} 筆</title></circle>
-      <text x="${x(hi) + 14}" y="${y + 4}" font-size="12" font-weight="700" fill="#0A4A32">${lean ? lean + ' +' + (hi - lo) : '持平'}</text>`;
+      <text x="${x(hi) + 14}" y="${y + 4}" font-size="12" font-weight="700" fill="#9FD9C2">${lean ? lean + ' +' + (hi - lo) : '持平'}</text>`;
   }).join('');
   box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto">${grid}${body}</svg>
     <div class="legend" style="margin-top:6px">
@@ -263,7 +423,7 @@ function renderHeat(s){
   }
   const max = Math.max(1, ...m.cells.flat());
   const cell = v => {
-    if (!v) return `<td style="background:#F4F8F6;color:#C2D3CA">·</td>`;
+    if (!v) return `<td style="background:rgba(255,255,255,.05);color:rgba(159,217,194,.5)">·</td>`;
     const [bg, fg] = heatColor(v / max);
     return `<td style="background:${bg};color:${fg}">${v}</td>`;
   };
@@ -283,6 +443,21 @@ async function load(){
   renderKpi(s); renderBar(s); renderCategory(s); renderLevel(s); renderHeat(s);
 }
 
+// 全國統計不隨「期間」切換而變，載入一次就好
+async function loadDisasterStats(){
+  try {
+    const d = await (await fetch('/disaster-stats')).json();
+    renderYearly(d.yearly.rows);
+    renderDisaster(d.by_disaster);
+    $('hint-yearly').textContent =
+      `民國 97–106 年，全國核定的救助農戶數與金額。資料來源：${d.yearly.source}`;
+    $('hint-disaster').textContent = d.by_disaster.source;
+  } catch (e) {
+    $('chart-yearly').innerHTML = '<p class="empty">載入不到全國統計資料。</p>';
+    $('chart-disaster').innerHTML = '';
+  }
+}
+
 document.querySelectorAll('.toolbar button').forEach(b => b.onclick = () => {
   document.querySelectorAll('.toolbar button').forEach(x => x.removeAttribute('aria-pressed'));
   b.setAttribute('aria-pressed', 'true');
@@ -290,6 +465,7 @@ document.querySelectorAll('.toolbar button').forEach(b => b.onclick = () => {
   load();
 });
 load();
+loadDisasterStats();
 </script>
 </body>
 </html>

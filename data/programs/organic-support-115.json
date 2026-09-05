@@ -3,6 +3,12 @@
   "name": "115年有機農業生產輔導",
   "summary": "有機驗證、轉型及友善環境耕作相關生產輔導入口示範資料。",
   "category": "有機農業",
+  "display": {
+    "ui_category": "驗證與外銷",
+    "industry": "農",
+    "region": "全國",
+    "amount_text": "驗證、資材與設施補助"
+  },
   "demo_simplified": true,
   "source_key": "organic_support_115",
   "authority": {

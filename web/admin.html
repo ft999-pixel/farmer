@@ -103,14 +103,13 @@ tr.stale td{background:var(--warn-bg);}
   <p class="sub">改動會立即生效在農民端。存檔前會自動驗證，驗證不過就不寫入；舊檔一律備份到 <code>data/backups/</code>，每次異動記進稽核檔。</p>
   <div id="msg"></div>
 
-  <!-- 登入 -->
+  <!-- 未登入：登入表單統一在 login.html，這裡只擋門並導過去 -->
   <section id="login-box" class="hide">
-    <h2>登入</h2>
-    <div class="grid g2" style="max-width:420px">
-      <div><label for="pw">維護密碼</label><input id="pw" type="password" autocomplete="current-password"></div>
+    <h2>請先登入</h2>
+    <p class="hint">這是機關端的維護後臺，需要承辦人員的密碼才能進入。</p>
+    <div style="margin-top:12px">
+      <button class="primary" onclick="location.href='login.html'">前往登入</button>
     </div>
-    <p class="hint">密碼設在專案根目錄 <code>.env</code> 的 <code>ADMIN_PASSWORD</code>。沒設定時後台不會啟用。</p>
-    <div style="margin-top:12px"><button class="primary" id="do-login">登入</button></div>
   </section>
 
   <!-- 分頁切換 -->
@@ -598,16 +597,8 @@ async function enterAdmin(){
 }
 
 // ---- 啟動 ---------------------------------------------------------------
-$('do-login').onclick = async () => {
-  try {
-    await api('/admin/login', {method: 'POST', headers: {'Content-Type': 'application/json'},
-                               body: JSON.stringify({password: $('pw').value})});
-    $('pw').value = '';
-    msg('', ''); await enterAdmin();
-  } catch (e) { showError(e); }
-};
-$('pw').addEventListener('keydown', e => { if (e.key === 'Enter') $('do-login').click(); });
-$('logout').onclick = async () => { await api('/admin/logout', {method: 'POST'}); location.reload(); };
+// 登入表單統一在 login.html，這裡不再自己收密碼
+$('logout').onclick = async () => { await api('/admin/logout', {method: 'POST'}); location.href = 'login.html'; };
 $('new-btn').onclick = () => openEditor(null);
 $('cancel-btn').onclick = () => backToList();
 $('save-btn').onclick = save;
