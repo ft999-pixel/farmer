@@ -257,7 +257,8 @@ footer { background: var(--ink); color: var(--green-bg); padding: 40px 24px 32px
 .dash-track::-webkit-scrollbar{display:none;}
 .dash-slide{flex:0 0 min(680px, calc(100% - 8px));scroll-snap-align:start;
   background:#0A3A29;border:1px solid #1C6144;border-radius:18px;padding:20px 22px;}
-.dash-slide h3{margin:0 0 14px;font-size:1.0625rem;font-weight:700;
+.dash-hint{margin:0 0 14px;font-size:.9375rem;line-height:1.6;color:#9FD9C2;}
+.dash-slide h3{margin:0 0 6px;font-size:1.0625rem;font-weight:700;
   display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
 
 /* 箭頭疊在圖上；小螢幕直接收起來，用手指滑就好 */
@@ -368,10 +369,12 @@ footer { background: var(--ink); color: var(--green-bg); padding: 40px 24px 32px
            role="group" aria-label="圖表輪播，可左右滑動">
         <article class="dash-slide">
           <h3>全國農業天然災害救助趨勢 <span class="tag-src official">官方統計</span></h3>
+          <p class="dash-hint">每年有多少農戶領到天災救助、一共發了多少錢。</p>
           <div id="chart-yearly"></div>
         </article>
         <article class="dash-slide">
           <h3>中央 vs 縣市</h3>
+          <p class="dash-hint">同一種卡點，出在中央公文還是地方公所。離越開差越多。</p>
           <div id="chart-level"></div>
         </article>
       </div>
