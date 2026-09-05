@@ -2,6 +2,7 @@
   "id": "moa-disaster-cash-sample-2026",
   "name": "農業天然災害現金救助（示範公告：芒果）",
   "category": "災害救助",
+  "form_template_id": "disaster_cash.damage_certificate",
   "authority": {
     "level": "中央",
     "agency": "農糧署（示範）",

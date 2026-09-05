@@ -434,6 +434,251 @@
           "note": "這是旁邊的整理欄，不是官方附表16欄位，不會畫到政府表單。"
         }
       ]
+    },
+    {
+      "id": "disaster_cash.damage_certificate",
+      "name": "農業天然災害受災證明書",
+      "program_ids": [
+        "moa-disaster-cash-sample-2026",
+        "disaster-cash-sample"
+      ],
+      "program": "農業天然災害現金救助",
+      "attachment": "附件1",
+      "official_source_page": 1,
+      "official_pdf": "web/official-forms/disaster_certificate.pdf",
+      "pdf_url": "/official-forms/pdf/disaster_certificate.pdf",
+      "web_pdf": "official-forms/disaster_certificate.pdf",
+      "official_layout": true,
+      "source_sha256": "e0afc3c1d1f88ae0fa85e05344209bd7b7135a8eb5812972c546ab74d330964e",
+      "source_note": "附件1、農業天然災害受災證明書（111.6.15 修正格式）。座標取自 PDF 表格線；只疊「一、基本資料」，「二、實地調查損失情形」由調查人員填寫。",
+      "tasks": [
+        {
+          "id": "photo-before-cleanup",
+          "title": "先拍照，再整理田地",
+          "description": "田一旦清理過就證明不了當初的損失。用農業部「農損拍照 APP」拍會自動記錄時間和位置。",
+          "depends_on": []
+        },
+        {
+          "id": "confirm-announcement",
+          "title": "打電話確認公告範圍",
+          "description": "問公所農業課：你的鄉鎮和你種的作物，有沒有在這次公告的救助地區與品項裡。",
+          "depends_on": []
+        },
+        {
+          "id": "complete-local-form",
+          "title": "檢查預填內容",
+          "description": "確認災害名稱、申請日期、姓名、身分證、住址、電話與土地地號填對了。",
+          "depends_on": [
+            "confirm-announcement"
+          ]
+        },
+        {
+          "id": "print-and-visit",
+          "title": "列印並到公所農業課",
+          "description": "列印受災證明書，連同身分證、印章、存摺封面影本、土地文件與災損照片一起帶去。",
+          "depends_on": [
+            "complete-local-form"
+          ]
+        }
+      ],
+      "fields": [
+        {
+          "field_key": "disaster_name",
+          "label": "災害名稱",
+          "type": "text",
+          "page": 1,
+          "pos_x": 113,
+          "pos_y": 713,
+          "width": 228,
+          "height": 15,
+          "required": true,
+          "editable": true,
+          "prefill_source": "",
+          "note": "公告上寫的名字，例如「凱米颱風」。"
+        },
+        {
+          "field_key": "apply_year",
+          "label": "申請日期（民國年）",
+          "type": "text",
+          "page": 1,
+          "pos_x": 429,
+          "pos_y": 713,
+          "width": 36,
+          "height": 15,
+          "required": true,
+          "editable": true,
+          "prefill_source": "today.year"
+        },
+        {
+          "field_key": "apply_month",
+          "label": "申請月份",
+          "type": "text",
+          "page": 1,
+          "pos_x": 486,
+          "pos_y": 713,
+          "width": 16,
+          "height": 15,
+          "required": true,
+          "editable": true,
+          "prefill_source": "today.month"
+        },
+        {
+          "field_key": "apply_day",
+          "label": "申請日",
+          "type": "text",
+          "page": 1,
+          "pos_x": 521,
+          "pos_y": 713,
+          "width": 16,
+          "height": 15,
+          "required": true,
+          "editable": true,
+          "prefill_source": "today.day"
+        },
+        {
+          "field_key": "applicant_name",
+          "label": "申請人姓名",
+          "type": "text",
+          "page": 1,
+          "pos_x": 113,
+          "pos_y": 693,
+          "width": 228,
+          "height": 15,
+          "required": true,
+          "editable": true,
+          "prefill_source": "private.full_name",
+          "storage_scope": "private",
+          "autocomplete": "name"
+        },
+        {
+          "field_key": "national_id",
+          "label": "身分證字號",
+          "type": "text",
+          "page": 1,
+          "pos_x": 429,
+          "pos_y": 693,
+          "width": 120,
+          "height": 15,
+          "required": true,
+          "editable": true,
+          "prefill_source": "private.national_id",
+          "storage_scope": "private",
+          "autocomplete": "off"
+        },
+        {
+          "field_key": "address",
+          "label": "住址",
+          "type": "text",
+          "page": 1,
+          "pos_x": 113,
+          "pos_y": 673,
+          "width": 228,
+          "height": 15,
+          "required": true,
+          "editable": true,
+          "prefill_source": "private.full_address",
+          "storage_scope": "private",
+          "autocomplete": "street-address"
+        },
+        {
+          "field_key": "phone",
+          "label": "電話",
+          "type": "text",
+          "page": 1,
+          "pos_x": 429,
+          "pos_y": 673,
+          "width": 120,
+          "height": 15,
+          "required": true,
+          "editable": true,
+          "prefill_source": "private.phone",
+          "storage_scope": "private",
+          "autocomplete": "tel"
+        },
+        {
+          "field_key": "land_section",
+          "label": "受災土地座落區段",
+          "type": "text",
+          "page": 1,
+          "pos_x": 38,
+          "pos_y": 618,
+          "width": 192,
+          "height": 15,
+          "required": true,
+          "editable": true,
+          "prefill_source": "private.land_section",
+          "storage_scope": "private",
+          "autocomplete": "off"
+        },
+        {
+          "field_key": "land_number",
+          "label": "地號",
+          "type": "text",
+          "page": 1,
+          "pos_x": 239,
+          "pos_y": 618,
+          "width": 146,
+          "height": 15,
+          "required": true,
+          "editable": true,
+          "prefill_source": "private.parcel_numbers",
+          "storage_scope": "private",
+          "autocomplete": "off"
+        },
+        {
+          "field_key": "land_share",
+          "label": "持分",
+          "type": "text",
+          "page": 1,
+          "pos_x": 393,
+          "pos_y": 618,
+          "width": 26,
+          "height": 15,
+          "required": false,
+          "editable": true,
+          "prefill_source": "private.land_share",
+          "storage_scope": "private",
+          "autocomplete": "off"
+        },
+        {
+          "field_key": "land_area_ha",
+          "label": "經營面積（公頃）",
+          "type": "text",
+          "page": 1,
+          "pos_x": 428,
+          "pos_y": 618,
+          "width": 120,
+          "height": 15,
+          "required": true,
+          "editable": true,
+          "prefill_source": "matching.land_area_ha",
+          "storage_scope": "matching"
+        },
+        {
+          "field_key": "crop",
+          "label": "受災作物（給承辦看的備註）",
+          "type": "text",
+          "required": false,
+          "editable": true,
+          "prefill_source": "matching.crops",
+          "storage_scope": "matching",
+          "helper_only": true,
+          "overlay": false,
+          "note": "作物種類、損失程度和金額是第二段「實地調查損失情形」的欄位，由調查人員到現場填，這裡只是先幫你記著要講什麼。"
+        },
+        {
+          "field_key": "qualification",
+          "label": "申請資格說明（輔助備註）",
+          "type": "textarea",
+          "required": false,
+          "editable": true,
+          "prefill_source": "matching.qualification",
+          "storage_scope": "matching",
+          "helper_only": true,
+          "overlay": false,
+          "note": "這是旁邊的整理欄，不是官方受災證明書欄位，不會畫到政府表單。土地只疊第一列，其他列請到現場手寫。"
+        }
+      ]
     }
   ]
 }

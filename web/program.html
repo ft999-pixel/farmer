@@ -82,6 +82,27 @@ const esc = s => String(s ?? '').replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;'
 // 只支援 **粗體**，內容先跳脫，不可能夾帶標籤
 const md = s => esc(s).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
 
+// 這筆補助有沒有已匯入的官方紙本表單。以 /official-forms/manifest 為準——
+// 沒有官方 PDF 就不給連結，也不會自己畫一張假表單。
+async function officialFormLink(program){
+  const templateId = program.form_template_id ||
+    (program.form_template && program.form_template.id) || '';
+  if (!templateId) return '';
+  let template = null;
+  try {
+    const r = await fetch('/official-forms/templates/' + encodeURIComponent(templateId),
+                          {headers: {Accept: 'application/json'}});
+    if (!r.ok) return '';
+    template = await r.json();
+  } catch (e) {
+    return '';
+  }
+  const params = new URLSearchParams({
+    program_id: program.id, template_id: templateId, program_name: program.name,
+  });
+  return `<a class="btn" href="form.html?${esc(params.toString())}">準備${esc(template.name)}</a>`;
+}
+
 function windowText(w){
   if (!w) return '未註明';
   if (w.close) {
@@ -164,7 +185,8 @@ function windowText(w){
     </div>
 
     <div class="actions">
-      <a class="btn" href="chat.html">問問我適不適合申請</a>
+      ${await officialFormLink(p)}
+      <a class="btn outline" href="chat.html">問問我適不適合申請</a>
       <a class="btn outline" href="profile.html">填我的資料，幫我預填申請表</a>
     </div>
 

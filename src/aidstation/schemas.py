@@ -30,6 +30,10 @@ PRIVATE_PROFILE_KEYS = frozenset({
     "bank_branch",
     "parcel_numbers",
     "parcel_number",
+    # 受災證明書把地號拆成「座落區段／地號」兩欄。名字不同但指的是同一塊地，
+    # 不擋的話就繞過了 parcel_numbers 的防線。
+    "land_section",
+    "land_number",
     "signature",
     "contact",
     "private_profile",

@@ -37,4 +37,6 @@ data/admin_audit.jsonl
 *.jpeg
 *.png
 !提案圖表/*.png
+# 官方表單背景圖（由官方 PDF 轉出，不是公文影像）
+!web/official-forms/*.png
 

@@ -23,7 +23,11 @@
     full_address: ['full_address', 'address', 'addr'],
     bank_account: ['bank_account'],
     bank_branch: ['bank_branch'],
-    parcel_numbers: ['parcel_numbers', 'parcel_number'],
+    parcel_numbers: ['parcel_numbers', 'parcel_number', 'land_number'],
+    // 受災證明書把地號拆成座落區段／地號／持分。三者一起才指得出是哪塊地，
+    // 所以跟 parcel_numbers 同級，一律留在本機。
+    land_section: ['land_section', 'land_lot'],
+    land_share: ['land_share'],
     signature: ['signature', 'applicant_signature'],
   });
 

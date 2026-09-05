@@ -48,7 +48,12 @@
     national_id: ['national_id', 'id_number', 'idNumber', '身分證', '身分證字號'],
     birth_year: ['birth_year', 'birth_year_roc', 'birthday', 'birth_date', 'birthYear', '出生年份'],
     full_address: ['full_address', 'address', 'addr', 'registered_address', '通訊地址', '地址'],
-    landline: ['landline', 'tel', 'phone', '電話']
+    landline: ['landline', 'tel', 'phone', '電話'],
+    // 地號指得出是哪一塊地、是誰的，跟姓名同級。受災證明書把它拆成
+    // 座落區段／地號／持分三欄，三欄都留在本機，不進 MatchingProfile。
+    parcel_numbers: ['parcel_numbers', 'parcel_number', 'land_number', '地號'],
+    land_section: ['land_section', 'land_lot', '地段', '受災土地座落區段'],
+    land_share: ['land_share', '持分']
   });
 
   const MATCHING_ALIASES = Object.freeze({
@@ -69,7 +74,13 @@
     score_items: ['score_items', 'score_codes', '配分項目'],
     total_score: ['total_score', '總分'],
     old_machine_cert_no: ['old_machine_cert_no', 'old_machine_certificate', '預計報廢農機證號'],
-    expected_delivery_date: ['expected_delivery_date', 'delivery_date', '預計交貨日期']
+    expected_delivery_date: ['expected_delivery_date', 'delivery_date', '預計交貨日期'],
+    // 受災證明書。災害名稱要填公告上的名字（例如「凱米颱風」），
+    // 所以不從 facts.event（只會是「天然災害」）帶入，寧可留白。
+    disaster_name: ['disaster_name', 'disaster', '災害名稱'],
+    apply_year: ['apply_year', '申請年'],
+    apply_month: ['apply_month', '申請月'],
+    apply_day: ['apply_day', '申請日']
   });
 
   const FALLBACK_TASKS = [
@@ -147,6 +158,26 @@
     };
   }
 
+  function privateField(fieldKey, label, x, y, width, height, source, autocomplete, required) {
+    return {
+      field_key: fieldKey, label: label, type: 'text',
+      pos_x: x, pos_y: y, width: width, height: height,
+      required: required !== false, editable: true,
+      prefill_source: source, storage_scope: 'private',
+      autocomplete: autocomplete || 'off'
+    };
+  }
+
+  // 沒有 storage_scope：值只留在這張表的草稿，不寫進 MatchingProfile 也不寫進本機個資。
+  function draftField(fieldKey, label, x, y, width, height, source, note) {
+    return {
+      field_key: fieldKey, label: label, type: 'text',
+      pos_x: x, pos_y: y, width: width, height: height,
+      required: true, editable: true,
+      prefill_source: source || '', note: note || ''
+    };
+  }
+
   function helperQualification(note) {
     return {
       field_key: 'qualification',
@@ -215,11 +246,53 @@
         field('expected_delivery_date', '預計交貨日期', 'text', 171, 297, 124, 13, 'matching.expected_delivery_date', false),
         helperQualification('這是旁邊的整理欄，不是官方附表16欄位，不會畫到政府表單。')
       ])
+    },
+    {
+      // 座標取自官方 PDF 的表格線（垂直線 x=33.8/109.7/234.9/345.7/389.4/423.6/553，
+      // 水平線 y=730.3/710.0/689.9/669.6/635.4/615.1），只疊「一、基本資料」。
+      // 「二、實地調查損失情形」是調查人員填的，一格都不碰。
+      id: 'disaster_cash.damage_certificate',
+      name: '農業天然災害受災證明書',
+      program: '農業天然災害現金救助',
+      attachment: '附件1',
+      official_source_page: 1,
+      official_pdf: 'web/official-forms/disaster_certificate.pdf',
+      pdf_url: '/official-forms/pdf/disaster_certificate.pdf',
+      preview_image: '/app/official-forms/disaster_certificate.png',
+      web_pdf: 'official-forms/disaster_certificate.pdf',
+      official_layout: true,
+      program_ids: ['moa-disaster-cash-sample-2026', 'disaster-cash-sample'],
+      tasks: [
+        { id: 'photo-before-cleanup', title: '先拍照，再整理田地', description: '田一旦清理過就證明不了當初的損失。用農業部「農損拍照 APP」拍會自動記錄時間和位置。', depends_on: [] },
+        { id: 'confirm-announcement', title: '打電話確認公告範圍', description: '問公所農業課：你的鄉鎮和你種的作物，有沒有在這次公告的救助地區與品項裡。', depends_on: [] },
+        { id: 'complete-local-form', title: '檢查預填內容', description: '確認災害名稱、申請日期、姓名、身分證、住址、電話與土地地號填對了。', depends_on: ['confirm-announcement'] },
+        { id: 'print-and-visit', title: '列印並到公所農業課', description: '列印受災證明書，連同身分證、印章、存摺封面影本、土地文件與災損照片一起帶去。', depends_on: ['complete-local-form'] }
+      ],
+      fields: [
+        draftField('disaster_name', '災害名稱', 113, 713, 228, 15, '', '公告上寫的名字，例如「凱米颱風」。'),
+        draftField('apply_year', '申請日期（民國年）', 429, 713, 36, 15, 'today.year'),
+        draftField('apply_month', '申請月份', 486, 713, 16, 15, 'today.month'),
+        draftField('apply_day', '申請日', 521, 713, 16, 15, 'today.day'),
+        privateField('applicant_name', '申請人姓名', 113, 693, 228, 15, 'private.full_name', 'name'),
+        privateField('national_id', '身分證字號', 429, 693, 120, 15, 'private.national_id', 'off'),
+        privateField('address', '住址', 113, 673, 228, 15, 'private.full_address', 'street-address'),
+        privateField('phone', '電話', 429, 673, 120, 15, 'private.phone', 'tel'),
+        privateField('land_section', '受災土地座落區段', 38, 618, 192, 15, 'private.land_section', 'off'),
+        privateField('land_number', '地號', 239, 618, 146, 15, 'private.parcel_numbers', 'off'),
+        privateField('land_share', '持分', 393, 618, 26, 15, 'private.land_share', 'off', false),
+        field('land_area_ha', '經營面積（公頃）', 'text', 428, 618, 120, 15, 'matching.land_area_ha', true),
+        {
+          field_key: 'crop', label: '受災作物（給承辦看的備註）', type: 'text',
+          required: false, editable: true, prefill_source: 'matching.crops',
+          storage_scope: 'matching', helper_only: true, overlay: false,
+          note: '作物種類、損失程度和金額是第二段「實地調查損失情形」的欄位，由調查人員到現場填，這裡只是先幫你記著要講什麼。'
+        },
+        helperQualification('這是旁邊的整理欄，不是官方受災證明書欄位，不會畫到政府表單。土地只疊第一列，其他列請到現場手寫。')
+      ]
     }
   ];
 
   const GENERIC_PROGRAM_IDS = new Set([
-    'moa-disaster-cash-sample-2026',
     'afa-crop-insurance-sample',
     'afa-green-payment-enrollment',
     'moa-occupational-injury',
@@ -355,11 +428,22 @@
     return String(value);
   }
 
+  // 公文一律用民國年。申請日期預設今天——填表的人就是今天在填，
+  // 但仍然可以改（例如補件時要寫原本的申請日）。
+  function todayRocPart(part) {
+    const now = new Date();
+    if (part === 'year') return String(now.getFullYear() - 1911);
+    if (part === 'month') return String(now.getMonth() + 1);
+    if (part === 'day') return String(now.getDate());
+    return '';
+  }
+
   function fieldValue(field, profiles) {
     const source = field.prefill_source || '';
     const dot = source.indexOf('.');
     const scope = dot >= 0 ? source.slice(0, dot) : field.storage_scope;
     const key = dot >= 0 ? source.slice(dot + 1) : field.field_key;
+    if (scope === 'today') return todayRocPart(key);
     if (scope === 'private' || field.storage_scope === 'private') {
       const aliases = PRIVATE_ALIASES[key] || PRIVATE_ALIASES[field.field_key] || [key, field.field_key];
       return displayValue(aliasesValue(profiles.privateForm, aliases));
@@ -515,7 +599,8 @@
       phone: 'phone',
       national_id: 'national_id',
       birth_year: 'birth_year',
-      address: 'full_address'
+      address: 'full_address',
+      land_number: 'parcel_numbers'
     }[fieldKey] || fieldKey;
   }
 
@@ -691,6 +776,7 @@
     const officialHelp = doc.getElementById('official-help');
     const overlayNote = doc.getElementById('official-overlay-note');
     const form = doc.getElementById('application-form');
+    const draftFields = doc.getElementById('draft-fields');
     const privateFields = doc.getElementById('private-fields');
     const matchingFields = doc.getElementById('matching-fields');
     const helperFields = doc.getElementById('helper-fields');
@@ -745,7 +831,14 @@
     const officialFields = (template.fields || []).filter(f => !f.helper_only);
     const privateList = officialFields.filter(f => f.storage_scope === 'private');
     const matchingList = officialFields.filter(f => f.storage_scope === 'matching');
+    // 這次才有的欄位（災害名稱、申請日期）。每次災害都不一樣，所以只留在
+    // 這張表的草稿裡，不寫回 MatchingProfile，也不會被下一次申請帶著跑。
+    const draftList = officialFields.filter(
+      f => f.storage_scope !== 'private' && f.storage_scope !== 'matching');
     const helperList = (template.fields || []).filter(f => f.helper_only);
+    if (draftList.length) {
+      renderFieldGroup(draftFields, '這次申請填的', '只留在這張表的草稿裡，不會存進你的常用資料。', draftList, values, onFieldChange);
+    }
     renderFieldGroup(privateFields, '你的個人資料', '這些只存在你的手機或電腦裡，不會送出去。', privateList, values, onFieldChange);
     renderFieldGroup(matchingFields, '當次媒合欄位', '作物與申請條件可由 MatchingProfile 預填，仍可修改。', matchingList, values, onFieldChange);
     if (helperList.length) {

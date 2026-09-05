@@ -95,10 +95,24 @@ window.AidChat = (function () {
       return 'form.html' + (query ? '?' + query : '');
     }
 
+    // 以 /official-forms/manifest 為準；下面的字面清單只是離線後備。
+    // 新增一張官方表單只要改 data/form_templates.json，不必回來改這裡。
+    const officialTemplateIds = new Set([
+      'farm_machine_115.labor_saving',
+      'farm_machine_115.electric_replacement',
+      'disaster_cash.damage_certificate'
+    ]);
+
+    fetch('/official-forms/manifest', {headers: {Accept: 'application/json'}})
+      .then(response => response.ok ? response.json() : null)
+      .then(data => (data && data.templates || []).forEach(t => {
+        if (t && t.id) officialTemplateIds.add(t.id);
+      }))
+      .catch(() => { /* 靜態或離線 demo：沿用後備清單 */ });
+
     function hasBrowserOfficialTemplate(card) {
       const template = card.form_template_id || (card.form_template && card.form_template.id);
-      return template === 'farm_machine_115.labor_saving' ||
-        template === 'farm_machine_115.electric_replacement';
+      return officialTemplateIds.has(template);
     }
 
     function cardHtml(card, tier) {

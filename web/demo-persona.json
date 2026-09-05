@@ -1,0 +1,38 @@
+{
+  "_note": "示範用的假農民。personas[].account 對應帳號名稱；同名帳號登入 profile.html 時，個人資料區才會出現「載入示範資料」按鈕。",
+  "_warning": "裡面的姓名、身分證、地址、電話、銀行帳號、地號全部是編出來的，不是任何真人的資料。正式環境請刪掉這個檔案，按鈕就會自動消失。",
+  "_seeded_by": "scripts/seed_demo_farmer.py 讀這個檔建立帳號與媒合資料；private_form_profile 只由瀏覽器讀，永遠不進資料庫。",
+  "personas": [
+    {
+      "account": "farmer",
+      "label": "臺南玉井芒果農",
+      "story": "在玉井種了二十幾年芒果，田是跟人租的但有簽書面租約。颱風過後想申請天然災害現金救助。",
+      "matching_profile": {
+        "applicant_type": "individual_farmer",
+        "location": "玉井區",
+        "crops": ["芒果"],
+        "land_area_ha": 0.8,
+        "farming_years": 22,
+        "land_use": "合法農業使用",
+        "land_tenure": "書面租約",
+        "land_doc": "書面租約",
+        "has_land_use_proof": true,
+        "policy_enrolled_2y": false,
+        "insured_farmer": true,
+        "is_farming": true
+      },
+      "private_form_profile": {
+        "full_name": "王阿明",
+        "phone": "0912-345-678",
+        "national_id": "A123456789",
+        "birthday": "1968-03-12",
+        "full_address": "臺南市玉井區中正路100號",
+        "bank_account": "0001234567890",
+        "bank_branch": "玉井區農會信用部",
+        "land_section": "臺南市玉井區玉井段",
+        "parcel_numbers": ["1234-5"],
+        "land_share": "全部"
+      }
+    }
+  ]
+}

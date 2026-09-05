@@ -140,7 +140,13 @@ input:focus,select:focus,textarea:focus{outline:3px solid var(--green-pale);bord
       <div style="grid-column:1/-1"><label for="c-addr">通訊地址</label><input id="c-addr" data-private-key="full_address" autocomplete="street-address"></div>
       <div><label for="c-bank-account">銀行帳號</label><input id="c-bank-account" data-private-key="bank_account" autocomplete="off"></div>
       <div><label for="c-bank-branch">銀行／分行</label><input id="c-bank-branch" data-private-key="bank_branch" autocomplete="off"></div>
-      <div><label for="c-parcels">完整地號（每行一筆）</label><textarea id="c-parcels" data-private-key="parcel_numbers" rows="2" autocomplete="off"></textarea></div>
+      <div><label for="c-land-section">土地座落區段</label><input id="c-land-section" data-private-key="land_section" autocomplete="off" placeholder="例如：臺南市玉井區玉井段"></div>
+      <div><label for="c-land-share">持分</label><input id="c-land-share" data-private-key="land_share" autocomplete="off" placeholder="例如：全部、1/2"></div>
+      <div style="grid-column:1/-1"><label for="c-parcels">完整地號（每行一筆）</label><textarea id="c-parcels" data-private-key="parcel_numbers" rows="2" autocomplete="off"></textarea></div>
+    </div>
+    <div id="demo-seed-box" hidden style="margin-top:12px">
+      <button id="demo-seed" type="button">載入示範資料</button>
+      <span class="hint" id="demo-seed-hint"></span>
     </div>
   </section>
 
@@ -425,10 +431,25 @@ function resultDocuments(result){
   })) : [];
 }
 
+// 哪些項目有官方紙本表單，以 /official-forms/manifest 為準——新增一張官方表單
+// 只要改 data/form_templates.json，不必回來改這裡。下面的字面清單是離線／靜態
+// demo 取不到 manifest 時的後備。
 const BROWSER_OFFICIAL_TEMPLATE_IDS = new Set([
   'farm_machine_115.labor_saving',
   'farm_machine_115.electric_replacement',
+  'disaster_cash.damage_certificate',
 ]);
+
+async function loadOfficialTemplateIds(){
+  try {
+    const response = await fetch('/official-forms/manifest', {headers: {Accept: 'application/json'}});
+    if (!response.ok) return;
+    const data = await response.json();
+    (data.templates || []).forEach(t => { if (t && t.id) BROWSER_OFFICIAL_TEMPLATE_IDS.add(t.id); });
+  } catch (e) {
+    // 靜態或離線 demo：沿用上面的後備清單
+  }
+}
 
 function resultTemplateId(result){
   return result.form_template_id || (result.form_template && result.form_template.id) || '';
@@ -591,6 +612,32 @@ function renderPrivateForm(){
 function savePrivateForm(){
   privateFormProfile = ProfileStore.save(collectPrivateForm());
   renderPrivateForm();
+}
+
+// Demo 用：一鍵把假的個人資料填進本機。刻意做成看得見的按鈕而不是網址參數，
+// 因為示範時觀眾應該看得出來資料是哪裡來的。
+// web/demo-persona.json 不存在（正式環境）時，按鈕不會出現。
+async function setupDemoSeed(){
+  const box = $('demo-seed-box');
+  if (!box || !memberCode) return;
+  let persona = null;
+  try {
+    const response = await fetch('demo-persona.json', {headers: {Accept: 'application/json'}});
+    if (!response.ok) return;
+    const data = await response.json();
+    persona = (data.personas || []).find(p => p.account === memberCode) || null;
+  } catch (e) {
+    return;                                   // 沒有這個檔就當作不是示範環境
+  }
+  if (!persona) return;
+  box.hidden = false;
+  $('demo-seed-hint').textContent = `${persona.label}的示範資料，全部是編的，只寫進這台裝置。`;
+  $('demo-seed').onclick = () => {
+    // 只帶個人資料。媒合資料由 scripts/seed_demo_farmer.py 存在帳號上，登入就有了。
+    privateFormProfile = ProfileStore.save(persona.private_form_profile || {});
+    renderPrivateForm();
+    msg('已把示範個人資料填進這台裝置，可以去官方表單準備頁看預填結果。', 'ok');
+  };
 }
 
 function replaceStableMatching(facts){
@@ -792,6 +839,7 @@ async function afterLogin(){
   // form data.  No member response is used to populate it.
   privateFormProfile = ProfileStore.load();
   matchingProfile = loadMatchingLocally();
+  await loadOfficialTemplateIds();
   FIELDS = await (await fetch('/fields')).json();
   const me = await api('/members/me');
   if (!me.logged_in) {
@@ -805,6 +853,7 @@ async function afterLogin(){
   saveMatchingLocally();
   loggedIn = true;
   await afterLogin();
+  await setupDemoSeed();
 
   const params = new URLSearchParams(location.search);
   if (params.get('demo') === '1' || params.get('demo') === 'hero') {
