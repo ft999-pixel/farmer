@@ -1,0 +1,31 @@
+{
+  "profile": {
+    "name": "王小明",
+    "id_number": "A123456789",
+    "phone": "0912345678",
+    "birth_year": "45",
+    "address": "台南市麻豆區和平路10號",
+    "qualification": "溯源QR Code",
+    "crop_type": "稻作"
+  },
+  "application": {
+    "subsidy": "省工農業機械補助",
+    "machine_type": "中耕管理機",
+    "machine_model": "無輪式-燃油",
+    "purchase_type": "新購",
+    "certificate_no": "",
+    "delivery_date": "2026-10-30",
+    "application_date": "2026-09-05",
+    "remarks": "補助上限16,000元"
+  },
+  "eligibility": {
+    "qr_code": true,
+    "organic": false,
+    "traceability": true,
+    "cas": false,
+    "friendly_farming": false,
+    "young_farmer": false,
+    "floriculture": false,
+    "adjustment_plan": false
+  }
+}
