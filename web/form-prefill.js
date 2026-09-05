@@ -82,12 +82,12 @@
     {
       id: 'confirm-qualification',
       title: '補充申請資格說明',
-      description: '把作物、用途與已知條件整理在本機輔助欄位；實際資格仍由承辦認定。',
+      description: '把作物、用途和已經知道的條件先整理好；實際資格還是由承辦單位認定。',
       depends_on: []
     },
     {
       id: 'complete-local-form',
-      title: '檢查本機預填資料',
+      title: '檢查填好的資料',
       description: '確認資料正確，缺的欄位可以直接修改或留白。',
       depends_on: ['confirm-documents']
     },
@@ -178,7 +178,7 @@
       tasks: [
         { id: 'confirm-documents', title: '確認附表9與應備文件', description: '對照推薦卡的文件清單，整理好申請書、身分證件及承辦要求的附件。', depends_on: [] },
         { id: 'confirm-qualification', title: '補充申請資格說明', description: '把作物、農機用途與已知的驗證或資格資訊整理在旁邊；實際資格仍由承辦單位認定。', depends_on: [] },
-        { id: 'complete-local-form', title: '檢查預填內容', description: '確認本機帶入的姓名、電話、身分證、出生年份、地址與媒合資料正確。', depends_on: ['confirm-documents'] },
+        { id: 'complete-local-form', title: '檢查預填內容', description: '確認姓名、電話、身分證、出生年份、地址這些有沒有填對。', depends_on: ['confirm-documents'] },
         { id: 'print-and-visit', title: '預覽、列印並洽承辦', description: '列印官方附表9，帶著文件到推薦卡上的農會、公所或承辦單位確認。', depends_on: ['complete-local-form'] }
       ],
       fields: SHARED_PRIVATE_FIELDS.concat([
@@ -205,7 +205,7 @@
       tasks: [
         { id: 'confirm-old-machine', title: '確認汰舊農機資料', description: '找出預計報廢燃油農機的證號或承辦要求的證明文件。', depends_on: [] },
         { id: 'confirm-qualification', title: '補充申請資格說明', description: '把作物、換購用途與已知的資格資訊整理在旁邊；實際資格仍由承辦單位認定。', depends_on: [] },
-        { id: 'complete-local-form', title: '檢查預填內容', description: '確認本機帶入的姓名、電話、身分證、出生年份、地址與媒合資料正確。', depends_on: ['confirm-old-machine'] },
+        { id: 'complete-local-form', title: '檢查預填內容', description: '確認姓名、電話、身分證、出生年份、地址這些有沒有填對。', depends_on: ['confirm-old-machine'] },
         { id: 'print-and-visit', title: '預覽、列印並洽承辦', description: '列印官方附表16，帶著文件到推薦卡上的農會、公所或承辦單位確認。', depends_on: ['complete-local-form'] }
       ],
       fields: SHARED_PRIVATE_FIELDS.concat([
@@ -439,7 +439,7 @@
   }
 
   function storageLabel(scope) {
-    if (scope === 'private') return {text: '本機 private', className: 'local'};
+    if (scope === 'private') return {text: '你自己填的', className: 'local'};
     if (scope === 'matching') return {text: 'matching', className: 'matching'};
     return {text: '本次草稿', className: 'draft'};
   }
@@ -746,10 +746,10 @@
     const privateList = officialFields.filter(f => f.storage_scope === 'private');
     const matchingList = officialFields.filter(f => f.storage_scope === 'matching');
     const helperList = (template.fields || []).filter(f => f.helper_only);
-    renderFieldGroup(privateFields, '本機私密欄位', '前五個欄位只從 localStorage 的 PrivateFormProfile 預填。', privateList, values, onFieldChange);
+    renderFieldGroup(privateFields, '你的個人資料', '這些只存在你的手機或電腦裡，不會送出去。', privateList, values, onFieldChange);
     renderFieldGroup(matchingFields, '當次媒合欄位', '作物與申請條件可由 MatchingProfile 預填，仍可修改。', matchingList, values, onFieldChange);
     if (helperList.length) {
-      renderFieldGroup(helperFields, '申請準備輔助欄位', '沒有官方座標的備註只留在本機，不會畫到官方 PDF。', helperList, values, onFieldChange);
+      renderFieldGroup(helperFields, '其他備註', '這些只是留給你自己看的，不會印到官方表單上。', helperList, values, onFieldChange);
     }
 
     function save(silent) {
@@ -762,7 +762,7 @@
       if (saveStatus) {
         saveStatus.classList.toggle('warn', !saved.ok);
         saveStatus.textContent = saved.ok
-          ? (silent ? '已儲存本機資料。' : '已儲存本機資料；重新整理後仍會保留。')
+          ? (silent ? '已經存起來了。' : '已經存起來了，重新整理也還在。')
           : '瀏覽器暫時無法完整保存，請確認未使用無痕限制儲存。';
       }
       return saved.ok;

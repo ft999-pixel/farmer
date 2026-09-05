@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>準備申請｜農民補給站</title>
-<meta name="description" content="用官方申請表預填示範，私密資料只留在這台裝置。">
+<meta name="description" content="把申請資料先準備好，再帶去問承辦。你填的資料只留在自己的裝置。">
 <link rel="stylesheet" href="form-prefill.css">
 <link rel="stylesheet" href="site-nav.css">
 </head>
@@ -18,9 +18,9 @@
   <main id="form-app" data-form-app>
     <a href="javascript:history.back()" class="back-link">回上一頁</a>
     <header class="form-hero">
-      <p class="eyebrow">開始申請・Task checklist・本地預填</p>
+      <p class="eyebrow">開始準備申請</p>
       <h1>把申請準備好，<span class="grad-text">再去問承辦</span></h1>
-      <p class="lead">先完成下面的申請任務清單，再用官方 PDF 做預填檢查。這一頁只在瀏覽器處理資料，不會自動送出申請。</p>
+      <p class="lead">先完成下面的申請任務清單，再用官方 PDF 做預填檢查。你填的東西只會留在自己的手機或電腦裡，不會自動送出申請。</p>
       <div class="context-card" aria-live="polite">
         <p class="context-title" id="program-name">正在準備推薦項目</p>
         <p class="context-meta">
@@ -31,68 +31,43 @@
       </div>
     </header>
 
-    <section class="panel privacy-panel" aria-labelledby="privacy-title">
-      <div class="privacy-heading">
-        <h2 id="privacy-title">資料分流：兩種資料，各走各的路</h2>
-        <p>表單值只留在這台裝置；這頁沒有把表單送往後端的程式。</p>
-      </div>
-      <div class="privacy-columns">
-        <div class="privacy-column local">
-          <h3>本機 PrivateFormProfile</h3>
-          <p>姓名、電話、身分證字號、出生年份、地址等私密欄位，只從瀏覽器 localStorage 讀取，也只回存 localStorage。</p>
-          <ul>
-            <li>不進 `/match`、會員 API 或其他 request</li>
-            <li>可在表單上修改，refresh 後仍留在本機</li>
-          </ul>
-        </div>
-        <div class="privacy-column matching">
-          <h3>當次 MatchingProfile</h3>
-          <p>作物、申請資格說明、地區、面積與申請意圖等媒合欄位，可以由這次推薦的 profile 預填。</p>
-          <ul>
-            <li>只作為申請準備的輔助資料</li>
-            <li>實際資格與正式內容以承辦單位認定為準</li>
-          </ul>
-        </div>
-      </div>
-      <p class="privacy-footnote">提醒：瀏覽器的 localStorage 是這台裝置上的示範儲存，不等於政府機關收件，也不代表已完成申請。</p>
-    </section>
 
     <section class="panel task-section screen-only" id="task-checklist" aria-labelledby="task-title">
       <div class="task-head">
         <div>
-          <h2 id="task-title">申請任務清單（Task checklist）</h2>
-          <p class="panel-intro">一步一步來；勾選進度會依推薦項目留在本機。</p>
+          <h2 id="task-title">申請任務清單</h2>
+          <p class="panel-intro">一步一步來，勾過的會記著，下次打開還在。</p>
         </div>
         <p class="task-count" id="task-count">0 / 0 已完成</p>
       </div>
       <div class="task-list" id="task-list" aria-live="polite"></div>
       <p class="save-status" id="task-status" aria-live="polite"></p>
       <div class="task-actions">
-        <button class="button primary" id="open-form" type="button">下一步：開啟本地預填</button>
+        <button class="button primary" id="open-form" type="button">下一步：開始填表</button>
       </div>
     </section>
 
     <section class="panel form-section screen-only" id="form-section" aria-labelledby="form-title">
       <div class="form-section-head">
         <div>
-          <h2 id="form-title">本地預填與編輯</h2>
-          <p class="panel-intro">欄位可以修改；按「儲存本機」後，重新整理仍會保留。</p>
+          <h2 id="form-title">填寫申請表</h2>
+          <p class="panel-intro">欄位可以直接改；按「先存起來」之後，重新整理也還在。</p>
         </div>
-        <span class="storage-badge local">不送出・只在本機</span>
+        <span class="storage-badge local">不會送出・只存在你的裝置</span>
       </div>
       <div class="form-legend" aria-label="欄位來源說明">
-        <span class="legend-item"><span class="legend-dot local" aria-hidden="true"></span>本機 private</span>
-        <span class="legend-item"><span class="legend-dot matching" aria-hidden="true"></span>當次 matching</span>
-        <span class="legend-item"><span class="legend-dot draft" aria-hidden="true"></span>本次草稿</span>
+        <span class="legend-item"><span class="legend-dot local" aria-hidden="true"></span>你自己填的資料</span>
+        <span class="legend-item"><span class="legend-dot matching" aria-hidden="true"></span>查補助時填過的</span>
+        <span class="legend-item"><span class="legend-dot draft" aria-hidden="true"></span>這次新填的</span>
       </div>
       <form id="application-form" novalidate>
         <div id="private-fields"></div>
         <div id="matching-fields"></div>
         <div id="helper-fields" class="helper-fields"></div>
       </form>
-      <p class="form-source-note">這裡的輸入框是編輯用 overlay 控制區；政府表單本身以下方官方 PDF 原樣呈現。沒有對應座標的「申請資格說明」只會留在本機輔助區，不會被畫到官方 PDF。</p>
+      <p class="form-source-note">下面是官方表單的原始樣子，你在上面填的字會疊上去。沒有對應欄位的內容只會留著給你參考，不會印到官方表單上。</p>
       <div class="form-actions">
-        <button class="button primary" id="save-local" type="button">儲存本機</button>
+        <button class="button primary" id="save-local" type="button">先存起來</button>
         <button class="button secondary" id="preview-form" type="button">預覽官方表單</button>
         <button class="button" id="print-form" type="button">列印</button>
       </div>
@@ -102,12 +77,12 @@
     <section class="panel official-section" id="official-section" aria-labelledby="official-title">
       <div class="official-section-head">
         <div>
-          <h2 id="official-title">官方 PDF 預覽（原樣背景＋瀏覽器 overlay）</h2>
+          <h2 id="official-title">官方表單預覽</h2>
           <p class="official-source"><strong id="official-attachment">官方申請表</strong>・農業部農糧署・官方第 <span id="official-page-inline">—</span> 頁</p>
         </div>
         <a class="button small" id="official-open-link" href="#" target="_blank" rel="noopener">開新分頁看原始 PDF</a>
       </div>
-      <p class="official-help" id="official-help">官方 PDF 保留原始版面；畫面與列印會使用官方 PDF 的頁面影像，可編輯欄位再依 templates.json 的座標疊在上面。請先在上方編輯區修改，再按預覽或列印。</p>
+      <p class="official-help" id="official-help">這是官方表單原本的樣子，你填的字會疊在對應的位置上。先在上面改好，再按預覽或列印。</p>
       <div class="official-missing" id="official-missing" hidden>
         這個推薦項目目前沒有放入官方紙本表單，所以不會重畫一張假表單。請依任務清單整理資料，並用推薦卡的承辦電話確認正式申請方式。
       </div>
@@ -117,7 +92,7 @@
           <div class="official-overlay" id="official-overlay" aria-hidden="true"></div>
         </div>
       </div>
-      <p class="official-overlay-note" id="official-overlay-note">畫面上的文字是本機 overlay；PDF 檔案本身不會被修改。</p>
+      <p class="official-overlay-note" id="official-overlay-note">畫面上的字是疊上去的，官方表單原檔不會被改到。</p>
       <div class="form-actions screen-only">
         <button class="button primary" id="official-preview" type="button">預覽／列印這張官方表</button>
       </div>
@@ -125,14 +100,14 @@
 
     <section class="panel preview-section screen-only" id="preview-section" hidden aria-labelledby="preview-title">
       <h2 id="preview-title">資料預覽</h2>
-      <p class="panel-intro">這是送件前的本機檢查，不是送件結果。</p>
+      <p class="panel-intro">這是送件前自己先對一次，不代表已經送出。</p>
       <div class="preview-card" id="preview-content"></div>
       <button class="button small preview-close" id="close-preview" type="button">關閉預覽</button>
     </section>
   </main>
 
   <footer>
-    <p>農民補給站（示範原型）・官方表單來源與欄位 mapping 來自 futuremode_official_forms_v2；實際申請請洽承辦單位。</p>
+    <p>農民補給站（示範原型）・這裡只是幫你先把資料整理好，實際申請請洽承辦單位。</p>
   </footer>
 </div>
 
