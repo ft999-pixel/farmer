@@ -1,79 +1,175 @@
-# 農民補給站（核心引擎）
+# 農民補給站
 
-說一句話找到你該領的補助，拍一張照看懂看不懂的公文。
-本 repo 目前為 **核心引擎＋知識庫**（MVP P0 第一塊），設計依據見《系統設計建議書.md》。
+> 說一句話找到可能適合的補助，接著一路走到「真的能送件」。
 
-## 架構原則
+農民補給站是一個面向台灣農民的 AI 補助申請助手。它不只做「推薦補助」：
+系統會把自然語言需求轉成受控欄位，由規則引擎判定資格與缺口，再把申請拆成待辦；
+對已有官方紙本表單的計畫，使用者可以直接在官方 PDF 版面上預填、修改並列印。
 
-- **LLM 不做資格判定**：判定只發生在規則引擎（三值邏輯：符合／可能符合／不符合），每條結果附法條依據。
-- **新增補助不改程式**：補助以 JSON 掛載於 `data/programs/`，條件欄位須先註冊於 `data/fields.json`（欄位字典是系統中樞）。
-- **期限兩型分流**：公告型直接倒數；文到型必須先問「你哪一天收到的？」再推算，並顯示計算式。解析不出就導向承辦電話，絕不猜。
+本作品參加 **BUILDMODE GEN-AI HACKATHON 2026**。
 
-## 目錄
+## 問題
 
+台灣農業補助資訊分散在公告、PDF、公文與各受理單位流程中。
+農民真正遇到的摩擦不只在「找不到補助」，而是：
+
+- 不知道自己是否符合資格，也不知道還缺哪些資訊。
+- 公告、公文與行政用語難讀，期限容易看錯。
+- 找到計畫後，仍要自己理解申請順序、準備文件與填表。
+- 表單常包含姓名、身分證、電話、地址、銀行帳號等敏感資料，不應為了 AI 媒合全部送上伺服器。
+
+## 解法
+
+完整流程：
+
+**自然語言描述需求 → 補問必要資訊 → 推薦補助與理由 → 補助詳情 → 開始申請 → 任務清單 → 官方表單預填／直接修改 → Preview / Print → 回到「正在申請」繼續**
+
+### 核心功能
+
+1. **自然語言找補助**
+   - 使用者用日常語言描述所在地、作物、設備需求或困難。
+   - LLM 只負責把文字抽成受控欄位。
+   - 未註冊或不合法欄位會被驗證層丟棄。
+
+2. **可追溯的規則判定**
+   - LLM 不直接決定資格。
+   - 規則引擎輸出「符合／可能符合／不符合」。
+   - 缺少關鍵資訊時，只補問真正影響判定的欄位。
+   - 補助資料以 JSON 掛載，新計畫可資料驅動加入。
+
+3. **從找到補助到完成申請**
+   - 從補助詳情直接按「開始申請」。
+   - 系統把行政流程拆成 task checklist。
+   - 一般步驟可標記「已完成」；送件型可標記「已送出」；
+     文件型則可同時追蹤「已填寫」與「已送出」。
+   - 「正在申請」保留進度，離開後可以回來繼續。
+
+4. **官方 PDF 表單預填與直接編輯**
+   - Demo 使用官方 PDF 原版面，不重新畫一張仿政府表單。
+   - `data/form_templates.json` 與表單 mapping 定義可編輯欄位座標。
+   - 使用者可直接在原表單畫面修改欄位，再 Preview / Print。
+
+5. **Privacy by design**
+   - `MatchingProfile` 只包含補助媒合必要、較粗粒度資訊。
+   - `PrivateFormProfile`（姓名、身分證、電話、完整地址、銀行帳號、地號、簽名等）
+     留在瀏覽器端。
+   - 表單草稿與申請進度保存於 browser local storage。
+   - 私密表單資料不需要為了補助媒合送到後端。
+
+6. **公文白話化與期限**
+   - 把公文整理成較容易理解的資訊。
+   - 公告型期限直接計算；「收到公文後 N 日」會先取得收文日再推算。
+   - 無法可靠解析時不猜測。
+
+7. **卡點儀表板**
+   - 以聚合視角呈現申請流程常見卡點，讓服務提供者看見制度摩擦。
+
+
+## 系統架構
+
+```mermaid
+flowchart LR
+    U["Browser / PWA<br/>農民使用者"] -->|"自然語言 + 媒合必要資料"| API["FastAPI"]
+    API --> X["LLM / deterministic extractor"]
+    X --> V["validate_facts<br/>受控欄位驗證"]
+    V --> R["Rule Engine<br/>三值邏輯 + 缺口提問"]
+    R <--> K["Knowledge Base<br/>fields.json + programs/*.json"]
+    R --> U
+
+    U <--> L["Browser local storage<br/>PrivateFormProfile / drafts / application progress"]
+    U <--> F["Official PDF + form mapping<br/>form_templates.json"]
+    U --> P["Preview / Print"]
+
+    API --> D["Document plain-language + deadline"]
+    D --> U
+
+    B["Aggregated blocker data"] --> G["Dashboard"]
 ```
+
+### 關鍵設計
+
+- **LLM 不做資格判定**：AI 負責語意抽取，規則引擎負責判定。
+- **敏感資料與媒合資料分流**：能留在使用者裝置的個資，不為了 AI 功能送出。
+- **官方表單原版面**：預填功能疊加在官方 PDF 上，不自行偽造政府表單。
+- **失敗可降級**：沒有 API key、模型逾時或失敗時，可走 deterministic / keyword fallback。
+
+## Repository 結構
+
+```text
 src/aidstation/
-  fields.py        欄位字典載入與正規化（含台語別名：檨仔→芒果）
-  engine.py        三值邏輯規則引擎＋缺口驅動提問（期限急迫者優先問）
-  deadline.py      期限兩型分流（工作日接假日行事曆）
-  knowledge.py     知識庫載入與啟動時驗證
-  extract.py       語意抽取層：Claude 受控輸出＋validate_facts 幻覺防火牆＋關鍵字後備
-  document.py      公文白話化：受控欄位、民國日期解析、白話卡、收文日反問
-  flow.py          對話狀態機（LINE／PWA 共用）：一次一題、我卡住了、公文流程
-  line_webhook.py  LINE Webhook：簽章驗證、quick reply、dry-run 測試模式
-  api.py           FastAPI（/match /translate /fields /programs /deadline /line/webhook）
+  api.py              FastAPI endpoints
+  extract.py          語意抽取 + validate_facts
+  engine.py           三值邏輯規則引擎
+  fields.py           欄位字典與正規化
+  knowledge.py        補助知識庫
+  deadline.py         期限計算
+  document.py         公文白話化
+  flow.py             對話狀態機
+  official_forms.py   官方表單 pack / mapping
+  blockers.py         卡點資料
+  admin.py            管理功能
+  line_webhook.py     LINE webhook
+
 data/
-  fields.json   欄位字典
-  holidays.json 國定假日（上線前須換完整行事曆）
-  programs/     補助種子資料（目前 10 筆，均標示示範或待人工覆核）
-scripts/demo.py 終端機互動展示
-tests/          pytest（核心、API 與申請流程契約）
+  fields.json
+  programs/
+  form_templates.json
+
+web/
+  主站前端、申請流程、表單編輯與 dashboard
+
+module/prefill/
+  舊版獨立預填服務
+
+tests/
+  核心規則、API、申請流程與表單契約測試
 ```
 
-## 環境變數
+## 快速啟動
 
-| 變數 | 用途 | 未設定時 |
-|------|------|---------|
-| `ANTHROPIC_API_KEY` | 語意抽取與公文翻譯走 Claude | 降級為關鍵字／規則式（離線可跑） |
-| `ANTHROPIC_MODEL` | 指定模型 | claude-opus-4-8 |
-| `LINE_CHANNEL_SECRET` | Webhook 簽章驗證 | 跳過驗證（僅限開發） |
-| `LINE_CHANNEL_ACCESS_TOKEN` | 回覆訊息 | dry-run：回覆放在 HTTP 回應中 |
-
-安全設計：LLM 輸出一律經過 `validate_facts()`／`sanitize_doc()` 過濾，
-未註冊欄位與不合法值直接丟棄——LLM 永遠無法影響資格判定，只能提供欄位值。
-LLM 故障時自動降級為規則式路徑，服務不中斷。
-
-## 快速開始
+### 建立環境
 
 ```bash
+python -m venv venv
+source venv/bin/activate
 pip install -r requirements.txt
-python -m pytest tests/ -q          # 跑測試
-PYTHONPATH=src python scripts/demo.py   # 終端機互動 demo
-PYTHONPATH=src uvicorn aidstation.api:app --reload  # 啟動 API
 ```
 
-## API 範例
+Windows PowerShell：
+
+```powershell
+venv\Scripts\Activate.ps1
+```
+
+### 啟動 Demo
 
 ```bash
-curl -X POST localhost:8000/match -H 'content-type: application/json' \
-  -d '{"facts": {"crop": "檨仔", "event": "天然災害", "township": "玉井區", "loss_rate": 0.6, "land_tenure": "口頭租約"}}'
+DEMO_MODE=true DEMO_DATE=2026-08-20 python run.py
 ```
 
-回傳：各補助的三級結果、未確認欄位、下一個該問的問題、應備文件（含豁免標記）、期限倒數。
+開啟：
 
-## 下一步（依 MVP 切分）
+```text
+http://127.0.0.1:8005/app/?demo=1
+```
 
-1. ~~LLM 受控輸出抽取層~~ ✅（extract.py，含降級路徑）
-2. 公文白話化 ✅（document.py）；**OCR 接入待辦**（PaddleOCR 台灣公文微調）
-3. LINE 接入 ✅（line_webhook.py）；**待辦**：建立官方帳號、設定 Rich Menu 三大鍵、
-   影像下載→OCR 串接、語音下載→台語 ASR（Breeze-ASR）串接
-4. 主站申請流程 ✅（詳情 → 開始申請 → 正在申請 → 本機預填／列印）
-5. 協辦者 PWA 工作台（案件列表＋A4 摘要匯出）
-6. 真實公告資料匯入與人工覆核流程
-7. 卡點回報落庫（flow.py 的 `_handle_stuck` 已留落點）
+`DEMO_DATE=2026-08-20` 是 Demo 用固定日期，避免正式受理日期已過時讓計畫顯示為關閉。
 
-⚠️ `data/programs/` 目前全為示範資料（source.status = "sample"），不可用於真實申辦指引。
+### 啟動 API
 
-## 子模組
+```bash
+PYTHONPATH=src uvicorn aidstation.api:app --reload
+```
 
-- `module/prefill/`：舊版預填表單服務（Flask，獨立 SQLite，預設 port 5000）。主站 Demo 的申請流程不依賴此服務；啟動與 API 見該目錄的 README。
+### 跑測試
+
+```bash
+python -m pytest tests/ -q
+python -m py_compile src/aidstation/*.py
+```
+
+## License
+
+本專案自有程式碼採用 [MIT License](./LICENSE)。
+
+政府表單、官方文件、資料、商標及其他第三方素材不因收錄於本 repository 而改變原始授權或權利歸屬；詳見 [`THIRD_PARTY_NOTICES.md`](./THIRD_PARTY_NOTICES.md)。
