@@ -1,4 +1,4 @@
-# Futuremode Hero Demo
+# Hero Demo Guide
 
 這是 Demo-first 的農民補助媒合流程：
 
@@ -10,10 +10,10 @@
 在 repo 根目錄執行：
 
 ```bash
-DEMO_MODE=true DEMO_DATE=2026-08-20 venv/bin/python run.py
+DEMO_MODE=true DEMO_DATE=2026-08-20 PORT=8000 venv/bin/python run.py
 ```
 
-開啟 <http://127.0.0.1:8005/app/?demo=1>（若有設定 `PORT`，請換成實際埠號）。
+開啟 <http://127.0.0.1:8000/app/?demo=1>（若有設定 `PORT`，請換成實際埠號）。
 
 `DEMO_DATE=2026-08-20` 是交接資料指定的 Hero 日期；它讓 115 年省工農機與青年農民資料在舞台 demo 時保持可展示。正式日期未設定時，API 會使用系統日期並依 application round 判斷 `CLOSED`。
 
@@ -37,7 +37,7 @@ DEMO_MODE=true DEMO_DATE=2026-08-20 venv/bin/python run.py
 
 ## 官方表單
 
-預填 demo 使用 `futuremode_official_forms_v2/` 提供的農糧署官方 115 年計畫抽頁與 mapping，不自行重畫政府表單。主要 Hero 表單是：
+預填 demo 以 repo 內的 `data/form_templates.json` manifest 和 `web/official-forms/` 官方 PDF 素材為準，不自行重畫政府表單。主要 Hero 表單是：
 
 - `farm_machine_115.labor_saving`：附表 9，官方 PDF 第 36 頁。
 - `farm_machine_115.electric_replacement`：附表 16，官方 PDF 第 43 頁。
@@ -74,4 +74,4 @@ venv/bin/python -m py_compile src/aidstation/*.py
 
 - Demo seed 以 `demo_simplified: true` 標記；不是完整行政規則數位化，也不保證最終核定。
 - LLM 沒有金鑰、逾時或失敗時，會使用 deterministic demo fallback，現場流程仍能繼續。
-- 表單 mapping 只覆蓋官方 pack 已提供的欄位；需要人工確認的欄位維持可編輯。
+- 表單 mapping 只覆蓋 manifest 已提供的欄位；需要人工確認的欄位維持可編輯。

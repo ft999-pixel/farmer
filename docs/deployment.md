@@ -1,9 +1,9 @@
-# 把網站放到網路上（永久網址）
+# Render 部署
 
-ngrok 只要關掉視窗就失效，網址每次都變。要一個「隨時都在、網址固定」的網站，就要部署。
+本 repo 以 Render 部署 FastAPI 主站。`render.yaml` 是 build/start command 與環境變數的設定來源；
+本指南補充第一次部署與展示時要注意的事項。
 
-本指南用 **Render** 免費方案（不用信用卡，介面最單純）。
-其他選擇：Zeabur（台灣團隊、介面中文）、Railway、Fly.io，流程大同小異。
+如果只是臨時讓隊友看，使用本機或 ngrok 即可；需要固定網址時再部署。
 
 ---
 
@@ -49,32 +49,18 @@ Render 每次重新部署或伺服器重啟，硬碟會**還原成 GitHub 上的
 
 ---
 
-## 步驟二：把程式放上 GitHub
+## 步驟二：確認 repository
 
-在專案資料夾開 cmd，依序執行：
-
-```
-git init
-git add .
-git commit -m "農民補給站 初版"
-```
-
-然後到 github.com 建一個新的 repository（**選 Private**，除非你確定要公開），
-照它畫面上給的指令貼上，通常是：
-
-```
-git remote add origin https://github.com/你的帳號/你的repo名.git
-git branch -M main
-git push -u origin main
-```
+確認要部署的 GitHub repository 已包含 `render.yaml`、`requirements.txt`、`src/`、`web/` 與 `data/`。
+本專案的 start command 不依賴本機的虛擬環境或額外服務。
 
 ---
 
 ## 步驟三：在 Render 部署
 
-1. 到 render.com 註冊，用 GitHub 帳號登入
+1. 到 Render 登入並連接 GitHub
 2. 點 **New +** → **Web Service**
-3. 選你剛剛上傳的那個 repository
+3. 選擇這個 repository
 4. 設定填這些：
 
 | 欄位 | 填什麼 |
@@ -84,14 +70,19 @@ git push -u origin main
 | Start Command | `python -m uvicorn aidstation.api:app --host 0.0.0.0 --port $PORT --app-dir src` |
 | Instance Type | `Free` |
 
-5. 往下找到 **Environment Variables**，把 `.env` 裡的內容一條一條加進去
+5. 往下找到 **Environment Variables**，把需要的值逐一填入
    （**不是上傳 `.env` 檔**，是在 Render 網頁上填）：
 
    | Key | Value |
    |---|---|
    | `ADMIN_PASSWORD` | 你改好的密碼 |
    | `ADMIN_SECRET` | 隨便一串長亂碼 |
+   | `MEMBER_SECRET` | 會員登入 cookie 的簽章金鑰 |
    | `ANTHROPIC_API_KEY` | 你的金鑰（不想給就留空，會自動降級成關鍵字模式） |
+   | `DEMO_PASSWORD` | 只在示範站需要；留空則不建立示範帳號 |
+
+   LINE Messaging API 與 LINE Login 只有在啟用對應入口時才需要填寫，欄位名稱請以
+   [`.env.example`](../.env.example) 為準。
 
 6. 按 **Create Web Service**，等 3～5 分鐘
 

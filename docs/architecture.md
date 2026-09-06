@@ -1,5 +1,8 @@
 # 系統流程圖
 
+> 目前部署的 FastAPI app 是 `src/aidstation/api.py`，靜態前端由同一個 app 掛載在 `/app/`；
+> 本圖補充主要模組之間的資料流，啟動方式以 README 與 `render.yaml` 為準。
+
 ## 1. 總覽（架構）
 
 ```mermaid
@@ -75,7 +78,7 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    PHOTO[拍照上傳公文] --> OCR[OCR 取文字<br/>待辦：PaddleOCR]
+    PHOTO[拍照上傳公文] --> OCR[影像讀取<br/>Claude vision／離線降級]
     OCR --> TR[translator.translate]
     TR --> SAN[sanitize_doc 受控欄位]
     SAN --> CD[build_plain_card]

@@ -1,4 +1,4 @@
-# 在自己電腦上啟動農民補給站（Windows）
+# 本機開發與展示（Windows）
 
 ## 一次性安裝
 
@@ -6,14 +6,14 @@
 2. 開啟「命令提示字元」（按 Win 鍵打 cmd），執行：
 
 ```
-cd C:\Users\futong\Claude\Projects\農民補助系統
+cd path\to\farmer
 pip install -r requirements.txt
 ```
 
 ## 每次啟動
 
 ```
-cd C:\Users\futong\Claude\Projects\農民補助系統
+cd path\to\farmer
 python scripts\check_keys.py
 python run.py
 ```
@@ -75,7 +75,7 @@ python run.py
 
 ### 情況三：要固定網址、隨時都能開 → 部署上線
 
-ngrok 關掉就失效、網址每次都變。要放進簡報的固定網址，看 [部署指南.md](部署指南.md)。
+ngrok 關掉就失效、網址每次都變。要放進簡報的固定網址，看 [Render 部署](deployment.md)。
 
 ### 情況二：隊友在外地 → 用 ngrok
 
