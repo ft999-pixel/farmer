@@ -146,7 +146,7 @@ function windowText(w){
   const context = selected ? {program: p, variant: selectedVariant, round: selectedRound} : null;
   const currentApplication = context && window.ApplicationStore
     ? window.ApplicationStore.listActive().find(row => row.scope_key === window.ApplicationStore.scopeKey(context)) : null;
-  const statusText = type => ({completion: '完成後打勾', submission: '送出後確認', form_submission: '填寫後再確認送出'})[type] || '完成後確認';
+  const statusText = type => ({completion: '一般完成', submission: '送出確認', form_submission: '填寫及送出'})[type] || '一般完成';
   const flowCards = choices.map(item => {
     const isSelected = selected && item.variant.id === selected.variant.id && item.round.id === selected.round.id;
     const href = 'program.html?id=' + encodeURIComponent(p.id) + '&variant_id=' + encodeURIComponent(item.variant.id) + '&round_id=' + encodeURIComponent(item.round.id);

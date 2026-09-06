@@ -730,7 +730,7 @@
         tasks.find(task => !localTaskState(legacyProgress, task).complete);
       if (nextNode) nextNode.textContent = next ? '接下來：' + next.title : (appMode ? '所有申請項目都完成了，請確認完成申請。' : '目前清單已完成。');
       if (completeButton) completeButton.hidden = !appMode || !root.ApplicationStore.canComplete(record);
-      if (openFormButton && appMode) openFormButton.textContent = template ? '下一步：編輯申請表' : '下一步：查看申請方式';
+      if (openFormButton && appMode) openFormButton.textContent = template ? '編輯申請表' : '查看申請方式';
       container.querySelectorAll('.task-item').forEach(item => {
         const task = tasks.find(candidate => candidate.id === item.dataset.taskId);
         const state = appMode ? root.ApplicationStore.taskState(record, task) : localTaskState(legacyProgress, task);
@@ -738,13 +738,6 @@
         item.querySelectorAll('input[data-task-key]').forEach(input => {
           const key = input.dataset.taskKey;
           input.checked = Boolean(state[key]);
-          if (!appMode) return;
-          const type = taskType(task);
-          input.disabled = type === 'form_submission' && key === 'filled'
-            ? Boolean(template)
-            : type === 'form_submission' && key === 'submitted'
-              ? Boolean(!state.filled) && !state.complete
-              : false;
         });
         item.querySelectorAll('[data-state-key]').forEach(node => {
           const key = node.dataset.stateKey;
@@ -756,12 +749,11 @@
       if (status) status.textContent = info.completed ? '清單進度已留在這台裝置。' : '';
     }
 
-    function addCheckbox(parent, task, state, key, labelText, disabled, change) {
+    function addCheckbox(parent, task, state, key, labelText, change) {
       const label = textElement('label', 'task-control');
       const input = doc.createElement('input');
       input.type = 'checkbox';
       input.checked = Boolean(state[key]);
-      input.disabled = Boolean(disabled);
       input.dataset.taskKey = key;
       input.setAttribute('aria-label', task.title + '：' + labelText);
       input.addEventListener('change', () => change(input.checked));
@@ -795,11 +787,11 @@
           refresh();
           if (onChange) onChange(Boolean(saved), saved);
         };
-        if (type === 'completion') addCheckbox(controls, task, state, 'completed', '已完成', false, checked => update({completed: checked}));
-        if (type === 'submission') addCheckbox(controls, task, state, 'submitted', '已送出', false, checked => update({submitted: checked}));
+        if (type === 'completion') addCheckbox(controls, task, state, 'completed', '已完成', checked => update({completed: checked}));
+        if (type === 'submission') addCheckbox(controls, task, state, 'submitted', '已送出', checked => update({submitted: checked}));
         if (type === 'form_submission') {
-          addCheckbox(controls, task, state, 'filled', template ? '已填寫（儲存表單後更新）' : '已填寫', Boolean(template), checked => update({filled: checked}));
-          addCheckbox(controls, task, state, 'submitted', '已送出', Boolean(!state.filled) && !state.complete, checked => update({submitted: checked}));
+          addCheckbox(controls, task, state, 'filled', '已填寫', checked => update({filled: checked}));
+          addCheckbox(controls, task, state, 'submitted', '已送出', checked => update({submitted: checked}));
           if (template) {
             const button = textElement('button', 'button small task-open-form', '編輯表單');
             button.type = 'button';
@@ -950,8 +942,6 @@
     const overlay = doc.getElementById('official-overlay');
     const pdf = doc.getElementById('official-pdf');
     const openLink = doc.getElementById('official-open-link');
-    const officialHelp = doc.getElementById('official-help');
-    const overlayNote = doc.getElementById('official-overlay-note');
     const form = doc.getElementById('application-form');
     const privateFields = doc.getElementById('private-fields');
     const matchingFields = doc.getElementById('matching-fields');
@@ -982,35 +972,22 @@
       }
     }, application, scrollToForm);
 
-    const formTask = application && application.items
-      ? application.items.find(task => taskType(task) === 'form_submission') : null;
-
-    function syncApplicationFilled() {
-      if (!application || !formTask || !template || !root.ApplicationStore) return;
-      const filled = root.ApplicationStore.requiredFieldsComplete(template, values);
-      const saved = root.ApplicationStore.updateTask(application.id, formTask.id, {filled});
-      if (saved) application = saved;
-      if (refreshTasks) refreshTasks();
-    }
-
-    // A user may have saved this form before leaving the flow.  Reconcile the
-    // stored draft on resume so the checklist does not ask them to repeat a
-    // completed fill step just because they did not press the task checkbox.
-    if (template) syncApplicationFilled();
-
     if (!template) {
       if (openFormButton) {
-        openFormButton.textContent = '下一步：查看申請方式';
+        openFormButton.textContent = '查看申請方式';
         openFormButton.setAttribute('aria-controls', 'official-section');
       }
-      if (formSection) formSection.hidden = true;
+      if (formSection) formSection.hidden = false;
+      const formHead = formSection && formSection.querySelector('.form-section-head');
+      const legend = formSection && formSection.querySelector('.form-legend');
+      if (formHead) formHead.hidden = true;
+      if (legend) legend.hidden = true;
+      if (form) form.hidden = true;
       if (missing) missing.hidden = false;
       if (sheetWrap) sheetWrap.hidden = true;
       if (openLink) openLink.hidden = true;
-      if (officialHelp) officialHelp.hidden = true;
-      if (overlayNote) overlayNote.hidden = true;
-      const officialActions = doc.getElementById('official-preview');
-      if (officialActions) officialActions.parentElement.hidden = true;
+      const formActions = doc.getElementById('form-actions');
+      if (formActions) formActions.hidden = true;
       const completeButton = doc.getElementById('complete-application');
       if (completeButton && application) completeButton.hidden = !root.ApplicationStore.canComplete(application);
       attachCompletion(application);
@@ -1049,7 +1026,6 @@
       const saved = saveProfiles(template, values, profiles, params);
       profiles.privateForm = saved.privateForm;
       profiles.matching = saved.matching;
-      syncApplicationFilled();
       updateOfficialOverlay(overlay, values);
       if (saveStatus) {
         saveStatus.classList.toggle('warn', !saved.ok);
@@ -1063,7 +1039,6 @@
     const saveButton = doc.getElementById('save-local');
     const previewButton = doc.getElementById('preview-form');
     const printButton = doc.getElementById('print-form');
-    const officialPreviewButton = doc.getElementById('official-preview');
     const closePreviewButton = doc.getElementById('close-preview');
 
     if (saveButton) saveButton.addEventListener('click', function () { save(false); });
@@ -1082,7 +1057,6 @@
       root.setTimeout(function () { root.print(); }, 80);
     }
     if (printButton) printButton.addEventListener('click', printOfficial);
-    if (officialPreviewButton) officialPreviewButton.addEventListener('click', printOfficial);
     attachCompletion(application);
 
     root.addEventListener('beforeprint', function () {
@@ -1093,9 +1067,7 @@
       const completeButton = doc.getElementById('complete-application');
       if (!completeButton || !record || !root.ApplicationStore) return;
       completeButton.onclick = function () {
-        // Capture any direct-on-sheet edits before the final gate.  This keeps
-        // an unsaved blank required field from being marked complete and makes
-        // the completed application reopen with exactly what was printed.
+        // Capture any direct-on-sheet edits before completing the application.
         if (template) save(true);
         const current = root.ApplicationStore.get(record.id) || record;
         if (!root.ApplicationStore.canComplete(current)) return;

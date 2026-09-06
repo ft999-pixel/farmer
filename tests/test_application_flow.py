@@ -30,6 +30,8 @@ def test_every_program_round_has_typed_tasks_and_valid_dependencies():
             for task in tasks:
                 assert task.get("title")
                 assert task.get("description")
+                assert "再繼續下一步" not in task["description"]
+                assert "完成「" not in task["description"]
                 assert task.get("status_type") in ALLOWED_TYPES
                 assert set(task.get("depends_on") or []).issubset(ids)
 
@@ -53,6 +55,9 @@ def test_application_and_program_pages_are_served_with_flow_assets():
     assert "開始申請" in program.text
     assert form.status_code == 200
     assert "complete-application" in form.text
+    assert "官方表單預覽" not in form.text
+    assert "畫面上的字是疊上去的" not in form.text
     prefill = client.get("/app/form-prefill.js").text
     assert "overlay-control" in prefill
     assert "請先完成前一項" not in prefill
+    assert "儲存表單後更新" not in prefill
