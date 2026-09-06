@@ -19,3 +19,10 @@ services:
         sync: false
       - key: ANTHROPIC_API_KEY  # 不填也能跑，公文翻譯會降級成關鍵字模式
         sync: false
+      # 示範帳號的密碼。Render 的磁碟是暫時性的、data/*.db 又不進版控，
+      # 所以部署站每次重新部署帳號表都是空的，示範帳號要在啟動時重建。
+      # 填了才會建（帳號名見 web/demo-persona.json，目前是 farmer）；
+      # ⚠️ 等於在公開網址上開一個已知帳密的一般會員帳號，只在示範站填。
+      # 不示範時把這個變數刪掉，帳號就不會再出現。
+      - key: DEMO_PASSWORD
+        sync: false

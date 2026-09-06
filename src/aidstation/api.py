@@ -24,6 +24,7 @@ from . import __version__, blockers, guides
 from .admin import router as admin_router
 from .auth import router as auth_router
 from .deadline import deadline_from_received, load_holidays
+from .demo_seed import ensure_demo_accounts
 from .document import ImageReadError, build_plain_card, get_translator, read_image
 from .matching import MatchingInputError, match_profile
 from .fields import load_fields
@@ -46,6 +47,10 @@ app.include_router(official_forms_router)
 FIELDS = load_fields()
 PROGRAMS = load_programs(fields=FIELDS)
 HOLIDAYS = load_holidays()
+
+# 部署站的資料庫每次重新部署都是空的（磁碟是暫時性的，data/*.db 也不進版控），
+# 示範帳號因此要在啟動時重建。沒設 DEMO_PASSWORD 就是完全不做事。
+DEMO_ACCOUNTS = ensure_demo_accounts()
 
 
 class DeadlineRequest(BaseModel):
