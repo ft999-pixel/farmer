@@ -835,41 +835,27 @@
     node.style.height = (Number(field.height || 16) / PDF_HEIGHT) * 100 + '%';
   }
 
-  function renderOfficialOverlay(overlay, template, values, onChange) {
+  // 疊在官方 PDF 上的一律是唯讀文字，不是輸入框。編輯發生在上方分組好的欄位卡，
+  // 那裡才有標籤、必填標記、「這筆存在哪」的標示與說明——直接在 PDF 上點小格子
+  // 打字看不出這些，欄位一多也難按。PDF 的角色是「你填的字長在官方版面上的樣子」。
+  function renderOfficialOverlay(overlay, template, values) {
     overlay.innerHTML = '';
     if (!template) return;
     (template.fields || []).filter(function (field) {
       return field.overlay !== false && field.pos_x != null && field.pos_y != null;
     }).forEach(function (field) {
-      const input = field.type === 'textarea' ? doc.createElement('textarea') : doc.createElement('input');
-      input.className = 'overlay-control';
-      input.id = 'overlay-' + safeId(field.field_key);
-      input.name = field.field_key;
-      input.value = escapeText(values[field.field_key] || '');
-      input.dataset.fieldKey = field.field_key;
-      input.dataset.overlayKey = field.field_key;
-      input.setAttribute('aria-label', field.label + (field.required ? '（必填）' : ''));
-      if (field.type !== 'textarea') input.type = field.type === 'number' ? 'number' : (field.type || 'text');
-      if (field.required) input.required = true;
-      if (field.editable === false) input.readOnly = true;
-      if (field.autocomplete) input.autocomplete = field.autocomplete;
-      if (field.inputmode) input.inputMode = field.inputmode;
-      positionNode(input, field);
-      input.addEventListener('input', () => { if (onChange) onChange(field.field_key, input.value); });
-      overlay.appendChild(input);
-
-      const print = textElement('span', 'overlay-print-text');
-      print.dataset.overlayKey = field.field_key;
-      positionNode(print, field);
-      print.textContent = escapeText(values[field.field_key] || '');
-      print.classList.toggle('empty', !print.textContent);
-      overlay.appendChild(print);
+      const span = textElement('span', 'overlay-text');
+      span.dataset.overlayKey = field.field_key;
+      positionNode(span, field);
+      span.textContent = escapeText(values[field.field_key] || '');
+      span.classList.toggle('empty', !span.textContent);
+      overlay.appendChild(span);
     });
   }
 
   function updateOfficialOverlay(overlay, values) {
     if (!overlay) return;
-    overlay.querySelectorAll('.overlay-print-text[data-overlay-key]').forEach(function (span) {
+    overlay.querySelectorAll('.overlay-text[data-overlay-key]').forEach(function (span) {
       const value = escapeText(values[span.dataset.overlayKey] || '');
       span.textContent = value;
       span.classList.toggle('empty', !value);
@@ -943,6 +929,14 @@
     const pdf = doc.getElementById('official-pdf');
     const openLink = doc.getElementById('official-open-link');
     const form = doc.getElementById('application-form');
+    // 舊版 form.html 沒有這個容器就自己補一個，插在表單最前面（對應官方表單
+    // 第一列的災害名稱與申請日期），少一個 div 不該讓整份表單消失。
+    let draftFields = doc.getElementById('draft-fields');
+    if (!draftFields && form) {
+      draftFields = doc.createElement('div');
+      draftFields.id = 'draft-fields';
+      form.insertBefore(draftFields, form.firstChild);
+    }
     const privateFields = doc.getElementById('private-fields');
     const matchingFields = doc.getElementById('matching-fields');
     const helperFields = doc.getElementById('helper-fields');
@@ -1005,20 +999,33 @@
       openLink.href = pdfUrl;
       openLink.setAttribute('aria-label', '開新分頁看' + template.name + '原始 PDF');
     }
-    renderOfficialOverlay(overlay, template, values, onFieldChange);
+    renderOfficialOverlay(overlay, template, values);
 
-    // Official fields are now edited on the sheet itself.  Keep the form
-    // container for helper-only fields and legacy direct links, but never
-    // render a second copy of calibrated fields beside the PDF.
-    //
-    // 受災證明書的「災害名稱／申請日期」沒有 storage_scope，值只留在這張表的
-    // 草稿：不寫回 MatchingProfile，也不寫進本機個資。改成在 PDF 上直接編輯
-    // 之後，它們自然就是 overlay 上的輸入框，不需要再開一個欄位群。
-    if (privateFields) { privateFields.innerHTML = ''; privateFields.hidden = true; }
-    if (matchingFields) { matchingFields.innerHTML = ''; matchingFields.hidden = true; }
+    // 欄位依「這筆資料存在哪裡」分組，這是這頁要講清楚的第一件事：
+    // 個資只留在本機、媒合欄位會同步、這次申請填的兩者都不寫回去。
+    // 分組同時決定了 saveProfiles 把值寫去哪，所以畫面上的分法就是實際行為。
+    const officialFields = (template.fields || []).filter(f => !f.helper_only);
+    const privateList = officialFields.filter(f => f.storage_scope === 'private');
+    const matchingList = officialFields.filter(f => f.storage_scope === 'matching');
+    // 沒有 storage_scope 的（災害名稱、申請日期）每次申請都不一樣，
+    // 只留在這張表的草稿裡，不寫回 MatchingProfile 也不寫進本機個資。
+    const draftList = officialFields.filter(
+      f => f.storage_scope !== 'private' && f.storage_scope !== 'matching');
     const helperList = (template.fields || []).filter(f => f.helper_only);
+
+    if (privateFields) { privateFields.innerHTML = ''; privateFields.hidden = false; }
+    if (matchingFields) { matchingFields.innerHTML = ''; matchingFields.hidden = false; }
+    if (draftFields) { draftFields.innerHTML = ''; draftFields.hidden = false; }
     if (helperFields) helperFields.innerHTML = '';
-    if (helperList.length) renderFieldGroup(helperFields, '其他備註', '這些只是留給你自己看的，不會印到官方表單上。', helperList, values, onFieldChange);
+
+    if (draftList.length) {
+      renderFieldGroup(draftFields, '這次申請填的', '只留在這張表的草稿裡，不會存進你的常用資料。', draftList, values, onFieldChange);
+    }
+    renderFieldGroup(privateFields, '你的個人資料', '這些只存在你的手機或電腦裡，不會送出去。', privateList, values, onFieldChange);
+    renderFieldGroup(matchingFields, '當次媒合欄位', '作物與申請條件可由 MatchingProfile 預填，仍可修改。', matchingList, values, onFieldChange);
+    if (helperList.length) {
+      renderFieldGroup(helperFields, '其他備註', '這些只是留給你自己看的，不會印到官方表單上。', helperList, values, onFieldChange);
+    }
 
     function save(silent) {
       const nextValues = collectValues(form, values, overlay);

@@ -55,16 +55,18 @@
     <section class="panel form-section" id="form-section" aria-labelledby="form-title">
       <div class="form-section-head">
         <div>
-          <h2 id="form-title">填寫表單</h2>
-          <p class="panel-intro">直接在官方表單上修改內容，並在下方儲存、預覽或列印。</p>
+          <h2 id="form-title">填寫申請表</h2>
+          <p class="panel-intro">欄位可以直接改；按「先存起來」之後，重新整理也還在。</p>
         </div>
         <span class="storage-badge local">不會送出・只存在你的裝置</span>
       </div>
       <form id="application-form" novalidate>
+        <div id="draft-fields"></div>
         <div id="private-fields"></div>
         <div id="matching-fields"></div>
         <div id="helper-fields" class="helper-fields"></div>
       </form>
+      <p class="form-source-note">下面是官方表單的原始樣子，你在上面填的字會即時疊上去。沒有對應座標的內容只會留著給你參考，不會印到官方表單上。</p>
       <div class="official-section" id="official-section" aria-labelledby="official-title">
         <div class="official-section-head">
           <div>
@@ -79,7 +81,7 @@
         <div class="official-sheet-wrap" id="official-sheet-wrap">
           <div class="official-sheet" id="official-sheet">
             <img class="official-pdf" id="official-pdf" alt="官方申請表 PDF 原始背景" src="about:blank">
-            <div class="official-overlay" id="official-overlay"></div>
+            <div class="official-overlay" id="official-overlay" aria-hidden="true"></div>
           </div>
         </div>
       </div>

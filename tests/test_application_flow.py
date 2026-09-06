@@ -56,8 +56,28 @@ def test_application_and_program_pages_are_served_with_flow_assets():
     assert form.status_code == 200
     assert "complete-application" in form.text
     assert "官方表單預覽" not in form.text
-    assert "畫面上的字是疊上去的" not in form.text
     prefill = client.get("/app/form-prefill.js").text
-    assert "overlay-control" in prefill
     assert "請先完成前一項" not in prefill
     assert "儲存表單後更新" not in prefill
+
+
+def test_official_fields_are_edited_beside_the_sheet_not_on_it():
+    """欄位在 PDF 旁邊分組編輯，PDF 上只疊唯讀文字。
+
+    分組本身就是隱私說明：哪些只留在本機、哪些會同步、哪些只是這次草稿。
+    直接在 PDF 的小格子上打字看不出這件事，所以 overlay 不放輸入框。
+    """
+    form = client.get("/app/form.html?application_id=missing")
+    prefill = client.get("/app/form-prefill.js").text
+    css = client.get("/app/form-prefill.css").text
+
+    for container in ("draft-fields", "private-fields", "matching-fields", "helper-fields"):
+        assert f'id="{container}"' in form.text, container
+    assert 'id="official-overlay" aria-hidden="true"' in form.text
+
+    assert "overlay-control" not in prefill, "PDF 上不應該再有可編輯的輸入框"
+    assert "overlay-control" not in css
+    assert "renderFieldGroup(privateFields" in prefill
+    assert "renderFieldGroup(matchingFields" in prefill
+    assert "renderFieldGroup(draftFields" in prefill
+    assert "pointer-events: none" in css

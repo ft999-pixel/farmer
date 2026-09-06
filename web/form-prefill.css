@@ -471,9 +471,10 @@ textarea.field-value { min-height: 100px; resize: vertical; line-height: 1.55; }
   position: absolute;
   z-index: 1;
   inset: 0;
-  pointer-events: auto;
+  /* PDF 上的字是唯讀預覽，不吃點擊；編輯一律在上方的欄位卡 */
+  pointer-events: none;
 }
-.overlay-control, .overlay-print-text {
+.overlay-text {
   position: absolute;
   display: block;
   overflow: hidden;
@@ -487,20 +488,7 @@ textarea.field-value { min-height: 100px; resize: vertical; line-height: 1.55; }
   white-space: nowrap;
   text-overflow: clip;
 }
-.overlay-control {
-  z-index: 2;
-  min-width: 0;
-  min-height: 0;
-  border: 1px dashed rgba(1, 185, 107, 0.78);
-  border-radius: 2px;
-  outline: none;
-  resize: none;
-}
-.overlay-control:focus { border: 2px solid var(--green-mid); background: rgba(255, 255, 255, .94); }
-.overlay-control[readonly] { background: rgba(255, 255, 255, .52); }
-textarea.overlay-control { white-space: pre-wrap; overflow: auto; }
-.overlay-print-text { z-index: 1; display: none; pointer-events: none; }
-.overlay-control.empty, .overlay-print-text.empty { background: rgba(255, 255, 255, 0.34); }
+.overlay-text.empty { background: rgba(255, 255, 255, 0.34); }
 .official-missing {
   padding: 16px;
   color: var(--ink-soft);
@@ -562,9 +550,7 @@ footer p { max-width: 760px; margin: 0 auto; }
     break-inside: avoid;
     page-break-inside: avoid;
   }
-  .overlay-control { display: none !important; }
-  .overlay-print-text {
-    display: block;
+  .overlay-text {
     padding: 0;
     color: #000000;
     background: transparent;
@@ -572,6 +558,6 @@ footer p { max-width: 760px; margin: 0 auto; }
     font-size: 8pt;
     line-height: 1.2;
   }
-  .overlay-print-text.empty { background: transparent; }
+  .overlay-text.empty { background: transparent; }
   .helper-fields { display: none; }
 }
