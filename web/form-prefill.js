@@ -357,8 +357,11 @@
     }
   }
 
+  // 沒註冊 → sessionStorage（關掉分頁就沒了）；註冊了 → localStorage。見 storage-mode.js
   function getStorage() {
-    try { return root.localStorage; } catch (e) { return null; }
+    try {
+      return root.AidStorage ? root.AidStorage.area() : root.sessionStorage;
+    } catch (e) { return null; }
   }
 
   function readJson(key) {

@@ -156,6 +156,34 @@ def test_demo_seed_fills_both_kinds_and_uploads_neither():
     assert "saveAndMatch" not in seed_block
 
 
+def test_anonymous_data_never_touches_local_storage():
+    """沒註冊就不在硬碟上留東西：所有 store 都走 AidStorage.area()。
+
+    匿名 → sessionStorage（關掉分頁就沒了），註冊 → localStorage。
+    預填表單在另一頁，所以不能「完全不存」，得靠 sessionStorage 跨頁交接。
+    """
+    from aidstation.api import app
+
+    client = TestClient(app)
+    mode = client.get("/app/storage-mode.js")
+    assert mode.status_code == 200
+    # 搬家用前綴比對，不寫死鍵名——寫死過一次就會漏掉帶版本後綴的鍵
+    assert "KEY_PREFIX = 'aidstation_'" in mode.text
+    assert "MIGRATED_KEYS" not in mode.text
+
+    for path in ("/app/profile-store.js", "/app/form-prefill.js",
+                 "/app/application-store.js"):
+        body = client.get(path).text
+        assert "AidStorage.area()" in body, path
+        assert "root.localStorage" not in body, f"{path} 仍直接用 localStorage"
+
+    profile = client.get("/app/profile.html").text
+    assert "AidStorage.setPersistent(loggedIn)" in profile
+    # 每個載入 store 的頁面都要先載入 storage-mode.js，否則會退回 sessionStorage
+    for page in ("profile.html", "form.html", "applications.html", "program.html"):
+        assert 'src="storage-mode.js"' in client.get(f"/app/{page}").text, page
+
+
 def test_stale_application_records_recover_a_late_added_form():
     """申請紀錄是快照；補助後來才掛上官方表單時，舊紀錄要補得回來。"""
     from aidstation.api import app

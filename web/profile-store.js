@@ -101,9 +101,12 @@
     return result;
   }
 
+  // 沒註冊時走 sessionStorage：這一趟用得好好的，關掉分頁就不留痕跡。
+  // 註冊之後才換成 localStorage（見 storage-mode.js）。
   function getStorage() {
     try {
-      return root && root.localStorage ? root.localStorage : null;
+      if (root && root.AidStorage) return root.AidStorage.area();
+      return root && root.sessionStorage ? root.sessionStorage : null;
     } catch (e) {
       return null;
     }

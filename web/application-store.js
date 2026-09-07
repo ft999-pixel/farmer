@@ -17,9 +17,12 @@
   const STATUS_TYPES = Object.freeze(['completion', 'submission', 'form_submission']);
   const DEFAULT_TASK_DESCRIPTION = '請依補助說明處理此項。';
 
+  // 沒註冊 → sessionStorage（關掉分頁就沒了）；註冊了 → localStorage。見 storage-mode.js
   function storage() {
-    try { return root && root.localStorage ? root.localStorage : null; }
-    catch (e) { return null; }
+    try {
+      if (root && root.AidStorage) return root.AidStorage.area();
+      return root && root.sessionStorage ? root.sessionStorage : null;
+    } catch (e) { return null; }
   }
 
   function isObject(value) {

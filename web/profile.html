@@ -163,6 +163,7 @@ input:focus,select:focus,textarea:focus{outline:3px solid var(--green-pale);bord
   </section>
 </div>
 
+<script src="storage-mode.js"></script>
 <script src="profile-store.js"></script>
 <script>
 const $ = id => document.getElementById(id);
@@ -259,15 +260,20 @@ function backendMatchingProfile(includeTransient = true){
   return result;
 }
 
+// 沒註冊 → sessionStorage（關掉分頁就沒了）；註冊了 → localStorage。見 storage-mode.js
+function store(){
+  return (window.AidStorage && AidStorage.area()) || sessionStorage;
+}
+
 const MATCHING_STORAGE_KEY = 'aidstation_matching_profile';
 function saveMatchingLocally(){
   try {
-    localStorage.setItem(MATCHING_STORAGE_KEY, JSON.stringify(backendMatchingProfile(false)));
+    store().setItem(MATCHING_STORAGE_KEY, JSON.stringify(backendMatchingProfile(false)));
   } catch (e) {}
 }
 function loadMatchingLocally(){
   try {
-    const raw = JSON.parse(localStorage.getItem(MATCHING_STORAGE_KEY) || '{}');
+    const raw = JSON.parse(store().getItem(MATCHING_STORAGE_KEY) || '{}');
     return canonicalMatchingProfile(raw);
   } catch (e) { return {}; }
 }
@@ -282,8 +288,8 @@ async function api(path, opts){
 
 // 「看過哪些補助」純粹是畫面提示，留在本機就好，不必存進資料庫
 const SEEN_KEY = 'aidstation_seen';
-const loadSeen = () => { try { return JSON.parse(localStorage.getItem(SEEN_KEY) || '[]'); } catch (e) { return []; } };
-const saveSeen = ids => localStorage.setItem(SEEN_KEY, JSON.stringify(ids));
+const loadSeen = () => { try { return JSON.parse(store().getItem(SEEN_KEY) || '[]'); } catch (e) { return []; } };
+const saveSeen = ids => store().setItem(SEEN_KEY, JSON.stringify(ids));
 
 async function persistMatchingProfile(){
   if (!loggedIn) return;
@@ -313,9 +319,11 @@ function renderLogin(){
         <a class="action-link" href="login.html?next=${next}">註冊或登入</a>
       </div>
       <p class="hint" style="margin-top:12px">
-        現在填的資料<b>留在這台裝置</b>，一樣可以查補助、預填申請表、列印。<br>
-        註冊之後多換到的是：<b>換手機或換電腦時，作物、鄉鎮這些不用重填</b>。
-        姓名、身分證、地號這類個人資料不管有沒有註冊，都只留在這台裝置，不會上傳。
+        現在填的資料<b>不會留在這台裝置</b>——關掉分頁就沒了。
+        但這一趟一樣可以查補助、預填申請表、列印，不會少任何功能。<br>
+        註冊之後多換到的是：<b>所有資料不用重填</b>，
+        而且<b>有和你相關的補助時會用 LINE 通知你</b>。
+        姓名、身分證、地號這類個人資料不管有沒有註冊，都只留在你自己的裝置，不會上傳。
       </p>`;
     return;
   }
@@ -786,8 +794,8 @@ async function saveAndMatch(){
   try {
     savePrivateForm();                               // browser-only
     await persistMatchingProfile();                 // matching-only, if logged in
-    msg(loggedIn ? '媒合資料已存到你的帳號；私密資料只留在這台裝置。'
-                 : '已存在這台裝置，下次打開還在。要換手機也帶著的話再註冊就好。', 'ok');
+    msg(loggedIn ? '媒合資料已存到你的帳號；個人資料只留在這台裝置。'
+                 : '這一趟可以繼續用，但關掉分頁就不留了。要留著下次不用重填的話，註冊就好。', 'ok');
     renderResults(await match());
     renderHeroPreview();
     $('results-box').scrollIntoView({behavior: 'smooth'});
@@ -827,8 +835,8 @@ $('clear').onclick = async () => {
   try {
     if (loggedIn) await api('/members/me', {method: 'DELETE'});
     ProfileStore.clear();
-    localStorage.removeItem(SEEN_KEY);
-    localStorage.removeItem(MATCHING_STORAGE_KEY);
+    store().removeItem(SEEN_KEY);
+    store().removeItem(MATCHING_STORAGE_KEY);
     matchingProfile = blankMatchingProfile();
     privateFormProfile = {};
     transient = {};
@@ -874,6 +882,12 @@ async function afterLogin(){
   let me = {logged_in: false};
   try { me = await api('/members/me'); } catch (e) { /* 未登入或離線都當作匿名 */ }
   loggedIn = Boolean(me.logged_in);
+  // 這一頁是唯一問得到登入狀態的地方，由它校正儲存模式。
+  // 剛註冊完 → 把這一趟填的東西從 sessionStorage 搬進 localStorage，留下來；
+  // 登出 → 反向搬回去，硬碟上不留東西。
+  if (window.AidStorage) AidStorage.setPersistent(loggedIn);
+  matchingProfile = loadMatchingLocally();
+  privateFormProfile = ProfileStore.load();
   if (loggedIn) {
     memberCode = me.code || null;
     // 登入了才用帳號上的資料覆蓋本機；匿名時沿用 loadMatchingLocally() 的結果
