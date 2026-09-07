@@ -303,9 +303,22 @@ async function persistMatchingProfile(){
 function esc(s){ return String(s ?? '').replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c])); }
 function msg(html, kind){ $('msg').innerHTML = html ? `<div class="msg ${kind}">${html}</div>` : ''; }
 
-// ---- 登入（Demo 版：只輸入代號，沒有密碼）---------------------------------
-// 這一頁未登入會在載入時就被導走，所以這裡只會遇到已登入的情況
+// ---- 登入狀態 -------------------------------------------------------------
+// 未登入不是錯誤狀態，是預設狀態。這裡只說明「註冊能多換到什麼」，不擋路。
 function renderLogin(){
+  if (!loggedIn) {
+    const next = encodeURIComponent(location.pathname + location.search);
+    $('login-box').innerHTML = `<div class="linked">
+        <span class="pill">還沒註冊，直接用就好</span>
+        <a class="action-link" href="login.html?next=${next}">註冊或登入</a>
+      </div>
+      <p class="hint" style="margin-top:12px">
+        現在填的資料<b>留在這台裝置</b>，一樣可以查補助、預填申請表、列印。<br>
+        註冊之後多換到的是：<b>換手機或換電腦時，作物、鄉鎮這些不用重填</b>。
+        姓名、身分證、地號這類個人資料不管有沒有註冊，都只留在這台裝置，不會上傳。
+      </p>`;
+    return;
+  }
   $('login-box').innerHTML = `<div class="linked">
       <span class="pill">目前是：${esc(memberCode)}</span>
       <button id="logout">換人／登出</button>
@@ -758,8 +771,8 @@ async function saveAndMatch(){
   try {
     savePrivateForm();                               // browser-only
     await persistMatchingProfile();                 // matching-only, if logged in
-    msg(loggedIn ? '媒合資料已存好；私密資料只留在這台裝置。'
-                 : '這次先用本機的媒合資料查詢；私密資料只留在這台裝置。', 'ok');
+    msg(loggedIn ? '媒合資料已存到你的帳號；私密資料只留在這台裝置。'
+                 : '已存在這台裝置，下次打開還在。要換手機也帶著的話再註冊就好。', 'ok');
     renderResults(await match());
     renderHeroPreview();
     $('results-box').scrollIntoView({behavior: 'smooth'});
@@ -840,17 +853,18 @@ async function afterLogin(){
   matchingProfile = loadMatchingLocally();
   await loadOfficialTemplateIds();
   FIELDS = await (await fetch('/fields')).json();
-  const me = await api('/members/me');
-  if (!me.logged_in) {
-    // 「我的資料」是登入後才有的頁面，未登入直接送去登入頁，
-    // 並記住原本要去哪，登入完再回來。
-    location.replace('login.html?next=' + encodeURIComponent(location.pathname + location.search));
-    return;
+  // 不登入也能用。這個系統的前提是農民打開就能查，註冊是為了「下次不用重填」，
+  // 不是進門的條件——把註冊擋在前面，最需要幫忙的人會直接離開。
+  // 未登入時媒合資料留在這台裝置（localStorage），個資本來就只留本機。
+  let me = {logged_in: false};
+  try { me = await api('/members/me'); } catch (e) { /* 未登入或離線都當作匿名 */ }
+  loggedIn = Boolean(me.logged_in);
+  if (loggedIn) {
+    memberCode = me.code || null;
+    // 登入了才用帳號上的資料覆蓋本機；匿名時沿用 loadMatchingLocally() 的結果
+    matchingProfile = canonicalMatchingProfile(me.profile || me.facts || {});
+    saveMatchingLocally();
   }
-  memberCode = me.code || null;
-  matchingProfile = canonicalMatchingProfile(me.profile || me.facts || {});
-  saveMatchingLocally();
-  loggedIn = true;
   await afterLogin();
   await setupDemoSeed();
 

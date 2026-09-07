@@ -105,3 +105,33 @@ def test_hero_static_pages_are_served_by_existing_app_mount():
     assert "自己整理用的資料表" not in profile.text
     assert "列印申請表（已幫你填好）" not in profile.text
     assert 'id="printable"' not in profile.text
+
+
+def test_profile_page_does_not_force_registration():
+    """免註冊就能查、能預填。註冊是為了換裝置不用重填，不是進門的條件。
+
+    先前未登入會在載入時被 location.replace 導去 login.html——最需要幫忙的人
+    會在那裡直接離開。
+    """
+    from aidstation.api import app
+
+    client = TestClient(app)
+    profile = client.get("/app/profile.html")
+    assert profile.status_code == 200
+    assert "location.replace('login.html" not in profile.text
+    assert "還沒註冊，直接用就好" in profile.text
+    # 未登入時媒合資料要落在本機，不能因為沒帳號就整段丟掉
+    assert "loadMatchingLocally()" in profile.text
+    assert "saveMatchingLocally" in profile.text
+
+
+def test_stale_application_records_recover_a_late_added_form():
+    """申請紀錄是快照；補助後來才掛上官方表單時，舊紀錄要補得回來。"""
+    from aidstation.api import app
+
+    client = TestClient(app)
+    prefill = client.get("/app/form-prefill.js").text
+    store = client.get("/app/application-store.js").text
+    assert "lookupFormTemplateId" in prefill
+    # 只允許從空補成有值，不能把既有紀錄改指到別張表
+    assert "!record.form_template_id" in store

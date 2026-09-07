@@ -286,6 +286,13 @@
     if (!record || record.status !== 'active') return null;
     const input = isObject(patch) ? patch : {};
     if (isObject(input.progress)) record.progress = clone(input.progress);
+    // 紀錄是「按下開始申請那一刻」的快照，事後不該被隨意改寫。唯一的例外是
+    // 補回當時還不存在的官方表單 id：補助後來才掛上表單時，舊紀錄會一直是空的，
+    // 使用者永遠看不到那張表。只允許從空補成有值，不允許改成別張表。
+    if (!record.form_template_id && typeof input.form_template_id === 'string'
+        && input.form_template_id) {
+      record.form_template_id = input.form_template_id;
+    }
     record.updated_at = now();
     if (!saveRecord(record)) return null;
     return clone(record);

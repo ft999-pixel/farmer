@@ -316,6 +316,31 @@
     return Object.assign({}, fallback, remote, {fields: mergedFields});
   }
 
+  // 從補助資料回頭找這筆申請對應的官方表單 id。優先比對同一個 variant／round，
+  // 對不到才退回補助層——避免多方案的補助（例如農機有兩張表）抓錯那一張。
+  async function lookupFormTemplateId(application) {
+    if (!application || !application.program_id || typeof root.fetch !== 'function') return '';
+    let program;
+    try {
+      const response = await root.fetch(
+        '/programs/' + encodeURIComponent(application.program_id),
+        {headers: {Accept: 'application/json'}});
+      if (!response.ok) return '';
+      program = await response.json();
+    } catch (error) {
+      return '';
+    }
+    for (const variant of program.variants || []) {
+      if (application.variant_id && variant.id !== application.variant_id) continue;
+      for (const round of variant.rounds || []) {
+        if (application.round_id && round.id !== application.round_id) continue;
+        if (round.form_template_id) return String(round.form_template_id);
+      }
+      if (variant.form_template_id) return String(variant.form_template_id);
+    }
+    return program.form_template_id ? String(program.form_template_id) : '';
+  }
+
   async function resolveTemplate(params) {
     const fallback = selectTemplate(params);
     if (!fallback || typeof root.fetch !== 'function') return fallback;
@@ -900,6 +925,18 @@
     if (applicationId && !application) {
       app.innerHTML = '<p class="empty-state">找不到這筆申請進度，請回「正在申請」重新選擇。</p>';
       return;
+    }
+    // 申請紀錄存在 localStorage，是按下「開始申請」那一刻的快照。補助之後才補上
+    // 官方表單的話，舊紀錄裡的 form_template_id 會一直是空的，使用者永遠看不到
+    // 那張表。所以空的時候回頭跟伺服器對一次，對到就補進紀錄。
+    if (application && !application.form_template_id && !params.get('template_id')) {
+      const found = await lookupFormTemplateId(application);
+      if (found) {
+        application = root.ApplicationStore.update
+          ? (root.ApplicationStore.update(application.id, {form_template_id: found}) || application)
+          : application;
+        if (!application.form_template_id) application.form_template_id = found;
+      }
     }
     if (application && application.form_template_id && !params.get('template_id')) {
       params.set('template_id', application.form_template_id);
