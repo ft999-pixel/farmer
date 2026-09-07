@@ -125,6 +125,23 @@ def test_profile_page_does_not_force_registration():
     assert "saveMatchingLocally" in profile.text
 
 
+def test_demo_seed_button_is_not_gated_on_login():
+    """個人資料只存本機，跟有沒有帳號無關；綁登入等於逼示範者公開一組帳密。
+
+    但這顆按鈕只帶個人資料，不帶媒合資料——匿名要自己填作物鄉鎮、登入才會
+    自動帶回，這個差別就是要展示的「註冊的好處」，不能一起塞進去。
+    """
+    from aidstation.api import app
+
+    client = TestClient(app)
+    profile = client.get("/app/profile.html")
+    assert "if (!box || !memberCode) return;" not in profile.text
+    assert "personas.find(p => p.account === memberCode) || personas[0]" in profile.text
+    seed_block = profile.text.split("async function setupDemoSeed")[1].split("\n}")[0]
+    assert "private_form_profile" in seed_block
+    assert "matching_profile" not in seed_block, "示範按鈕不該一併帶入媒合資料"
+
+
 def test_stale_application_records_recover_a_late_added_form():
     """申請紀錄是快照；補助後來才掛上官方表單時，舊紀錄要補得回來。"""
     from aidstation.api import app

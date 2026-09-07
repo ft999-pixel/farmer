@@ -629,23 +629,30 @@ function savePrivateForm(){
 // Demo 用：一鍵把假的個人資料填進本機。刻意做成看得見的按鈕而不是網址參數，
 // 因為示範時觀眾應該看得出來資料是哪裡來的。
 // web/demo-persona.json 不存在（正式環境）時，按鈕不會出現。
+//
+// 不綁登入：個人資料本來就只存本機，跟有沒有帳號無關。綁了的話匿名示範得手打
+// 十個欄位，也等於逼示範者在公開網址上放一組帳密才能順順地演。
+//
+// 這顆按鈕**只帶個人資料，不帶媒合資料**——這不是省略，是刻意的：
+// 匿名時作物、鄉鎮要自己填，登入後才會自動帶回來。兩者的差別就是註冊的好處。
 async function setupDemoSeed(){
   const box = $('demo-seed-box');
-  if (!box || !memberCode) return;
-  let persona = null;
+  if (!box) return;
+  let personas = [];
   try {
     const response = await fetch('demo-persona.json', {headers: {Accept: 'application/json'}});
     if (!response.ok) return;
-    const data = await response.json();
-    persona = (data.personas || []).find(p => p.account === memberCode) || null;
+    personas = (await response.json()).personas || [];
   } catch (e) {
     return;                                   // 沒有這個檔就當作不是示範環境
   }
+  // 登入時優先用對應這個帳號的示範人物，匿名就用第一個
+  const persona = personas.find(p => p.account === memberCode) || personas[0];
   if (!persona) return;
   box.hidden = false;
-  $('demo-seed-hint').textContent = `${persona.label}的示範資料，全部是編的，只寫進這台裝置。`;
+  $('demo-seed-hint').textContent = `${persona.label}的示範資料，全部是編的，只寫進這台裝置`
+    + (loggedIn ? '。' : '；作物與鄉鎮不會一起帶入，那要註冊才會跟著你走。');
   $('demo-seed').onclick = () => {
-    // 只帶個人資料。媒合資料由 scripts/seed_demo_farmer.py 存在帳號上，登入就有了。
     privateFormProfile = ProfileStore.save(persona.private_form_profile || {});
     renderPrivateForm();
     msg('已把示範個人資料填進這台裝置，可以去官方表單準備頁看預填結果。', 'ok');
