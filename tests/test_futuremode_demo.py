@@ -126,20 +126,34 @@ def test_profile_page_does_not_force_registration():
 
 
 def test_demo_seed_button_is_not_gated_on_login():
-    """個人資料只存本機，跟有沒有帳號無關；綁登入等於逼示範者公開一組帳密。
-
-    但這顆按鈕只帶個人資料，不帶媒合資料——匿名要自己填作物鄉鎮、登入才會
-    自動帶回，這個差別就是要展示的「註冊的好處」，不能一起塞進去。
-    """
+    """個人資料只存本機，跟有沒有帳號無關；綁登入等於逼示範者公開一組帳密。"""
     from aidstation.api import app
 
     client = TestClient(app)
     profile = client.get("/app/profile.html")
     assert "if (!box || !memberCode) return;" not in profile.text
     assert "personas.find(p => p.account === memberCode) || personas[0]" in profile.text
-    seed_block = profile.text.split("async function setupDemoSeed")[1].split("\n}")[0]
+
+
+def test_demo_seed_fills_both_kinds_and_uploads_neither():
+    """整份帶入，但兩種都只寫本機。
+
+    先前只帶個人資料、要使用者自己打作物，畫面上會變成「沒註冊卻幫你填了
+    身分證，反而要你自己打作物」——把最敏感的東西看得最輕。
+    媒合資料要上傳仍須使用者自己按「存起來」，按鈕不代替他做這個決定。
+    """
+    from aidstation.api import app
+
+    client = TestClient(app)
+    # HTTP 回應保留原始 CRLF，先正規化才切得出函式區塊
+    profile = client.get("/app/profile.html").text.replace("\r\n", "\n")
+    seed_block = profile.split("async function setupDemoSeed")[1].split("\n}\n")[0]
     assert "private_form_profile" in seed_block
-    assert "matching_profile" not in seed_block, "示範按鈕不該一併帶入媒合資料"
+    assert "persona.matching_profile" in seed_block
+    assert "saveMatchingLocally()" in seed_block
+    # 只寫本機：按鈕裡不可以直接呼叫會送出資料的函式
+    assert "persistMatchingProfile" not in seed_block
+    assert "saveAndMatch" not in seed_block
 
 
 def test_stale_application_records_recover_a_late_added_form():

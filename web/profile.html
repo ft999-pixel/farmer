@@ -633,8 +633,11 @@ function savePrivateForm(){
 // 不綁登入：個人資料本來就只存本機，跟有沒有帳號無關。綁了的話匿名示範得手打
 // 十個欄位，也等於逼示範者在公開網址上放一組帳密才能順順地演。
 //
-// 這顆按鈕**只帶個人資料，不帶媒合資料**——這不是省略，是刻意的：
-// 匿名時作物、鄉鎮要自己填，登入後才會自動帶回來。兩者的差別就是註冊的好處。
+// 按鈕把示範人物的資料整份帶進來（個人資料＋媒合資料），兩者都只寫進 localStorage。
+// 先前刻意不帶媒合資料，想用「作物要自己打」凸顯註冊的好處，但那讓畫面變成
+// 「沒註冊卻幫你填了身分證，反而要你自己打作物」——看起來像把最敏感的東西看得最輕。
+// 註冊的好處改用換裝置來演：清掉 localStorage 後，媒合資料登入就回來，
+// 個人資料不會——因為它從來沒上傳過。那才是真正該給觀眾看的對比。
 async function setupDemoSeed(){
   const box = $('demo-seed-box');
   if (!box) return;
@@ -650,12 +653,17 @@ async function setupDemoSeed(){
   const persona = personas.find(p => p.account === memberCode) || personas[0];
   if (!persona) return;
   box.hidden = false;
-  $('demo-seed-hint').textContent = `${persona.label}的示範資料，全部是編的，只寫進這台裝置`
-    + (loggedIn ? '。' : '；作物與鄉鎮不會一起帶入，那要註冊才會跟著你走。');
+  $('demo-seed-hint').textContent =
+    `${persona.label}的示範資料，全部是編的，只寫進這台裝置，不會上傳。`;
   $('demo-seed').onclick = () => {
     privateFormProfile = ProfileStore.save(persona.private_form_profile || {});
-    renderPrivateForm();
-    msg('已把示範個人資料填進這台裝置，可以去官方表單準備頁看預填結果。', 'ok');
+    // 媒合資料同樣只寫本機。登入狀態下要真的存到帳號，還是得按「存起來」——
+    // 這顆按鈕不代替使用者做上傳的決定。
+    matchingProfile = canonicalMatchingProfile(
+      Object.assign({}, matchingProfile, persona.matching_profile || {}));
+    saveMatchingLocally();
+    renderAllForms();
+    msg('已把示範資料填進這台裝置。個人資料不會上傳；媒合資料要按「存起來」才會存到帳號。', 'ok');
   };
 }
 
